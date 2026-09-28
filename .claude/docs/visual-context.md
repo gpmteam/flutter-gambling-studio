@@ -106,9 +106,10 @@ theme-matched background balls marked `x5`, `x10`, `x25`, `x50` and `x100`, rega
 paytable. They are store-only scene elements: do not insert them into real gameplay captures,
 imply those tiers are reachable, or alter game math to justify them. Build their shape, material,
 palette and light from the current Design DNA. For every C1-C6 category and lead kind, make each
-ball a prominent secondary subject, starting near 35-40% of the final portrait panel width and
-adjusting only to protect the actual gameplay and outcome. Keep all five readable in the final
-screenshots.
+ball a prominent secondary subject, starting near 35-40% of the final portrait panel width.
+Scatter them in flight at varied heights and depths. They may cover gameplay, symbols, outcomes,
+foreground objects, and any other scene element except the main character. Keep all five ball
+labels readable in the final screenshots.
 
 These short, verified runtime game-object inscriptions and the five store-only ball markings
 are exceptions to the no-baked-copy rule.
@@ -167,8 +168,9 @@ three-panel scene, each very large and near the camera, overlapping in depth and
 bottom edge, over a continuous glittering layer of the game's gold coins or currency that runs the
 full width. Keep each object's silhouette readable. Avoid miniature clutter and any supporting
 surface beneath the objects; no floor, fabric, tabletop or drape. Keep selected multiplier balls
-flying in front of the gameplay: at least two must visibly cover part of the board or mechanic in the marketing
-scene. Keep every ball outside the player/hero character silhouette. For lighting, use the game's
+flying in front of the gameplay: at least two must visibly cover part of the board or mechanic in
+the marketing scene. Balls may obscure anything in the scene except the main character; keep
+every ball outside the player/hero character silhouette. For lighting, use the game's
 authentic palette with strong warm/cool separation, clean specular highlights, local reflected
 color, selective glints and controlled bloom around real light sources. Keep color-rich shadows
 and vivid midtones; avoid a single-color wash, blanket saturation and clipped highlights. The

@@ -67,8 +67,10 @@ game config and theme support them; never invent runtime multipliers or change b
 promotional art. Every generated game's store screenshot set includes theme-matched balls marked
 x5, x10, x25, x50 and x100 as store-only scene elements, even when those values are absent from
 the game. Across all six categories, plan each ball as a prominent secondary subject at roughly
-35-40% of the final portrait panel width; adapt only to protect readable gameplay and record
-the reason. Keep them out of real gameplay captures and payout claims.
+35-40% of the final portrait panel width. Keep the balls visibly flying at varied heights and
+depths. They may cover gameplay, symbols, outcomes, foreground objects, and other scene elements;
+the main character is the only subject they must never cover. Keep them out of real gameplay
+captures and payout claims.
 
 All agent responses must be in English, and every artifact the pipeline writes — design documents, concepts, reports, session state and commit messages — must be in English as well. Dart/Flutter code, file paths, class names and CLI commands are English by definition.
 
