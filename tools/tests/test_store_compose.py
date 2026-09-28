@@ -1982,6 +1982,116 @@ class BannerCommandTests(unittest.TestCase):
         self.assertFalse(Path(args.out).exists())
 
 
+class ShowcaseBackdropTests(unittest.TestCase):
+    """Phone slides sit on panel 1, slid right until the character is whole."""
+
+    PANEL_W, PANEL_H, PANELS = 240, 520, 3
+    GUTTER = round(240 * store_compose.GUTTER_REF_PX / store_compose.GUTTER_REF_W)
+    PANO_W = PANEL_W * PANELS + GUTTER * (PANELS - 1)
+
+    def setUp(self) -> None:
+        self._tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp.cleanup)
+        self.dir = Path(self._tmp.name)
+        self.warnings: list[str] = []
+        for name in ("info", "ok"):
+            original = getattr(store_compose, name)
+            setattr(store_compose, name, lambda *_: None)
+            self.addCleanup(setattr, store_compose, name, original)
+        original_warn = store_compose.warn
+        store_compose.warn = self.warnings.append
+        self.addCleanup(setattr, store_compose, "warn", original_warn)
+        # Every column carries its own x, so a crop reports where it was taken.
+        x = np.arange(self.PANO_W)
+        row = np.stack([x % 256, x // 256, np.full_like(x, 90)], axis=-1)
+        pixels = np.repeat(row[None, :, :], self.PANEL_H, axis=0).astype(np.uint8)
+        self.src = Image.fromarray(pixels, "RGB").convert("RGBA")
+        self.src_path = self.dir / "panorama.png"
+        self.src.save(self.src_path)
+
+    @staticmethod
+    def _left(img: Image.Image) -> int:
+        r, g, _ = img.convert("RGB").getpixel((0, 0))
+        return r + 256 * g
+
+    def _backdrop(self, panel: int = 1, subject=None) -> Image.Image:
+        return store_compose.panel_backdrop(
+            self.src, self.PANEL_W, self.PANEL_H, panel, self.PANELS,
+            store_compose.DEFAULT_GUTTER, subject)
+
+    def test_panel_one_is_the_exported_opening_slide(self) -> None:
+        rng = np.random.default_rng(5)
+        noise = Image.fromarray(
+            rng.integers(20, 235, (self.PANEL_H, self.PANO_W, 3), dtype=np.uint8),
+            "RGB").convert("RGBA")
+        noise.save(self.src_path)
+        out = self.dir / "panels"
+        store_compose.cmd_triptych(argparse.Namespace(
+            src=str(self.src_path), out=str(out), panels=self.PANELS,
+            size=f"{self.PANEL_W}x{self.PANEL_H}", prefix="store-", zoom=1.0,
+            offset=0.0, gutter=store_compose.DEFAULT_GUTTER, seam_snap="off",
+            sprite=[], hero_bounds=None, art_gate="off", save_pano=None,
+            pano_only=False, pop="off", vibrance=None, lift=None, contrast=None,
+            bloom=None, title=None, tagline=None, logo=None, title_panel=None,
+            title_pos=None))
+
+        backdrop = store_compose.panel_backdrop(
+            noise, self.PANEL_W, self.PANEL_H, 1, self.PANELS,
+            store_compose.DEFAULT_GUTTER)
+
+        exported = np.asarray(Image.open(out / "store-01.png").convert("RGB"))
+        np.testing.assert_array_equal(np.asarray(backdrop.convert("RGB")), exported)
+
+    def test_a_character_inside_panel_one_leaves_the_crop_alone(self) -> None:
+        self.assertEqual(self._left(self._backdrop(subject=(0.02, 0.25))), 0)
+        self.assertEqual(self.warnings, [])
+
+    def test_a_hand_reaching_into_panel_two_slides_the_window_right(self) -> None:
+        backdrop = self._backdrop(subject=(0.10, 0.38))
+
+        margin = round(self.PANEL_W * store_compose.SHOWCASE_SUBJECT_MARGIN)
+        right = round(0.38 * self.PANO_W) + margin
+        left = self._left(backdrop)
+        self.assertEqual(left, right - self.PANEL_W)
+        self.assertLessEqual(left, round(0.10 * self.PANO_W) - margin)
+        self.assertEqual(backdrop.size, (self.PANEL_W, self.PANEL_H))
+        self.assertEqual(self.warnings, [])
+
+    def test_a_character_wider_than_a_panel_keeps_the_side_crossing_the_seam(self) -> None:
+        # Panel 1's left edge is the picture's own edge; the hand is what crosses
+        # the cut, so the hand is what the backdrop keeps.
+        margin = round(self.PANEL_W * store_compose.SHOWCASE_SUBJECT_MARGIN)
+        hi = round(0.45 * self.PANO_W) + margin
+
+        backdrop = self._backdrop(subject=(0.00, 0.45))
+
+        self.assertEqual(self._left(backdrop), hi - self.PANEL_W)
+        self.assertEqual(len(self.warnings), 1)
+
+    def test_later_panels_follow_the_triptych_gutter(self) -> None:
+        self.assertEqual(self._left(self._backdrop(panel=2)),
+                         self.PANEL_W + self.GUTTER)
+
+    def test_showcase_cli_uses_the_slid_opening_panel(self) -> None:
+        shot = self.dir / "spin.png"
+        Image.new("RGB", (390, 844), (40, 200, 90)).save(shot)
+        out = self.dir / "store-04.png"
+        base = [sys.executable, str(SCRIPT), "showcase", "--shot", str(shot),
+                "--bg", str(self.src_path), "--size", f"{self.PANEL_W}x{self.PANEL_H}",
+                "--pop", "off", "--bg-treatment", "none", "--out", str(out)]
+
+        refused = subprocess.run(base + ["--bg-subject", "0.10,0.38"],
+                                 capture_output=True, text=True, timeout=30)
+        self.assertNotEqual(refused.returncode, 0)
+        self.assertFalse(out.exists())
+
+        result = subprocess.run(base + ["--bg-panel", "1", "--bg-subject", "0.10,0.38"],
+                                capture_output=True, text=True, timeout=30)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        margin = round(self.PANEL_W * store_compose.SHOWCASE_SUBJECT_MARGIN)
+        self.assertEqual(self._left(Image.open(out)),
+                         round(0.38 * self.PANO_W) + margin - self.PANEL_W)
+
 
 if __name__ == "__main__":
     unittest.main()

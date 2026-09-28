@@ -343,6 +343,16 @@ def load_image(path: str | Path, label: str = "image") -> Image.Image:
     return img.convert("RGBA")
 
 
+def cover_geometry(src_w: int, src_h: int, w: int, h: int, bias_x: float = 0.0,
+                   zoom: float = 1.0) -> tuple[int, int, int, int, float]:
+    """Where `cover` puts the picture: scaled size, crop left/top, scale factor."""
+    tw, th = max(w, round(w * zoom)), max(h, round(h * zoom))
+    scale = max(tw / src_w, th / src_h)
+    nw, nh = max(tw, math.ceil(src_w * scale)), max(th, math.ceil(src_h * scale))
+    left = int(round((nw - w) * (0.5 + 0.5 * max(-1.0, min(1.0, bias_x)))))
+    return nw, nh, left, (nh - h) // 2, scale
+
+
 def cover(img: Image.Image, w: int, h: int, sharpen: bool = True,
           bias_x: float = 0.0, zoom: float = 1.0) -> Image.Image:
     """Scale to fully cover w×h (preserving aspect), then crop.
@@ -352,18 +362,13 @@ def cover(img: Image.Image, w: int, h: int, sharpen: bool = True,
     That pair is how a face sitting on a panel seam gets moved off it without
     paying for a whole new generation.
     """
-    tw, th = max(w, round(w * zoom)), max(h, round(h * zoom))
-    scale = max(tw / img.width, th / img.height)
-    nw, nh = max(tw, math.ceil(img.width * scale)), max(th, math.ceil(img.height * scale))
+    nw, nh, left, top, scale = cover_geometry(img.width, img.height, w, h, bias_x, zoom)
     out = img.resize((nw, nh), RES)
     # Generated art is usually smaller than a store canvas; a light unsharp pass
     # is the difference between "upscaled" and "soft".
     if sharpen and scale > 1.25:
         amount = int(min(120, 45 * scale))
         out = out.filter(ImageFilter.UnsharpMask(radius=2, percent=amount, threshold=3))
-    slack_x, slack_y = nw - w, nh - h
-    left = int(round(slack_x * (0.5 + 0.5 * max(-1.0, min(1.0, bias_x)))))
-    top = slack_y // 2
     return out.crop((left, top, left + w, top + h))
 
 
@@ -3538,13 +3543,93 @@ def cmd_boardplate(args) -> None:
          "pass the real gameplay capture to image generation as context")
 
 
+# ── showcase backdrop: the opening panel, slid until the character is whole ──
+#
+# Cover-cropping the whole panorama to portrait lands on its middle — whatever
+# sits between the seams, usually a slice of board. The carousel opens on panel
+# 1, so the capture slides that follow belong to the same campaign when their
+# backdrop is that opening scene. Panel 1's cut is content-blind, though: a
+# character whose hand, held prop or hair crosses the first seam loses it behind
+# the phone. `--bg-subject` names the character's horizontal extent, and the
+# window slides right only as far as it takes to keep the whole figure.
+SHOWCASE_SUBJECT_MARGIN = 0.03   # room kept past the subject, per panel width
+
+
+def parse_unit_span(text: str, flag: str = "--bg-subject") -> tuple[float, float]:
+    """`LEFT,RIGHT` as fractions of an image's width."""
+    try:
+        left, right = (float(part) for part in str(text).split(","))
+    except ValueError:
+        die(f"{flag} {text}: expected LEFT,RIGHT as fractions of the image width "
+            "(e.g. 0.02,0.41)")
+    if not 0.0 <= left < right <= 1.0:
+        die(f"{flag} {text}: need 0 ≤ LEFT < RIGHT ≤ 1")
+    return left, right
+
+
+def panel_backdrop(src: Image.Image, w: int, h: int, panel: int, panels: int,
+                   gutter_spec: str,
+                   subject: tuple[float, float] | None = None) -> Image.Image:
+    """Panel `panel` (1-based) of `src`, cut as `triptych --seam-snap off` cuts it.
+
+    With `subject` (the character's LEFT,RIGHT as fractions of `src` width) the
+    window slides the least distance that keeps that extent, plus a small margin,
+    inside the panel. A subject wider than one panel cannot be kept whole; the
+    window then keeps the side that crosses the panel's cut — the reaching hand —
+    and gives up the side the picture's own edge already trims, and says so.
+    """
+    gutter = parse_gutter(gutter_spec, w)
+    pano_w = w * panels + gutter * (panels - 1)
+    scaled_w, _, crop_left, _, _ = cover_geometry(src.width, src.height, pano_w, h)
+    pano = cover(src, pano_w, h)
+    home, _ = panel_span(panel - 1, w, gutter)
+    left = home
+    if subject:
+        margin = round(w * SHOWCASE_SUBJECT_MARGIN)
+        lo = max(0, round(subject[0] * scaled_w) - crop_left - margin)
+        hi = min(pano_w, round(subject[1] * scaled_w) - crop_left + margin)
+        whole = hi - lo <= w
+        if whole:
+            left = min(max(left, hi - w), lo)
+        else:
+            keep_right = hi - (home + w) >= home - lo
+            left = hi - w if keep_right else lo
+            warn(f"--bg-subject spans {hi - lo}px of a {w}px panel — kept its "
+                 f"{'right' if keep_right else 'left'} side, {hi - lo - w}px of the "
+                 "other is cropped. Pass the extent that must survive (head, "
+                 "reaching hand, held prop) to choose differently")
+        left = max(0, min(pano_w - w, left))
+        if left != home:
+            info(f"backdrop: panel {panel} slid {left - home:+d}px "
+                 f"({(left - home) / w:+.0%} of a panel) "
+                 + ("so the character stays whole" if whole
+                    else "to keep the side that crosses the seam"))
+    return pano.crop((left, 0, left + w, h))
+
+
 def cmd_showcase(args) -> None:
     w, h = parse_size(args.size)
+    bg = load_image(args.bg, "background")
+    panel = getattr(args, "bg_panel", 0) or 0
+    subject = getattr(args, "bg_subject", None)
+    if panel:
+        panels = getattr(args, "bg_panels", 3)
+        if not 2 <= panels <= 5:
+            die(f"--bg-panels {panels} out of range (2..5)")
+        if not 1 <= panel <= panels:
+            die(f"--bg-panel {panel} is not one of the {panels} panels")
+        base = panel_backdrop(bg, w, h, panel, panels,
+                              getattr(args, "bg_gutter", DEFAULT_GUTTER),
+                              parse_unit_span(subject) if subject else None)
+    elif subject:
+        die("--bg-subject slides a panel window; pass --bg-panel 1 with it")
+    else:
+        base = cover(bg, w, h)
     # Grade the ART, then push it back. The real game frame is never graded:
     # Both stores require a screenshot to represent what the app actually
     # renders, so a dull gameplay frame is fixed as a separate game-design task,
     # never in store post-production.
-    backdrop = pop_grade(cover(load_image(args.bg, "background"), w, h), args.pop,
+    backdrop = pop_grade(base, args.pop,
                          vibrance=args.vibrance, lift=args.lift,
                          contrast=args.contrast, bloom=args.bloom)
     canvas = treat_background(backdrop, args.bg_treatment)
@@ -4284,6 +4369,19 @@ def main() -> None:
                    help="contain = whole phone visible (default, crops nothing); "
                         "bleed = phone fills the canvas, bottom runs off the edge")
     s.add_argument("--bg-treatment", choices=("soft", "blur", "dim", "none"), default="soft")
+    s.add_argument("--bg-panel", type=int, default=0, metavar="N",
+                   help="use panel N of the --bg panorama as the backdrop, cut exactly as "
+                        "`triptych --seam-snap off` cuts it at this --size (1 = the "
+                        "opening panel). 0 (default) cover-crops the whole --bg")
+    s.add_argument("--bg-panels", type=int, default=3,
+                   help="panel count of that triptych (default 3)")
+    s.add_argument("--bg-gutter", default=DEFAULT_GUTTER, metavar="PX|N%|auto",
+                   help="the --gutter that triptych used (default auto)")
+    s.add_argument("--bg-subject", metavar="LEFT,RIGHT",
+                   help="the character's horizontal extent in --bg as fractions of its "
+                        "width, including hands, held props, hair and headwear. The "
+                        "--bg-panel window slides the least distance that keeps it "
+                        "whole: a hand reaching into panel 2 moves the window right")
     add_pop_args(s)
     add_text_args(s)
     s.set_defaults(func=cmd_showcase)

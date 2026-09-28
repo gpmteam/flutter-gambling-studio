@@ -69,7 +69,8 @@ was explicitly requested. All copy is English unless another game language was r
 ## Outputs
 
 Default N=8 screenshots: P=3 adjacent concept panels sliced from one complete panorama followed by
-N−P actual gameplay/meta captures with optional device frames and captions. Produce `store/`
+N−P actual gameplay/meta captures with optional device frames and captions, set on the
+panorama's opening panel shifted to keep the whole character (see Phase 5). Produce `store/`
 at 1320×2868 and `store-play/` at 1080×1920 independently, not by resizing one set into the other.
 Include a dedicated text-free 1024×500 feature graphic: the banner scene plus one phone on the
 right holding a real screenshot, with no title or copy on the left or anywhere else (see Phase 5),
@@ -460,9 +461,22 @@ Use `showcase` on real captures with the game's fonts/type mood and secondary de
 Typical Joker typography is bold/playful, not automatic elegance. Captions describe actual play.
 Resolve filenames and words from this game's inventory; honor frame/no-captions/language/count.
 
+**Real-capture backdrops show the opening panel with the whole character.** Every phone slide
+sits on the panorama's first panel, not the cover-cropped middle: pass `--bg-panel 1` (and the
+triptych's `--gutter` as `--bg-gutter` if Phase 4 changed it). Panel 1's cut ignores content, so
+a hand, held prop, hair or headwear that crosses into panel 2 would be lost. Read the character's
+full horizontal extent once from `art/panorama.png` and pass it as `--bg-subject LEFT,RIGHT`
+(fractions of the panorama width). The backdrop then slides right only as far as the whole
+character needs. It is a crop parameter, not a gate. A character wider than one panel keeps the
+side that crosses the seam and loses some of the side the image edge already crops; the
+compositor warns, and a narrower extent (head and the reaching hand) chooses otherwise. Reuse
+the same values for the Play set; the compositor recomputes the Play geometry. For an
+object/mechanic lead, `--bg-subject` spans the lead object instead.
+
 ```bash
 "$STORE_PYTHON" tools/store_compose.py showcase --shot "$RAW_DIR/03-spin.png" \
-  --bg "$ART_DIR/panorama.png" --out "$OUT_DIR/store-04.png" \
+  --bg "$ART_DIR/panorama.png" --bg-panel 1 --bg-subject 0.00,0.38 \
+  --out "$OUT_DIR/store-04.png" \
   --size 1320x2868 --caption "Every Spin Counts" --type-mood playful --pop soft
 ```
 
@@ -527,8 +541,8 @@ the generation order and the references attached to each image call (the banner 
 for the panorama), panel and lower-edge plan, upload order/dimensions/counts, five store-only ball
 labels and whether each exists in gameplay, the single visual verdict for balls flying in every
 panel and covering gameplay while clearing the player, the character framing verdict (torso to
-head, no legs, not standing, not flying), any retry or correction, feature phone capture and no-text
-result, background guard and compliance notes. Do not require per-sprite audit tables, measured
+head, no legs, not standing, not flying), any retry or correction, the showcase backdrop panel and
+`--bg-subject` extent, feature phone capture and no-text result, background guard and compliance notes. Do not require per-sprite audit tables, measured
 bounds, numeric gate results or repeated visual verdicts.
 
 ```bash

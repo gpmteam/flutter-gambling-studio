@@ -104,6 +104,20 @@ class StoreScreenshotTopologyGuidanceTest(unittest.TestCase):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, self.phase1)
 
+    def test_phone_slides_use_the_opening_panel_with_the_whole_character(self) -> None:
+        phase5 = " ".join(
+            self.guidance.split("## Phase 5 — showcases and feature graphic", 1)[1]
+            .split("## Phase 6", 1)[0].split())
+        for phrase in (
+            "**Real-capture backdrops show the opening panel with the whole character.**",
+            "pass `--bg-panel 1`",
+            "`--bg-subject LEFT,RIGHT`",
+            "slides right only as far as the whole character needs",
+            '--bg "$ART_DIR/panorama.png" --bg-panel 1 --bg-subject',
+        ):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, phase5)
+
     def test_feature_graphic_is_text_free_with_one_phone_on_the_right(self) -> None:
         required_contract = (
             "a banner with one phone on the right and no text",
