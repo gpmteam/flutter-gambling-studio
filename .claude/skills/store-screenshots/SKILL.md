@@ -189,11 +189,14 @@ registered splash/shared backgrounds outside conventional directories. See
 
 ### Composition rules shared by every scene
 
-Choose the panorama aspect from panel count and target geometry. Character-led Zeus/Joker/chicken
-games default to a large real character on panel 1; humanoids use a waist-up crop and animals a
-species-appropriate crop. Protect the complete head/headwear with 2% top headroom and attached
-forms from the first seam. Use `--character-framing bust` for humanoids and `mascot` for a
-compact chicken/animal. Mascot mode uses prominence by area rather than humanoid height; it
+Choose the panorama aspect from panel count and target geometry. When the game has a main
+character, frame that character from torso to head in the panorama, showing enough torso to read
+the costume and pose. Humanoids crop through the torso; animals use equivalent readable
+species-appropriate framing. Leave visible open space above the complete head/headwear in the
+final panel crop, at least 2% of panel height, and protect attached forms from the first seam.
+Character-led Zeus/Joker/chicken games default to a large real character on panel 1. Use
+`--character-framing bust` for humanoids and `mascot` for a compact chicken/animal. Mascot mode
+uses prominence by area rather than humanoid height; it
 still protects the head, first-panel placement and attached silhouette. Left/bottom crops are
 allowed for a bust; preserve the mascot's recognizable form. Joker is a mischievous, slightly vicious
 playful trickster, not an elegant courtier or horror figure. Object/mechanic scenes have no empty
@@ -292,8 +295,11 @@ showcase background:
 > One continuous, fully illustrated game panorama set in the world of the attached banner:
 > same environment, palette, lighting and board housing, in a new composition. Reproduce the
 > supplied original character asset faithfully; the banner is world context, not the character
-> reference. Paint five multiplier balls modeled on the attached ball asset, flying at varied
-> heights, depths and horizontal positions. Letter each ball on its face with exactly one of
+> reference. If the game has a main character, show that character from torso to head (or the
+> species-appropriate equivalent), with visible open space above the entire head/headwear in
+> the final panel crop, at least 2% of panel height. Paint five multiplier balls modeled on the
+> attached ball asset, flying at varied heights, depths and horizontal positions. Letter each
+> ball on its face with exactly one of
 > these inscriptions, each used once: "x5", "x10", "x25", "x50", "x100". Make every label big,
 > chunky 3D display numerals in [warm display color] with a dark outline and inner highlight,
 > filling most of the ball face and following its curve. Light the balls with the scene: glossy
@@ -344,8 +350,10 @@ by the crop (Phase 4), not by regeneration.
 
 After the first full export, inspect one contact sheet showing the final App Store and Play crops,
 plus the feature graphic. Compare the character to its original asset, verify that `x5`, `x10`,
-`x25`, `x50` and `x100` each appear once, spelled exactly, on distinct airborne balls, and check
-for clipped labels, missing panels or an obvious pasted screenshot boundary. Check that the balls
+`x25`, `x50` and `x100` each appear once, spelled exactly, on distinct airborne balls. Check that
+any main character reads from torso to head with visible space above the complete head in the
+final panorama panel crop. Check for clipped labels, missing panels or an obvious pasted screenshot
+boundary. Check that the balls
 read as the multiplier reference (silhouette, material, color, ornament) painted into the scene:
 lit by it, with glow and motion, labels bold and dominant. A flat, pasted-looking or small-label
 ball is an error. Confirm at least two ball bodies visibly cover gameplay and none overlaps the

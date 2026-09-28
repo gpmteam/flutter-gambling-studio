@@ -31,9 +31,11 @@ topology, symbols, and outcome against the capture; stop if the image cannot pre
 Record `lead_kind: character | object | mechanic` before composing. Zeus, Joker and chicken games
 default to a large character on the first panel. Object/mechanic games such as crown slots and
 Plinko need no invented mascot or character-only opening. For characters, left/lower edge crops
-are allowed; protect heads/headwear with 2% top headroom and keep attached forms clear of the first
-seam. Animal framing fits the species. Real game objects form the cropped bottom frame
-and fall through the picture, while the far background stays broad, smooth, and subordinate so
+are allowed. When the game has a main character, show that character from torso to head in the
+panorama, with visible space above the complete head/headwear in the final panel crop (at least
+2% of panel height). Keep attached forms clear of the first seam. Animal framing fits the species.
+Real game objects form the cropped bottom frame and fall through the picture, while the far
+background stays broad, smooth, and subordinate so
 those subjects lead. Store grading is restrained and theme-led by default: preserve the Design DNA's
 exposure and add only enough saturation for the game objects to read cleanly. Brightness lifts, bloom,
 blown light sources, and aggressively saturated treatments are opt-in art direction, never universal

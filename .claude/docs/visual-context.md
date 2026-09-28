@@ -137,11 +137,14 @@ foreground.
 Do not paste the capture or a derived board plate into the panorama, or leave a placeholder
 opening for a later gameplay insert. Reject generated gameplay that changes the real outcome.
 
-For character-led concepts, default to a large first-panel character. Use a waist-up crop for
-humanoids; use a readable species-appropriate crop for animal mascots. Protect the whole head,
-hair/headwear and attached silhouette from the first seam, with at least 2% top headroom;
-left and lower edge crops are allowed. Object/mechanic leads have prominence and readability
-checks, not anatomy or first-panel silhouette requirements.
+When the game has a main character, show that character from torso to head in the panorama,
+including enough torso to read the costume and pose. For humanoids, crop through the torso;
+for animal mascots, use the equivalent readable species-appropriate framing. Keep visible open
+space above the complete head and hair/headwear in the final panel crop, at least 2% of panel
+height. Protect the head and attached silhouette from the first seam; left and lower edge crops
+are allowed. Character-led concepts default to a large character on the first panel.
+Object/mechanic leads have prominence and readability checks, not anatomy requirements when
+the game has no main character.
 
 For an object/mechanic-led game with no living character in its concept and shipped inventory,
 the first two carousel slides are gameplay-led. Show the authentic board or mechanic at a readable
