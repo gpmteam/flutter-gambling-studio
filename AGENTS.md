@@ -30,10 +30,12 @@ and never generate a placeholder scene to fill with gameplay afterward. Verify t
 topology, symbols, and outcome against the capture; stop if the image cannot preserve them.
 Record `lead_kind: character | object | mechanic` before composing. Zeus, Joker and chicken games
 default to a large character on the first panel. Object/mechanic games such as crown slots and
-Plinko need no invented mascot or character-only opening. For characters, left/lower edge crops
-are allowed. When the game has a main character, show that character from torso to head in the
-panorama, with visible space above the complete head/headwear in the final panel crop (at least
-2% of panel height). Keep attached forms clear of the first seam. Animal framing fits the species.
+Plinko need no invented mascot or character-only opening. When the game has a main character,
+it is mandatory to show that character from torso to head in the banner and the panorama. The
+bottom edge or the foreground band cuts the body through the torso, so no legs or feet are
+visible, and the character is never standing full length or flying. Leave visible space above the
+complete head/headwear in the final panel crop (at least 2% of panel height). Keep attached forms
+clear of the first seam. Animal framing fits the species but also shows no legs or feet.
 Real game objects form the cropped bottom frame and fall through the picture, while the far
 background stays broad, smooth, and subordinate so
 those subjects lead. Store grading is restrained and theme-led by default: preserve the Design DNA's
@@ -67,8 +69,10 @@ game config and theme support them; never invent runtime multipliers or change b
 promotional art. Every generated game's store screenshot set includes theme-matched balls marked
 x5, x10, x25, x50 and x100 as store-only scene elements, even when those values are absent from
 the game. Across all six categories, plan each ball as a prominent secondary subject at roughly
-35-40% of the final portrait panel width. Keep the balls visibly flying at varied heights and
-depths. They may cover gameplay, symbols, outcomes, foreground objects, and other scene elements;
+35-40% of the final portrait panel width. The flying balls are mandatory: all five appear in the
+banner and the panorama, and every panorama panel carries at least one. Keep the balls visibly
+flying at varied heights and depths around the character and across the gameplay. They may cover
+gameplay, symbols, outcomes, foreground objects, and other scene elements;
 the main character is the only subject they must never cover. Keep them out of real gameplay
 captures and payout claims.
 

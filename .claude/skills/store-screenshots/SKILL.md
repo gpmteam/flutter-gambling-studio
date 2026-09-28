@@ -1,6 +1,6 @@
 ---
 name: store-screenshots
-description: "Create a store kit: generate the feature banner first (character on the left), then a complete panorama with character, gameplay and x5/x10/x25/x50/x100 multiplier balls rendered in one image-generation call from the banner and a shipped ball asset as references. Add real capture slides, feature graphic, icon/emblem and ZIP. Match game assets and topology; preserve runtime backgrounds."
+description: "Create a store kit: generate the feature banner first (torso-to-head character on the left), then a complete panorama with the torso-to-head character (never standing, flying or showing legs), gameplay and mandatory flying x5/x10/x25/x50/x100 multiplier balls in every panel, rendered in one image-generation call from the banner and a shipped ball asset as references. Add real capture slides, feature graphic, icon/emblem and ZIP. Match game assets and topology; preserve runtime backgrounds."
 argument-hint: "[--count 8] [--panels 3] [--lead-kind character|object|mechanic] [--character-framing bust|mascot] [--banner-layout free|left-heavy] [--size 1320x2868|play] [--no-play-set] [--frame ios|android|none] [--no-apply] [--no-wire-logo] [--no-captions] [--apply-backdrop]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Agent
@@ -28,12 +28,27 @@ may establish pose and composition, but it cannot redefine the character's face,
 costume or colors. If the character has multiple shipped layers, use the original layers or a
 lossless assembly of them.
 
-Multiplier balls must look airborne, scattered at varied heights and depths. Several must fly
-**in front of gameplay** and visibly cover parts of the board, symbols or outcome area in the
-marketing scene. Balls may obscure any scene element except the visible player/hero character
-silhouette, including headwear, face, hands and costume. Character occlusion is a placement error.
-Keep the five ball labels legible. Review art once at final crop size; use format/dimension checks
-for exports. Do not run numeric composition
+**Character framing is mandatory, not a style choice.** When the game has a main character, every
+generated scene that shows it (banner, panorama and any showcase background) frames it from
+torso to head. The bottom frame edge or the lower-edge foreground objects cut the body through
+the torso, so no legs, knees, hips or feet are visible. The character is never standing full
+length and never flying, floating, leaping or levitating. Its cut torso rises from the bottom
+of the frame or from behind the foreground objects, with no background showing beneath it. Animal
+mascots follow the same rule in species-appropriate terms: body to head, with no legs, paws,
+talons or feet visible. A full-body, standing, flying or leg-revealing character is an
+objective failure.
+
+**Flying multiplier balls are mandatory in every scene.** The banner, the panorama and any
+showcase background each contain all five labelled balls (`x5`, `x10`, `x25`, `x50`, `x100`),
+visibly airborne and scattered at varied heights and depths around the character and across the
+gameplay. Every panorama panel carries at least one ball. That includes the character's panel,
+where at least one ball flies around the character (beside or above the shoulders and head)
+without touching it. Several must fly **in front of gameplay** and visibly cover parts of the
+board, symbols or outcome area in the marketing scene. Balls may obscure any scene element except
+the visible player/hero character silhouette, including headwear, face, hands and costume.
+Character occlusion is a placement error. A missing ball, a ball resting on an object or a panel
+with no ball is an objective failure. Keep the five ball labels legible. Review art once at final
+crop size; use format/dimension checks for exports. Do not run numeric composition
 gates or repeat visual audits to optimize scores.
 
 **The image model generates the multiplier balls and their labels in the same call as the rest
@@ -118,8 +133,9 @@ Write `STORE_BRIEF.md` before any generation call:
 - `lead_kind: character | object | mechanic`, exact subject and in-game role. A chicken is a
   character; a crown/coin/board is not. No invented mascot or character-only opening for objects.
 - Inspected references, borrowed traits and original adaptations.
-- Banner plan: lead on the left, gameplay placement, lower-edge band, which multiplier labels
-  appear in it and where, and what continues under the phone on the right.
+- Banner plan: lead on the left, where the character's torso is cut (bottom edge or foreground
+  band), gameplay placement, lower-edge band, where each of the five flying balls sits, and what
+  continues under the phone on the right.
 - Panel map with anchors and gameplay positions/spans. Any panel, the right two, or all three
   may carry gameplay. There is no required middle field or final reward-only panel. Note where
   the character's pose, crop or panel differs from the banner.
@@ -154,8 +170,9 @@ Write `STORE_BRIEF.md` before any generation call:
   Record the exact labels separately from the visual treatment so a styled ball never changes
   a game's payout meaning.
   Map each value to a position and flight direction across the full panorama, judging space in
-  the final portrait crops. Scatter the five balls across at least two panels with no fixed
-  count or label assignment per panel; slide 1 may have none. Place at least two ball bodies
+  the final portrait crops. Scatter the five balls so every panel carries at least one, with no
+  fixed label assignment per panel. On the character's panel, at least one ball flies around the
+  character, clear of its silhouette. Place at least two ball bodies
   across the board/mechanic or its symbols so they visibly hide a portion of gameplay in the
   exported marketing panels. Keep every ball outside the player/hero silhouette. Map the same
   behavior in the banner and, for `--panels 0`, the themed showcase background wherever the
@@ -191,15 +208,19 @@ registered splash/shared backgrounds outside conventional directories. See
 ### Composition rules shared by every scene
 
 Choose the panorama aspect from panel count and target geometry. When the game has a main
-character, frame that character from torso to head in the panorama, showing enough torso to read
-the costume and pose. Humanoids crop through the torso; animals use equivalent readable
-species-appropriate framing. Leave visible open space above the complete head/headwear in the
-final panel crop, at least 2% of panel height, and protect attached forms from the first seam.
+character, frame that character from torso to head in the banner and the panorama, showing
+enough torso to read the costume and pose. Humanoids crop through the torso; animals crop through
+the body in species-appropriate terms. In both cases the bottom frame edge or the lower-edge
+foreground objects hide everything below the cut: no legs, knees, hips or feet. Never pose the
+character standing full length, flying, floating or leaping. Leave visible open space above the
+complete head/headwear in the final panel crop, at least 2% of panel height, and protect
+attached forms from the first seam.
 Character-led Zeus/Joker/chicken games default to a large real character on panel 1. Use
-`--character-framing bust` for humanoids and `mascot` for a compact chicken/animal. Mascot mode
-uses prominence by area rather than humanoid height; it
-still protects the head, first-panel placement and attached silhouette. Left/bottom crops are
-allowed for a bust; preserve the mascot's recognizable form. Joker is a mischievous, slightly vicious
+`--character-framing bust` for humanoids and `mascot` for a compact chicken/animal. Both are
+torso-to-head framings with no legs or feet; mascot mode only measures prominence by area rather
+than humanoid height, and still protects the head, first-panel placement and attached
+silhouette. A left crop is allowed and a bottom crop through the torso is expected; preserve the
+mascot's recognizable head and body. Joker is a mischievous, slightly vicious
 playful trickster, not an elegant courtier or horror figure. Object/mechanic scenes have no empty
 character berth and no anatomy constraints. Keep a strong game anchor in every panel; a continuous
 board can anchor several. Flying multiplier balls must cover part of the board or mechanic in
@@ -231,11 +252,13 @@ a treasure spill rather than a row of cutouts. The coins are game objects, not a
 floor, fabric, tabletop, podium, platform or velvet drape. Vary scale and angle for rhythm; keep
 the game objects recognizable where visible; do not shrink them into miniature clutter. Light the band
 with the scene's warm and cool sources: specular highlights, rim light and reflected color. A few
-other game objects may fly higher. The multiplier balls stay visibly in flight, including when
-they cross the foreground; none rests on a lower object.
+other game objects may fly higher. Where the character's cut torso meets the band, the objects
+hide everything below the cut, so no legs or feet appear. The multiplier balls stay visibly in
+flight, including when they cross the foreground; none rests on a lower object.
 
-**Multiplier balls.** Show all five labelled balls at least once across the panorama's store
-panels; when `--panels 0`, include them in the themed showcase background as well as the banner.
+**Multiplier balls.** Every scene shows all five labelled balls in flight: the banner, the
+panorama (with at least one ball in every panel, the character's panel included) and, when
+`--panels 0`, the themed showcase background. This is required for every game and lead kind.
 Each ball is the multiplier reference re-rendered by the model: keep its silhouette, material,
 color and ornament recognizable while the scene's lighting shapes it, with a specular highlight,
 rim light in the scene's accent color, reflected color from neighbors, a halo, sparkle ring or
@@ -253,14 +276,17 @@ cluster. Match any user-supplied size reference.
 ### 1a — Banner (the first generation call)
 
 Generate `art/long-banner.png` before anything else. For a character-led game the character
-stands large on the left; object/mechanic leads put the lead object or the angled gameplay
+appears large on the left, framed from torso to head: the bottom edge or the foreground band cuts
+the body through the torso, with no legs or feet visible, and the character is neither standing
+full length nor flying. Object/mechanic leads put the lead object or the angled gameplay
 surface there instead, with no invented character. The mechanic sits at a three-quarter/3D angle
 beside the lead, the environment runs edge to edge, and the lower-edge band crosses the full
 width. The right third continues the scene without a face or decisive symbol, because
 `banner` seats the phone there (centered at 82% of the width, about a third of it wide). That area
-is not an empty reserved zone: background, housing and foreground run through it. Include at least
-two labelled multiplier balls (all five when `--panels 0`), clear of the character. Do not reserve
-space around gameplay or the future phone for the balls. No title, logo, wordmark, tagline, device,
+is not an empty reserved zone: background, housing and foreground run through it. Include all
+five labelled multiplier balls flying around the character and across the gameplay, clear of the
+character's silhouette. Keep their labels out of the right-third phone seat so the shipped graphic
+shows all five, and never keep balls off the gameplay to preserve it. No title, logo, wordmark, tagline, device,
 UI or copy space; a left side left blank for text is a failed banner. The banner must look finished
 alone.
 
@@ -273,9 +299,10 @@ When the tool takes custom sizes, `3840x1872` matches the 1024×500 delivery asp
 Generate `art/panorama.png` as a new composition for the panel geometry. The accepted banner is
 attached as **world context**, not as a source to extend: the panorama inherits its environment,
 palette, lighting, board housing, lower-edge treatment and ball look. The character may take a
-different pose, expression, crop or panel than in the banner; identity still comes only from the
-original asset. One call renders everything: character, scene-native gameplay, the lower-edge
-band, all five labelled balls in flight, and the environment.
+different pose, expression, crop or panel than in the banner, but it stays framed from torso to
+head with no legs visible; identity still comes only from the original asset. One call renders
+everything: the torso-to-head character, scene-native gameplay, the lower-edge band, all five
+labelled balls in flight with at least one in every panel, and the environment.
 
 Attach, in order: the original character asset (identity authority), the accepted banner (world
 context — not a character reference), the multiplier reference (ball model), the gameplay
@@ -291,17 +318,22 @@ as inspiration. Keep runtime background files unchanged.
 
 Put this composition requirement in the **first** prompt of the panorama call, adapting the
 details to the game's actual characters, board, colors and environment. Adapt the same text to
-the banner (character left, at least two balls, the right third continuing the scene) and to any
-showcase background:
+the banner (torso-to-head character left, all five balls, the right third continuing the scene)
+and to any showcase background:
 
 > One continuous, fully illustrated game panorama set in the world of the attached banner:
 > same environment, palette, lighting and board housing, in a new composition. Reproduce the
 > supplied original character asset faithfully; the banner is world context, not the character
-> reference. If the game has a main character, show that character from torso to head (or the
-> species-appropriate equivalent), with visible open space above the entire head/headwear in
-> the final panel crop, at least 2% of panel height. Paint five multiplier balls modeled on the
-> attached ball asset, flying at varied heights, depths and horizontal positions. Letter each
-> ball on its face with exactly one of
+> reference. If the game has a main character, frame it as a torso-to-head bust (or the
+> species-appropriate equivalent): the bottom edge of the image or the large foreground objects
+> cut its body through the torso, so no legs, knees, hips or feet are visible anywhere. The
+> character is not standing full length and is not flying, floating or leaping; its cut torso
+> rises from the bottom of the image or from behind the foreground objects. Leave visible open
+> space above the entire head/headwear in the final panel crop, at least 2% of panel height.
+> Paint five multiplier balls modeled on the attached ball asset, all required, clearly
+> airborne and flying around the character and across the scene at varied heights, depths and
+> horizontal positions, with at least one ball in each of the [N] portrait panels and none
+> resting on an object. Letter each ball on its face with exactly one of
 > these inscriptions, each used once: "x5", "x10", "x25", "x50", "x100". Make every label big,
 > chunky 3D display numerals in [warm display color] with a dark outline and inner highlight,
 > filling most of the ball face and following its curve. Light the balls with the scene: glossy
@@ -339,22 +371,36 @@ captures. Check for a pasted screenshot boundary in the single final visual pass
 
 ### Correcting a generated scene
 
-Read every inscription at final crop size. A misspelled, missing, duplicated or extra label, a ball
-on the character, a ball resting on a lower object or character drift from its asset is an
-objective failure: use the scene's one fresh retry with the same references. If exactly one
-inscription is still wrong after the retry, make at most one image-tool edit of the selected
+Read every inscription at final crop size. Each of these is an objective failure: a misspelled,
+missing, duplicated or extra label; a missing ball, or a panorama panel with no ball; a ball on
+the character; a ball resting on a lower object; character drift from its asset; or a character
+shown full length, standing, flying/floating or with legs, knees, hips or feet visible. Use the
+scene's one fresh retry with the same references. If exactly one inscription is still wrong after
+the retry, make at most one image-tool edit of the selected
 scene that changes only that inscription, naming the exact label in the prompt and attaching the
 original character asset first. Never letter it with a script. If that edit alters anything else,
 keep the unedited scene and record the defect in `STORE_INFO.md`. A label cut by a seam is fixed
 by the crop (Phase 4), not by regeneration.
 
+Character framing and the flying balls are hard requirements, not defects to record and ship.
+If the retry still shows legs or a standing/flying character, or lacks a required ball, make at
+most one image-tool edit of that scene. The edit either raises the foreground objects over
+everything below the torso cut, or adds or lifts the missing ball into the air. Attach the
+original character asset first and the multiplier reference, and change nothing else. If the
+scene still fails, do not export it: stop and report the blocker in `STORE_INFO.md` and the final
+answer.
+
 ## Phase 2 — visual review criteria (apply after exports)
 
 After the first full export, inspect one contact sheet showing the final App Store and Play crops,
 plus the feature graphic. Compare the character to its original asset, verify that `x5`, `x10`,
-`x25`, `x50` and `x100` each appear once, spelled exactly, on distinct airborne balls. Check that
-any main character reads from torso to head with visible space above the complete head in the
-final panorama panel crop. Check for clipped labels, missing panels or an obvious pasted screenshot
+`x25`, `x50` and `x100` each appear once, spelled exactly, on distinct airborne balls in the
+panorama and in the banner, and that every panorama panel carries at least one ball. Check that
+any main character reads from torso to head in the banner and the panorama. Its body should be
+cut through the torso by the bottom edge or the foreground band, with no legs, knees, hips or feet
+visible. It should be neither standing full length nor flying or floating, with visible space
+above the complete head in the final panel crop. Check for clipped labels, missing panels or an
+obvious pasted screenshot
 boundary. Check that the balls
 read as the multiplier reference (silhouette, material, color, ornament) painted into the scene:
 lit by it, with glow and motion, labels bold and dominant. A flat, pasted-looking or small-label
@@ -405,7 +451,8 @@ adjustment and re-export. A flying ball covering gameplay is never a reason to a
 Use `--lead-kind character` or `object` as applicable. Export Play separately with `--size play`
 from the same complete source; do not resize the App Store panels. The compositor's default
 gutter remains suitable for a carousel. A label cut by the gutter needs one crop correction;
-at least two balls must still cover gameplay, and no ball may cover the player.
+every panel must still carry a ball, at least two balls must still cover gameplay, and no ball
+may cover the player.
 
 ## Phase 5 — showcases and feature graphic
 
@@ -441,9 +488,11 @@ scene, not beside the device. The scene fills the frame and the phone sits on th
 is pure illustration with no scrim or copy space. The compositor enforces this: `banner` refuses
 `--title`, `--tagline` and `--logo`. The only lettering that may appear is a multiplier-ball
 inscription generated by the image model or the game's own UI inside the captured screenshot.
-When `--panels 0`, the banner carries all five multiplier balls. The balls cover some of the
-scene's gameplay and may overlap any scene element except the player. Keep their labels legible
-in the shipped graphic. The phone may cover other parts of the illustration.
+The banner always carries all five multiplier balls flying around the character, and any
+character is framed from torso to head with no legs visible. The balls cover some of the
+scene's gameplay and may overlap any scene element except the player. Keep all five labels
+legible in the shipped graphic, clear of the phone. The phone may cover other parts of the
+illustration.
 
 **The feature graphic always carries one device.** `--shot` is required: pick the single
 strongest current capture (active play or a win moment, not the menu) and pass it so the compositor
@@ -465,8 +514,9 @@ multipliers and payout promises. Metadata retains the virtual-currency disclaime
 gambling declaration, rating and applicable odds disclosure. Interpret text matches in context.
 The Phase 2 review checks the five ball inscriptions once. A missing or altered label follows the
 Phase 1 correction policy; an unsupported gameplay value does not need one. Balls in the
-generated marketing scene must cover some gameplay while leaving the player clear. Keep separate
-real gameplay captures authentic.
+generated marketing scene must fly in every panel and cover some gameplay while leaving the
+player clear, and any character stays framed from torso to head. Keep separate real gameplay
+captures authentic.
 
 Recheck runtime-background inventory/hashes/wiring: normal result UNCHANGED. If branding changed
 Dart, run format/analysis and relevant existing tests, and verify the menu still fits. Compositor
@@ -475,8 +525,9 @@ success is not runtime or visual verification.
 Write STORE_INFO.md with the original character asset path, the multiplier reference asset path,
 the generation order and the references attached to each image call (the banner as world context
 for the panorama), panel and lower-edge plan, upload order/dimensions/counts, five store-only ball
-labels and whether each exists in gameplay, the single visual verdict for balls covering gameplay
-while clearing the player, any retry or inscription correction, feature phone capture and no-text
+labels and whether each exists in gameplay, the single visual verdict for balls flying in every
+panel and covering gameplay while clearing the player, the character framing verdict (torso to
+head, no legs, not standing, not flying), any retry or correction, feature phone capture and no-text
 result, background guard and compliance notes. Do not require per-sprite audit tables, measured
 bounds, numeric gate results or repeated visual verdicts.
 

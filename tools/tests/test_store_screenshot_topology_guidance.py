@@ -63,6 +63,38 @@ class StoreScreenshotTopologyGuidanceTest(unittest.TestCase):
             with self.subTest(retired=retired):
                 self.assertNotIn(retired, self.guidance_flat)
 
+    def test_character_is_framed_torso_to_head_in_every_scene(self) -> None:
+        for phrase in (
+            "**Character framing is mandatory, not a style choice.**",
+            "no legs, knees, hips or feet are visible",
+            "never standing full length and never flying, floating, leaping or levitating",
+            "A full-body, standing, flying or leg-revealing character is an objective failure",
+        ):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, self.guidance_flat)
+        banner = self.phase1.split("### 1a", 1)[1].split("### 1b", 1)[0]
+        self.assertIn("framed from torso to head", banner)
+        self.assertIn("neither standing full length nor flying", banner)
+        self.assertIn("frame it as a torso-to-head bust", self.phase1)
+        self.assertNotIn("the character stands large on the left", self.guidance_flat)
+
+    def test_flying_multiplier_balls_are_mandatory_in_every_scene_and_panel(self) -> None:
+        for phrase in (
+            "**Flying multiplier balls are mandatory in every scene.**",
+            "Every panorama panel carries at least one ball",
+            "a panel with no ball is an objective failure",
+            "at least one ball in each of the [N] portrait panels",
+            "The banner always carries all five multiplier balls",
+        ):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, self.guidance_flat)
+        banner = self.phase1.split("### 1a", 1)[1].split("### 1b", 1)[0]
+        self.assertIn("Include all five labelled multiplier balls", banner)
+        for retired in ("slide 1 may have none", "at least two labelled multiplier balls",
+                        "all five when `--panels 0`"):
+            with self.subTest(retired=retired):
+                self.assertNotIn(retired, self.guidance_flat)
+
     def test_lower_edge_is_a_close_up_object_band_over_coins(self) -> None:
         for phrase in (
             "overlapping one another in depth, cropped by the bottom edge",

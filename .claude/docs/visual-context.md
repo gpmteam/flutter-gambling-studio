@@ -107,9 +107,12 @@ paytable. They are store-only scene elements: do not insert them into real gamep
 imply those tiers are reachable, or alter game math to justify them. Build their shape, material,
 palette and light from the current Design DNA. For every C1-C6 category and lead kind, make each
 ball a prominent secondary subject, starting near 35-40% of the final portrait panel width.
-Scatter them in flight at varied heights and depths. They may cover gameplay, symbols, outcomes,
-foreground objects, and any other scene element except the main character. Keep all five ball
-labels readable in the final screenshots.
+The flying balls are mandatory: all five appear in the banner and the panorama (and any
+`--panels 0` showcase background), and every panorama panel, including the character's, carries
+at least one. Scatter them in flight at varied heights and depths around the character and across
+the gameplay; none rests on an object. They may cover gameplay, symbols, outcomes, foreground
+objects, and any other scene element except the main character. Keep all five ball labels
+readable in the final screenshots.
 
 These short, verified runtime game-object inscriptions and the five store-only ball markings
 are exceptions to the no-baked-copy rule.
@@ -138,12 +141,15 @@ foreground.
 Do not paste the capture or a derived board plate into the panorama, or leave a placeholder
 opening for a later gameplay insert. Reject generated gameplay that changes the real outcome.
 
-When the game has a main character, show that character from torso to head in the panorama,
-including enough torso to read the costume and pose. For humanoids, crop through the torso;
-for animal mascots, use the equivalent readable species-appropriate framing. Keep visible open
-space above the complete head and hair/headwear in the final panel crop, at least 2% of panel
-height. Protect the head and attached silhouette from the first seam; left and lower edge crops
-are allowed. Character-led concepts default to a large character on the first panel.
+When the game has a main character, show that character from torso to head in the banner and
+the panorama, including enough torso to read the costume and pose. This framing is mandatory.
+For humanoids, crop through the torso; for animal mascots, crop through the body in
+species-appropriate terms. The bottom edge or the foreground band hides everything below the cut:
+no legs, knees, hips or feet. The character is never standing full length and never flying,
+floating or leaping. Keep visible open space above the complete head and hair/headwear in the
+final panel crop, at least 2% of panel height. Protect the head and attached silhouette from the
+first seam; a left crop is allowed and a bottom crop through the torso is expected.
+Character-led concepts default to a large character on the first panel.
 Object/mechanic leads have prominence and readability checks, not anatomy requirements when
 the game has no main character.
 

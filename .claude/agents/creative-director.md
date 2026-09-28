@@ -87,4 +87,5 @@ the concept into the art direction, asset manifest and prompts. Classic unspecif
 use 3×3; store gameplay placement is flexible and object-led games need no invented character.
 
 Reject forced mascots, horror Jokers, invented runtime multipliers and store grids that differ
-from runtime. For store-only art, follow `/store-screenshots` and include its five themed balls.
+from runtime. For store-only art, follow `/store-screenshots`: its five themed balls must fly in every scene,
+and any character is framed from torso to head (no legs, never standing or flying).
