@@ -118,6 +118,7 @@ visual problems.
 | D8 | **GestureDetector intercepts scrolling** | `GestureDetector` with `onVerticalDragUpdate` inside `ListView` | Scroll doesn't work | Use `onTap` or `Listener` instead of drag gestures |
 | D9 | **Action button doesn't show disabled** | The "SPIN" / "PLAY" button is visually the same in enabled and disabled | User clicks - nothing happens - frustration | Add visual difference: dull color, lower opacity, different icon |
 | D10 | **No Insufficient Funds Processing** | With `balance < bet` there is no check before action | The balance goes into minus OR nothing happens when you press | Add check + show InsufficientFundsDialog |
+| D11 | **Affordability action stays stale after a value change** | At the stake boundary, change the bet tier or award credits while the game screen stays open; compare the HUD values with the action label, enabled state and tap result. Check that a builder computing affordability listens to every value it reads. | The HUD shows enough credits, but the action still says “NEED CREDITS” or opens the insufficient-funds page | Rebuild the action from the live balance and stake dependencies; retest both crossing directions without leaving the screen |
 
 ### Category E: DESIGN INTENT (Medium - contextual design)
 
