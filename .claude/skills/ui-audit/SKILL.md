@@ -88,6 +88,7 @@ visual problems.
 | B14 | **Disconnected controls** | Compare field, C recipe, materials, geometry, spacing and depth | Controls look like an unrelated generic panel | Integrate them according to the recorded attached/dock/rail/distributed/direct/contextual recipe |
 | B15 | **Poor control proportions** | Measure transformed hit and semantic bounds plus labels at 1.0×/1.3× text scale; compare enabled/disabled states and idle/press animation extrema, not only untransformed widget sizes | Buttons are cramped, uneven, clipped, ambiguous, or shrink below their minimum during feedback | Enforce ≥48×48 targets and a primary action ≥56 logical pixels high throughout animation; keep interaction bounds stable while animating decoration, with shared baselines/heights and responsive label fitting |
 | B16 | **Not a portrait phone game** | Inspect the four phone screenshots and the wide-host capture; `rg -n 'maxWidth\s*[><]|size\.width\s*[><]|NavigationRail|isTablet|isDesktop|Orientation\.landscape|MouseRegion|onHover|Tooltip' lib`; `main.dart`, Android manifest, iOS plist | A width breakpoint or desktop/tablet/landscape layout exists; a wide host stretches the game or shows a device frame; information lives only in hover/tooltips; no portrait lock | Delete the non-phone branch so every width renders the one portrait composition; add the phone column in `MaterialApp.builder` and the portrait lock |
+| B17 | **Screen root does not fill the phone** | View splash, menu, gameplay and secondary route captures at all four phone sizes; compare each route's background and content bounds with both edges of the phone viewport. Inspect shared `Scaffold.body` roots for decorated `Container`/`Column` trees that can shrink-wrap under loose constraints. A clean console or full-width sibling route does not prove this route fills the screen. | A flat host-color strip appears beside a route, or its art and controls occupy only part of the phone column | Constrain the route root to the full viewport (for example, `width: double.infinity` or `SizedBox.expand`) while keeping the background full-bleed and content inside `SafeArea` |
 
 ### Category C: NAVIGATION AND STATUS (High - the application is not working properly)
 
@@ -367,10 +368,11 @@ If tests fail → fix (up to 3 attempts). If the test is correct, fix the code, 
 Static analysis and widget tests cannot approve visual composition or prove that configured
 assets actually render. Before a final `PASS`, run the game and capture at minimum:
 
-- idle gameplay and one active/resolved action at 390×844; and
-- idle gameplay at the short phone (360×640), plus one wide-host capture showing the phone column.
+- splash, menu, idle gameplay and one active/resolved action at 390×844; and
+- splash, menu and idle gameplay at the short phone (360×640), plus one wide-host capture showing the phone column.
 
-Use the runtime screenshots to verify B11–B16 and A7 directly. Record the field bounds or
+Use the runtime screenshots to verify B11–B17 and A7 directly. Check both phone edges on each
+captured route, including routes that reuse a shared scaffold. Record the field bounds or
 usable gaps, confirm there is no unexplained dead region or edge-pinned mechanic, and compare
 every configured visual item with what appears in the live outcome set. Inspect console/runtime
 errors and reject captures whose renderer failed to paint raster layers.
