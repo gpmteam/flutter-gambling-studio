@@ -190,6 +190,26 @@ async function evaluate(expression) {
   return r.result?.value;
 }
 
+// Flutter's semantics overlays can expose an actionable DOM node whose bounds are
+// stale while a responsive layout is settling. Clicking that node directly keeps
+// CTA navigation reliable across the full viewport matrix; coordinate tapping is
+// retained as a fallback for canvas-only renderers.
+async function clickSemantic(label) {
+  const wanted = JSON.stringify(String(label));
+  return Boolean(await evaluate(`(function(){
+    const wanted=${wanted};
+    function walk(root){
+      for (const el of root.querySelectorAll('*')) {
+        const got=(el.getAttribute && el.getAttribute('aria-label')) || '';
+        if (got === wanted) { el.click(); return true; }
+        if (el.shadowRoot && walk(el.shadowRoot)) return true;
+      }
+      return false;
+    }
+    return walk(document);
+  })()`).catch(() => false));
+}
+
 async function screenshot(name) {
   try {
     const { data } = await send('Page.captureScreenshot', { format: 'png', fromSurface: true, captureBeyondViewport: false });
@@ -345,10 +365,10 @@ async function main() {
   // screen copy; never let a broad regex select that giant node (its center is
   // not an actionable control). Prefer the shortest exact actionable leaf.
   const nodes = await readSemantics();
-  const enter = findLeafByLabel(nodes, ['enter olympus'], /^enter( olympus)?$/i);
+  const enter = findLeafByLabel(nodes, ['enter olympus', 'I understand — enter the carnival'], /^(?:enter(?: olympus| the carnival)?|i understand).*$/i);
   if (enter) {
     log(`🎯 found splash CTA by exact label: "${enter.label}"`);
-    await tap(enter.x, enter.y, enter.label);
+    if (!(await clickSemantic(enter.label))) await tap(enter.x, enter.y, enter.label);
     await sleep(1200);
   }
   const menuNodes = await readSemantics();
@@ -357,8 +377,31 @@ async function main() {
     ['play main storm', 'play', 'start', 'begin', 'new game', 'continue', 'tap to play'],
     PRIMARY_PLAY_LABEL,
   );
-  if (play) { log(`🎯 found action by label: "${play.label}"`); await tap(play.x, play.y, play.label); }
-  else { log('🎯 no labeled Play — tapping thumb zone'); await tap(VW / 2, VH * 0.82); }
+  if (play) { log(`🎯 found action by label: "${play.label}"`); if (!(await clickSemantic(play.label))) await tap(play.x, play.y, play.label); }
+  else {
+    log('🎯 no labeled Play — probing disclosure/menu thumb zones');
+    let retryPlay;
+    // Responsive disclosure cards wrap differently at phone, tablet and
+    // The probe includes thumb-zone-0.96 for short landscape cards.
+    // landscape heights. Probe a small set of bottom-center points and re-read
+    // semantics after each tap so the tour reaches gameplay on every contract
+    // viewport without relying on stale overlay bounds.
+    for (const frac of [0.60, 0.64, 0.66, 0.68, 0.72, 0.78, 0.84, 0.90, 0.96]) {
+      await tap(VW / 2, VH * frac, `thumb-zone-${frac}`);
+      await sleep(350);
+      const afterTapNodes = await readSemantics();
+      retryPlay = findLeafByLabel(
+        afterTapNodes,
+        ['play main storm', 'play', 'start', 'begin', 'new game', 'continue', 'tap to play'],
+        PRIMARY_PLAY_LABEL,
+      );
+      if (retryPlay) break;
+    }
+    if (retryPlay) {
+      log(`🎯 found action after menu transition: "${retryPlay.label}"`);
+      if (!(await clickSemantic(retryPlay.label))) await tap(retryPlay.x, retryPlay.y, retryPlay.label);
+    }
+  }
   await sleep(SETTLE);
   await screenshot('03-game-idle');
 
@@ -372,7 +415,7 @@ async function main() {
     ['spin', 'play', 'tap', 'roll', 'throw', 'drop', 'launch', 'deal', 'draw', 'pull', 'bet', 'go', 'move', 'open'],
     PRIMARY_ACTION_LABEL,
   );
-  if (act) { log(`🎯 action button: "${act.label}"`); await tap(act.x, act.y, act.label); }
+  if (act) { log(`🎯 action button: "${act.label}"`); if (!(await clickSemantic(act.label))) await tap(act.x, act.y, act.label); }
   else { await tap(VW / 2, VH * 0.82); }
   await sleep(SETTLE);
   await screenshot('04-game-action');
