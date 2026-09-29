@@ -4,16 +4,20 @@
 
 This is a **gambling-only** game studio: every concept must fall into one of six categories (C1 social casino, C2 casino originals, C3 spin-to-progress hybrids, C4 gacha/loot-box, C5 casino roguelike, C6 coin pusher/plinko) and declare a verifiable math model (M1-M6). Puzzles, runners, shooters and clickers are out of scope.
 
-Every generated game is **mobile-first**, with touch-first phone UI/UX as its canonical design
-baseline. It must also fill and adapt to tablet, landscape, desktop, and Web viewports without a
-fixed-width phone canvas or fake device frame. Follow `.claude/docs/mobile-first-contract.md`,
-including both its phone-baseline and expanded-viewport verification gates.
+Every generated game is a **portrait phone game**, played by touch. Design every concept,
+layout recipe, asset and screen for a phone held upright and verify it at 360×640, 360×800,
+390×844 and 430×932. There is no tablet, desktop or landscape layout at any stage; a wide host
+shows the same phone screens in the phone column, never a device frame. Follow
+`.claude/docs/mobile-first-contract.md`.
 
 Choose each game's rendering style from its brief and visual references. Polished 2D and modeled
 2.5D are both valid. Keep the asset set coherent in linework, depth, materials, palette, detail
 and light without imposing gloss, gradients or top-left lighting. Inspect matching
-`examples-games/` images by default. When the user requests one of those games, match its
-character, symbols, background, palette, board, composition and visual finish closely. Pass the
+`examples-games/` images by default. Whether a request is a reference request is decided by
+`tools/reference_detect.py` (named families in English or Russian, attached images under
+`design/references/user/`, explicit "same as / copy / по референсу" asks) and recorded in
+`design/reference-contract.md`. A reference game must match its sources' character, sprites and
+symbols, reel strips and board, background, palette, composition and visual finish closely. Pass the
 actual reference images into image generation when the tool supports it, and compare the runtime
 game beside the references. See `.claude/docs/visual-context.md` and
 `.claude/docs/game-concept-examples.md` for the reference contract and limits.
@@ -60,12 +64,15 @@ Matching `examples-games/` previews are default references; other relevant `exam
 record what is borrowed and keep the actual game's assets, mechanics and Design DNA authoritative.
 Store-screenshot generation preserves the actual game's existing menu, gameplay, splash, and shared
 background assets and wiring. A runtime-background redesign is a separate, explicit opt-in; never
-replace the game's background merely to make it match newly generated marketing art. During `/autocreate-finalize`,
-the shared runtime/phone-showcase background is an explicitly required exception: generate the
-banner using the current store-screenshots prompt, derive its clean environment background, wire
-it into the game before runtime verification, and persist both in `production/store-art/`. Later
-`/store-screenshots` reuses that banner for panorama/icon generation and the same clean background
-for phone slides, preserving the integrated runtime background.
+replace the game's background merely to make it match newly generated marketing art. The one
+exception is campaign art (`.claude/skills/store-screenshots/references/campaign-art.md`), run by
+`/autocreate-finalize` Phase 10.4: it renders the banner from the shared template (the exact
+store-screenshots banner prompt, proven with `tools/prompt_template.py check`), generates a
+portrait game background in the banner's world with the main character whole inside the frame
+(no multiplier balls, lettering, board or UI), and wires that background into the game before
+runtime verification. `/store-screenshots` then builds the panorama, icon and feature graphic on
+the banner and puts the phone slides on the same game background; it runs campaign art itself only
+when the handoff is missing or stale.
 
 Unspecified classic slots use 3 reels × 3 visible rows (3×3), not 4×4. Preserve explicit or existing
 variants. Joker defaults to a mischievous, slightly vicious theatrical trickster, playful rather than
@@ -91,7 +98,7 @@ Note on `/autocreate`: it is the full Zero-to-Production pipeline, split across 
 
 1. Session 1 — pre-production: concept, classification (category C1-C6 + math model M1-M6), Production Plan, `flutter create --platforms android,ios,web`, assets and audio.
 2. Session 2 (`autocreate-implement`, Phases 4 → 10) — implementation: code plus meta systems, content wiring, integration, `dart analyze lib/` looped until 0 errors, `flutter test` all green, feel pass, UI audit, curve-based balancing, crash prevention.
-3. Session 3 (`autocreate-finalize`, Phases 10.4 → 12) — store banner and shared runtime/phone-showcase background, runtime and soak verification via Chrome CDP with auto-fix, `/playtest`, session state, release-engineering PREP (icons, splash, versioning, store metadata, CI — WITHOUT building the AAB/APK and without a keystore) and the final report.
+3. Session 3 (`autocreate-finalize`, Phases 10.4 → 12) — campaign art (store banner + game background with the character whole in frame, wired into the game), runtime and soak verification via Chrome CDP with auto-fix, `/playtest`, session state, release-engineering PREP (icons, splash, versioning, store metadata, CI — WITHOUT building the AAB/APK and without a keystore) and the final report.
 
 `/autocreate` leaves the project release-ready but does NOT produce the downloadable archive. Building the release artifact is an explicit user action: `/release-package` takes the screenshots, runs `flutter build apk --release`, runs `flutter clean` and archives the whole project into a **`.zip`** in `project_zip/`.
 

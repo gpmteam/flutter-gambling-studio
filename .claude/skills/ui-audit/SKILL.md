@@ -32,10 +32,10 @@ visual problems.
 2c. Read `.claude/docs/quality-bar.md` → professional level thresholds
     (§1 first 30 sec: TTP ≤ 3 taps; §2 response ≤ 100 ms; §3 scaled feedback;
     §7 completeness; §8 visual integrity) - the audit measures BY THEM, not “by eye”
-2d. Read `.claude/docs/gameplay-screen-contract.md` → full-viewport field, integrated controls,
-    stable measurement keys, no core-loop scrolling, and the full verification matrix
-2e. Read `.claude/docs/mobile-first-contract.md` → touch-first phone baseline, intentional
-    landscape/tablet/desktop/Web reflow, full-host canvas, and platform targeting guidance
+2d. Read `.claude/docs/gameplay-screen-contract.md` → full-screen portrait field, integrated
+    controls, stable measurement keys, no core-loop scrolling, and the phone matrix
+2e. Read `.claude/docs/mobile-first-contract.md` → portrait phone only, touch only, the phone
+    column for wide hosts, and the portrait lock
 3. `glob lib/screens/**/*.dart` - find all screens
 4. `glob lib/widgets/**/*.dart` - find all widgets
 5. `glob lib/theme/**/*.dart` - find theme and animations
@@ -87,7 +87,7 @@ visual problems.
 | B13 | **Core loop requires scrolling** | Find a vertical `Scrollable` ancestor of `gameplaySurface` or `primaryAction`; verify first viewport | Field or action/control deck falls below the fold | Recompose the fixed viewport; move rules/history/secondary content to a sheet or screen |
 | B14 | **Disconnected controls** | Compare field, C recipe, materials, geometry, spacing and depth | Controls look like an unrelated generic panel | Integrate them according to the recorded attached/dock/rail/distributed/direct/contextual recipe |
 | B15 | **Poor control proportions** | Measure transformed hit and semantic bounds plus labels at 1.0×/1.3× text scale; compare enabled/disabled states and idle/press animation extrema, not only untransformed widget sizes | Buttons are cramped, uneven, clipped, ambiguous, or shrink below their minimum during feedback | Enforce ≥48×48 targets and a primary action ≥56 logical pixels high throughout animation; keep interaction bounds stable while animating decoration, with shared baselines/heights and responsive label fitting |
-| B16 | **Broken mobile-first responsiveness or targeting** | Inspect phone + expanded screenshots, layout branches, `main.dart`, Android manifest, and iOS plist/project | Phone hierarchy breaks; expanded hosts show a capped phone strip, fake frame, dead margins, blind scaling, pointer-only controls, or an undocumented native restriction | Enforce the mobile-first contract; use the full host canvas and intentional responsive reflow |
+| B16 | **Not a portrait phone game** | Inspect the four phone screenshots and the wide-host capture; `rg -n 'maxWidth\s*[><]|size\.width\s*[><]|NavigationRail|isTablet|isDesktop|Orientation\.landscape|MouseRegion|onHover|Tooltip' lib`; `main.dart`, Android manifest, iOS plist | A width breakpoint or desktop/tablet/landscape layout exists; a wide host stretches the game or shows a device frame; information lives only in hover/tooltips; no portrait lock | Delete the non-phone branch so every width renders the one portrait composition; add the phone column in `MaterialApp.builder` and the portrait lock |
 
 ### Category C: NAVIGATION AND STATUS (High - the application is not working properly)
 
@@ -320,8 +320,8 @@ void dispose() {
 ```
 
 **Stage 2 - Layout errors (B1-B16):**
-Fix all layout problems. Special attention: SafeArea, overflow, mobile-first responsive
-constraints, full-viewport gameplay composition, platform targeting, and control proportions.
+Fix all layout problems. Special attention: SafeArea, overflow, the one portrait composition at
+every phone height, full-screen gameplay composition, portrait lock, and control proportions.
 Do not “fix” B11–B16 by wrapping the whole game screen in a scroll view.
 
 **Stage 3 - Navigation and Status (C1-C10):**
@@ -367,8 +367,8 @@ If tests fail → fix (up to 3 attempts). If the test is correct, fix the code, 
 Static analysis and widget tests cannot approve visual composition or prove that configured
 assets actually render. Before a final `PASS`, run the game and capture at minimum:
 
-- idle gameplay and one active/resolved action at the phone baseline; and
-- idle gameplay at one expanded viewport from the mobile-first matrix.
+- idle gameplay and one active/resolved action at 390×844; and
+- idle gameplay at the short phone (360×640), plus one wide-host capture showing the phone column.
 
 Use the runtime screenshots to verify B11–B16 and A7 directly. Record the field bounds or
 usable gaps, confirm there is no unexplained dead region or edge-pinned mechanic, and compare
@@ -407,7 +407,7 @@ inside a PASS report.
 📐 B: Layout errors (High):
    [✅|❌] B1-B10: [responsive/safe layout status]
    [✅|❌] B11-B15: [field dominance, no nested window/scroll, integrated usable controls]
-   [✅|❌] B16: [mobile-first full-viewport responsiveness and platform configuration]
+   [✅|❌] B16: [portrait phone only: no width breakpoints, phone column, touch only, portrait lock]
    Total: [X]/16
 
 🧭 C: Navigation and Status (High):

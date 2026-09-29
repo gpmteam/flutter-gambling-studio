@@ -1,7 +1,7 @@
 ---
 name: store-screenshots
-description: "Create a store kit: reuse the autocreate-finalize banner and shared background, or generate the feature banner first (torso-to-head character on the left), then a complete panorama with the torso-to-head character (never standing, flying or showing legs), gameplay and mandatory flying x5/x10/x25/x50/x100 multiplier balls in every panel, rendered in one image-generation call from the banner and a shipped ball asset as references. Add real capture slides, feature graphic, icon/emblem and ZIP. Match game assets and topology; preserve runtime backgrounds."
-argument-hint: "[--count 8] [--panels 3] [--lead-kind character|object|mechanic] [--character-framing bust|mascot] [--banner-layout free|left-heavy] [--size 1320x2868|play] [--no-play-set] [--frame ios|android|none] [--no-apply] [--no-wire-logo] [--no-captions] [--apply-backdrop]"
+description: "Create a store kit from the campaign art: reuse the autocreate-finalize banner and game background (or make them first with references/campaign-art.md), then a complete panorama with the torso-to-head character (never standing, flying or showing legs), gameplay and mandatory flying x5/x10/x25/x50/x100 multiplier balls in every panel, rendered in one image-generation call from the banner and a shipped ball asset as references. Phone slides put real captures on the game background — the same picture the game uses, character whole in frame. Add feature graphic, icon/emblem from the banner, and ZIP. Match game assets and topology."
+argument-hint: "[--count 8] [--panels 3] [--lead-kind character|object|mechanic] [--character-framing bust|mascot] [--banner-layout free|left-heavy] [--size 1320x2868|play] [--no-play-set] [--frame ios|android|none] [--no-apply] [--no-wire-logo] [--no-captions] [--keep-runtime-background]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Agent
 ---
@@ -10,13 +10,19 @@ allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Agent
 
 Read `.claude/docs/visual-context.md`, `.claude/docs/game-concept-examples.md`, and the game's
 concept, art direction, asset manifest, math config and runtime evidence. Inspect matching
-`examples-games/` previews by default. References guide composition; the shipped assets and
+`examples-games/` previews by default, and every source in `design/reference-contract.md` when the
+game is a reference game — its store art is that reference's world. References guide composition; the shipped assets and
 mechanics govern identity. Never change a real game to match a preview's topology or palette.
 
-**Generation order: accepted banner first, then panorama.** Read
-[references/campaign-handoff.md](references/campaign-handoff.md) in preflight. Reuse the accepted
-`autocreate-finalize` banner and shared background when valid; generate the banner here only
-when no valid banner exists. The banner prompt below remains authoritative for both skills.
+**Generation order: banner first, then panorama.** The banner and the game background are the
+campaign art that `/autocreate-finalize` makes before runtime verification
+([references/campaign-art.md](references/campaign-art.md)). Read
+[references/campaign-handoff.md](references/campaign-handoff.md) in preflight: reuse both when the
+handoff is valid; otherwise run campaign-art.md first, in this run, and then continue. Nobody
+writes the banner prompt by hand: it is rendered from
+[references/campaign-prompts.md](references/campaign-prompts.md) and proved with
+`tools/prompt_template.py check`, so a banner made here and one made by finalization come from the
+same words.
 
 The horizontal feature banner, with the
 character on the left, is the first image generated. It establishes the campaign's world:
@@ -43,11 +49,15 @@ mascots follow the same rule in species-appropriate terms: body to head, with no
 talons or feet visible. A full-body, standing, flying or leg-revealing character is an
 objective failure.
 
-**Scope:** the clean shared runtime/phone-slide environment from the campaign handoff is
-exempt from marketing-scene composition, character and multiplier requirements throughout this
-runbook. Those requirements apply to the banner, panorama and standalone multiplier showcase.
+**The game background is not a marketing scene.** `shared-background.png` is the picture the
+game itself runs on and the backdrop of every phone slide. It shows the campaign's world with the
+main character torso-to-head and **whole inside the portrait frame** (head, headwear, shoulders,
+hands and held props clear of every edge), and it carries no multiplier balls, lettering, board or
+UI — a promotional `x100` behind real gameplay would read as a payout claim. The ball and
+lower-edge requirements below govern the banner, the panorama and any showcase background; the
+character framing governs the game background too.
 
-**Flying multiplier balls are mandatory in every marketing scene.** The banner, the panorama and any
+**Flying multiplier balls are mandatory in every scene.** The banner, the panorama and any
 showcase background each contain all five labelled balls (`x5`, `x10`, `x25`, `x50`, `x100`),
 visibly airborne and scattered at varied heights and depths around the character and across the
 gameplay. Every panorama panel carries at least one ball. That includes the character's panel,
@@ -72,24 +82,27 @@ art, and never draw a label with Pillow, the compositor or any other script. The
 grades, slices and frames finished images.
 
 Create local artifacts; do not publish or build release binaries. Apply icon/emblem unless
-`--no-apply`. Runtime backgrounds and wiring remain unchanged unless their separate redesign
-was explicitly requested. All copy is English unless another game language was requested.
+`--no-apply`. Runtime backgrounds and wiring remain unchanged after campaign art: the game's
+background is the campaign game background, changed only by campaign-art.md (which this run
+invokes when the handoff is missing or stale, unless `--keep-runtime-background`), and never
+replaced with the panorama. All copy is English unless another game language was requested.
 
 ## Outputs
 
 Default N=8 screenshots: P=3 adjacent concept panels sliced from one complete panorama followed by
 N−P actual gameplay/meta captures with optional device frames and captions, set on the
-shared background from finalization, or the panorama's opening panel for standalone runs (see Phase 5). Produce `store/`
+game background from the campaign art — the same picture the captured game shows (see Phase 5).
+With `--keep-runtime-background` they sit on the panorama's opening panel instead. Produce `store/`
 at 1320×2868 and `store-play/` at 1080×1920 independently, not by resizing one set into the other.
 Include a dedicated text-free 1024×500 feature graphic: the banner scene plus one phone on the
 right holding a real screenshot, with no title or copy on the left or anywhere else (see Phase 5),
 icon masters/platform densities (1024 launcher master, 512×512 Play listing icon, frame-free —
 see Phase 3), transparent emblem, `STORE_BRIEF.md`, `STORE_INFO.md`, and ZIP under `project_zip/`.
 `--no-play-set` omits Play screenshots. `--panels 0` skips panorama work and uses real captures
-for all N screenshots, with the required multiplier balls in a themed showcase background; it
-still reuses or generates the banner first and produces the feature graphic. With a valid
-finalization handoff, use its clean shared background instead of generating a multiplier showcase. Marketing portrait formats
-never constrain the runtime app's full mobile/expanded viewport behavior.
+on the game background for all N screenshots; the banner still carries all five balls and the
+feature graphic is still produced. Only `--panels 0 --keep-runtime-background` generates the
+themed multiplier showcase background of Phase 1b. Store formats never change the runtime layout,
+which follows `.claude/docs/mobile-first-contract.md` (portrait phone only).
 
 ## Phase 0 — context and preflight
 
@@ -123,7 +136,7 @@ Use `"$STORE_PYTHON"` for the compositor and other Python tools in this runbook.
 
 Require a real Flutter game, Pillow/numpy, the image-generation path, compositor and capture
 tools. Read `"$STORE_PYTHON" tools/store_compose.py --help` and the relevant subcommand help.
-Runbook options such as count, board, hero, no-apply and apply-backdrop govern orchestration;
+Runbook options such as count, board, hero, no-apply and keep-runtime-background govern orchestration;
 do not blindly pass them to compositor subcommands. Initialize:
 
 ```bash
@@ -136,6 +149,17 @@ RAW_DIR="$STORE_DIR/raw"
 OUT_DIR="$STORE_DIR/store"
 PLAY_DIR="$STORE_DIR/store-play"
 mkdir -p "$ART_DIR" "$RAW_DIR" "$OUT_DIR" "$PLAY_DIR"
+```
+
+**Campaign art comes first.** Validate `production/store-art/` by
+[references/campaign-handoff.md](references/campaign-handoff.md). Valid → copy the accepted art in
+unchanged. Missing or stale → run [references/campaign-art.md](references/campaign-art.md) now
+(context capture, banner, game background, wiring, analyzer and tests), then copy. With
+`--keep-runtime-background`, run only its banner step.
+
+```bash
+cp production/store-art/long-banner.png "$ART_DIR/long-banner.png"
+cp production/store-art/shared-background.png "$ART_DIR/shared-background.png"  # not with --keep-runtime-background
 ```
 
 Write `STORE_BRIEF.md` before any generation call:
@@ -209,10 +233,10 @@ as a recognizable ball reference, report the missing source instead of inventing
 
 Capture or locate a real active/resolving gameplay frame as reference-only context. Record its
 field rectangle and actual state. A symbol-built board is provisional until a real frame exists.
-Games without a grid use the actual curve, machine, card or other mechanic surface. Record all
-runtime-background files, hashes and selecting code/config references before any edits, including
-registered splash/shared backgrounds outside conventional directories. See
-[references/runtime-branding.md](references/runtime-branding.md).
+Games without a grid use the actual curve, machine, card or other mechanic surface. After campaign
+art and before any other edit, record all runtime-background files, hashes and selecting
+code/config references, including registered splash/shared backgrounds outside conventional
+directories. See [references/runtime-branding.md](references/runtime-branding.md).
 
 ## Phase 1 — banner first, then the complete panorama
 
@@ -286,8 +310,12 @@ cluster. Match any user-supplied size reference.
 
 ### 1a — Banner (the first generation call)
 
-Reuse the accepted finalization banner as `art/long-banner.png` when the campaign handoff is valid.
-Otherwise generate it before other campaign scenes using the following unchanged prompt contract. For a character-led game the character
+`art/long-banner.png` is the accepted campaign banner. When this run has to make it (no valid
+handoff), campaign-art.md's banner step makes it: the prompt is `banner-character` or
+`banner-object` from [references/campaign-prompts.md](references/campaign-prompts.md), rendered
+with this game's values and passing `tools/prompt_template.py check` — the same words
+`/autocreate-finalize` sends. The template is this section and "First-prompt requirements" below
+written out once for the banner; do not re-adapt them yourself. For a character-led game the character
 appears large on the left, framed from torso to head: the bottom edge or the foreground band cuts
 the body through the torso, with no legs or feet visible, and the character is neither standing
 full length nor flying. Object/mechanic leads put the lead object or the angled gameplay
@@ -322,16 +350,17 @@ capture (context only), visible shipped sprites, matching previews. When the too
 sizes, `3456x2384` (about 1.45:1) covers three 1320×2868 panels plus the default hidden seam
 allowance.
 
-For `--panels 0` without a valid shared-background handoff, generate the portrait `art/multiplier-showcase-bg.png` the same way, with the
-banner as world context, all five labelled balls in the scene and the existing game background
-as inspiration. Keep runtime background files unchanged.
+Only for `--panels 0 --keep-runtime-background`, generate the portrait
+`art/multiplier-showcase-bg.png` the same way, with the banner as world context, all five
+labelled balls in the scene and the existing game background as inspiration. Keep runtime
+background files unchanged.
 
 ### First-prompt requirements
 
 Put this composition requirement in the **first** prompt of the panorama call, adapting the
-details to the game's actual characters, board, colors and environment. Adapt the same text to
-the banner (torso-to-head character left, all five balls, the right third continuing the scene)
-and to any showcase background:
+details to the game's actual characters, board, colors and environment, and adapt it the same way
+to any showcase background. The banner's version already exists, adapted once and literally, as
+the `banner-*` templates in [references/campaign-prompts.md](references/campaign-prompts.md):
 
 > One continuous, fully illustrated game panorama set in the world of the attached banner:
 > same environment, palette, lighting and board housing, in a new composition. Reproduce the
@@ -435,13 +464,16 @@ untouched.
 ## Phase 3 — branding and current captures
 
 Follow [references/runtime-branding.md](references/runtime-branding.md) for icon/emblem application,
-platform-density checks and background guards. Honor no-apply/no-wire-logo. An explicit separate
-runtime redesign is required for apply-backdrop and `--confirm-game-background-replacement`;
-the flag alone does not provide authorization. Preserve all backgrounds and wiring by default.
+platform-density checks and background guards. Honor no-apply/no-wire-logo. The icon and emblem
+are generated with the accepted banner as world context. The game background is the campaign's
+and stays as campaign art wired it; `--apply-backdrop` is retired, and
+`--confirm-game-background-replacement` belongs to campaign-art.md alone.
 
 Capture menu, active play, peak tension, win/reward and a useful meta state after branding using
 `/emulator-test` or `tools/web_verify.mjs` against the actual running URL. A typical capture uses
-`--size 390x844 --dpr 3 --budget 180 --quick`. Reuse frames only if current and authentic. Reject
+`--size 390x844 --dpr 3 --budget 180 --quick`. Every capture must show the integrated campaign
+background (V22 in `/emulator-test`); a frame from before campaign art is stale. Reuse frames only
+if current and authentic. Reject
 blank, duplicate, loading, error, overflow and fabricated states; parse runtime exception logs.
 Apply `.claude/docs/gameplay-screen-contract.md`: never use cropping or device chrome to conceal
 weak gameplay. If the actual state changed, correct integration/feature art and re-export;
@@ -472,12 +504,20 @@ Use `showcase` on real captures with the game's fonts/type mood and secondary de
 Typical Joker typography is bold/playful, not automatic elegance. Captions describe actual play.
 Resolve filenames and words from this game's inventory; honor frame/no-captions/language/count.
 
-**Finalized games use the shared background.** With a valid campaign handoff, pass
-`--bg "$ART_DIR/shared-background.png"` to every real-capture showcase, without `--bg-panel`,
-`--bg-gutter` or `--bg-subject`. Use the same image already wired into the game. Keep its clean
-environment free of promotional balls; the banner and panorama carry those.
+**Phone slides sit on the game background.** Pass `--bg "$ART_DIR/shared-background.png"` to
+every real-capture showcase, with no `--bg-panel`, `--bg-gutter` or `--bg-subject`. It is the
+picture the captured game already shows, composed for a portrait phone with the character whole
+inside the frame, so the backdrop needs no panel window to keep the character. Do not add
+promotional balls to it; the banner and panorama carry those.
 
-**Standalone fallback: real-capture backdrops show the opening panel with the whole character.** Every phone slide
+```bash
+"$STORE_PYTHON" tools/store_compose.py showcase --shot "$RAW_DIR/03-spin.png" \
+  --bg "$ART_DIR/shared-background.png" --out "$OUT_DIR/store-04.png" \
+  --size 1320x2868 --caption "Every Spin Counts" --type-mood playful --pop soft
+```
+
+**Fallback with `--keep-runtime-background` only.** Real-capture backdrops show the opening panel
+with the whole character. Every phone slide
 sits on the panorama's first panel, not the cover-cropped middle: pass `--bg-panel 1` (and the
 triptych's `--gutter` as `--bg-gutter` if Phase 4 changed it). Panel 1's cut ignores content, so
 a hand, held prop, hair or headwear that crosses into panel 2 would be lost. Read the character's
@@ -496,8 +536,9 @@ object/mechanic lead, `--bg-subject` spans the lead object instead.
   --size 1320x2868 --caption "Every Spin Counts" --type-mood playful --pop soft
 ```
 
-With panels 0 and no valid shared-background handoff, use `art/multiplier-showcase-bg.png` (Phase 1b) behind at least one real-capture
-showcase; keep the capture and runtime background files unchanged. Compose Play separately.
+With `--panels 0 --keep-runtime-background`, use `art/multiplier-showcase-bg.png` (Phase 1b)
+behind at least one real-capture showcase; keep the capture and runtime background files
+unchanged. Compose Play separately in every case.
 
 Feature example:
 
@@ -548,7 +589,8 @@ generated marketing scene must fly in every panel and cover some gameplay while 
 player clear, and any character stays framed from torso to head. Keep separate real gameplay
 captures authentic.
 
-Recheck runtime-background inventory/hashes/wiring: normal result UNCHANGED. If branding changed
+Recheck runtime-background inventory/hashes/wiring against the baseline taken after campaign art:
+normal result UNCHANGED, including a run that made the campaign art itself. If branding changed
 Dart, run format/analysis and relevant existing tests, and verify the menu still fits. Compositor
 success is not runtime or visual verification.
 
@@ -557,8 +599,10 @@ the generation order and the references attached to each image call (the banner 
 for the panorama), panel and lower-edge plan, upload order/dimensions/counts, five store-only ball
 labels and whether each exists in gameplay, the single visual verdict for balls flying in every
 panel and covering gameplay while clearing the player, the character framing verdict (torso to
-head, no legs, not standing, not flying), any retry or correction, the showcase backdrop panel and
-`--bg-subject` extent, feature phone capture and no-text result, background guard and compliance notes. Do not require per-sprite audit tables, measured
+head, no legs, not standing, not flying), any retry or correction, whether the campaign art was
+reused from finalization or made in this run (and why, with the runtime files it changed), the
+phone-slide backdrop (`shared-background.png` and its SHA-256, or the fallback panel and
+`--bg-subject` extent), feature phone capture and no-text result, background guard and compliance notes. Do not require per-sprite audit tables, measured
 bounds, numeric gate results or repeated visual verdicts.
 
 ```bash

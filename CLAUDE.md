@@ -33,12 +33,20 @@ flexible store composition, 3×3 classic-slot defaults, Joker tone, supported ru
 coins and the five required store-only multiplier balls.
 The reference's visual language is authoritative; reject unrequested style substitutions.
 
+**Reference requests are detected, not guessed.** `/autocreate` Phase 0 runs
+`tools/reference_detect.py` on the user's request: a named `examples-games/` family (English or
+Russian spelling), images the user attached (`design/references/user/`), or an explicit "same as /
+copy / по референсу" ask. Its result lives in `design/reference-contract.md` and binds every later
+phase: the game — character, sprites and symbols, reel strips and board, background, palette,
+finish — must read as the same game as its sources. The detector's findings may be added to,
+never dropped.
+
 ## Technology stack
 
 - **Engine**: Flutter 3.27+ / Flame 1.18+
 - **Language**: Dart 3.6+ (null-safe, sealed classes, pattern matching)
-- **Specialisation**: mobile-first gambling mini-games with responsive full-viewport layouts
-- **Product platforms**: Android, iOS/iPadOS, and Web; phone UI/UX is the design baseline
+- **Specialisation**: portrait phone gambling mini-games, touch only
+- **Product platforms**: Android and iOS phones (portrait-locked); Web is the verification and preview host
 - **Rendering**: Flutter Impeller (Android/iOS), CanvasKit/Skia for Web
 - **Mathematics**: `tools/simulate_math.py` — the verifier for all six models
 
@@ -159,7 +167,7 @@ Idea → Concept → Math model → Design → Gate → Code → UI audit → Ru
 | `/release-checklist` | Final GO/NO-GO checklist before release, including compliance (release-manager agent) |
 | `/release-engineering` | Ship engineering: app icons (adaptive + iOS) + native splash + versioning + **signed AAB** + iOS scaffold + store metadata (with the mandatory compliance fields) + CI |
 | `/release-package` | Release packaging: screenshots of every screen + release APK/AAB + `flutter clean` + a `.zip` in `project_zip/` |
-| `/store-screenshots` | Context-based store kit with character/object/mechanic lead, flexible gameplay spans, real captures, feature graphic and ZIP. Read `.claude/skills/store-screenshots/SKILL.md`; preserve runtime backgrounds. |
+| `/store-screenshots` | Context-based store kit with character/object/mechanic lead, flexible gameplay spans, real captures, feature graphic and ZIP. Built on the campaign art from `/autocreate-finalize` (banner → panorama, icon, feature graphic; the game background behind the phones). Read `.claude/skills/store-screenshots/SKILL.md`. |
 
 ### Diagnostics and debt
 
@@ -283,11 +291,12 @@ runtime gates use the measurable contract below.
 
 @.claude/docs/gameplay-screen-contract.md
 
-### Mobile-first, full-viewport product target
+### Portrait phone product target — mobile only
 
-Every screen starts from a touch-first phone composition, verified across the required phone
-matrix. The same game must then fill and adapt to landscape, tablet, desktop, and Web viewports;
-never place it in a capped phone canvas or artificial device frame.
+Every game is a portrait phone game played by touch. Concepts, layout recipes, assets and screens
+are designed for a phone held upright and verified at 360×640, 360×800, 390×844 and 430×932.
+There is no tablet, desktop or landscape layout at any stage; a tablet or desktop browser shows
+the same phone screens in the phone column over the game's background, never in a device frame.
 
 @.claude/docs/mobile-first-contract.md
 

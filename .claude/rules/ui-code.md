@@ -190,9 +190,9 @@ MaterialApp(
 
 ## 3. LAYOUT SAFETY (high — a violation means a visual bug)
 
-All layout work follows `.claude/docs/mobile-first-contract.md`: touch-first phone UI/UX is the
-canonical baseline, and the app must fill and adapt to landscape, tablet, desktop, and Web
-viewports without a global phone-width cap or fake device frame.
+All layout work follows `.claude/docs/mobile-first-contract.md`: the game is a portrait phone
+game, played by touch. Every screen is written for the four portrait phones (360×640 to 430×932)
+and nothing else; tablets and desktop browsers show the same screens inside the phone column.
 
 ### 3.1 SafeArea on EVERY root screen
 
@@ -236,13 +236,17 @@ Flexible(child: Text(longPlayerName, overflow: TextOverflow.ellipsis))
 **Rule**: every `Text` with dynamic content (not a hardcoded string) MUST have `overflow:`
 plus `maxLines:`, or sit inside a `FittedBox`, or inside a `Flexible`/`Expanded`.
 
-### 3.3 Mobile-first responsive design — no fixed pixels for layout
+### 3.3 One portrait layout — no fixed pixels, no breakpoints
 
 ```dart
-// ❌ Overflow on a compact phone, unused space on an expanded viewport
+// ❌ Overflow on a 360×640 phone
 Container(width: 400, height: 600, child: ...)
 
-// ✅ Adaptive layout
+// ❌ A second layout for wide screens — the studio ships phone games only
+LayoutBuilder(builder: (context, c) =>
+    c.maxWidth > 600 ? const DesktopGameLayout() : const PhoneGameLayout())
+
+// ✅ One portrait composition that scales with the phone
 LayoutBuilder(
   builder: (context, constraints) {
     final width = constraints.maxWidth;
@@ -268,11 +272,11 @@ Container(width: size.width * 0.9, height: size.height * 0.7)
 Everything else goes through `MediaQuery`, `LayoutBuilder`, `Expanded`, `Flexible` or
 `FractionallySizedBox`.
 
-Use content-driven breakpoints to recompose medium and expanded layouts. Keep the compact phone
-layout as the baseline, preserve touch/click access to every essential action, and use additional
-space for a larger mechanic, balanced supporting zones, or an adaptive rail. Do not globally cap
-the app to 430 logical pixels, add a fake phone bezel, depend on hover, or merely enlarge every
-control on desktop.
+Use `LayoutBuilder`/`MediaQuery` to fit the one portrait composition to the phone's height and
+safe areas (the P axis in `layout-archetypes.md`: what grows on a tall phone, what compresses on a
+short one). Never branch on width to produce another composition — no tablet, desktop or landscape
+layout, no side rail or second pane for extra width. The only wide-host behaviour is the phone
+column in `MaterialApp.builder` (`mobile-first-contract.md`).
 
 ### 3.4 SingleChildScrollView + Column (the correct pattern)
 
@@ -309,18 +313,17 @@ Image.asset('assets/images/ui/button.png', width: 120, height: 48, fit: BoxFit.c
 SvgPicture.asset('assets/images/sprites/cherry.svg', width: 64, height: 64)
 ```
 
-### 3.6 Full-viewport gameplay composition
+### 3.6 Full-screen gameplay composition
 
 Read and implement `.claude/docs/gameplay-screen-contract.md` for every `GameScreen`.
 
 - Put the live field under `Key('gameplaySurface')`, the primary action under
   `Key('primaryAction')`, and the core control group under `Key('controlDeck')` when present.
-- Compose the field, HUD, and controls as one full-viewport screen. Do not embed the field in a
-  small decorative window above a separate generic information card.
+- Compose the field, HUD, and controls as one full-screen phone composition. Do not embed the
+  field in a small decorative window above a separate generic information card.
 - Keep the field, essential counters, stake/risk controls, and primary action visible without
   vertical page scrolling.
-- Verify the phone baseline at 360×640, 360×800, 390×844, and 430×932, plus expanded behavior at
-  844×390, 768×1024, 1024×768, and 1440×900.
+- Verify it at 360×640, 360×800, 390×844, and 430×932 in portrait — the only layout targets.
 
 **Rule**: shrinking the field, adding a `SingleChildScrollView` around the whole game screen, or
 moving core controls below the fold is not an acceptable overflow fix. Recompose the layout.
@@ -600,14 +603,16 @@ Future<int> getHighScore() async {
 
 ---
 
-## 9. MOBILE-FIRST TARGETING
+## 9. PORTRAIT PHONE TARGETING
 
-- Follow `.claude/docs/mobile-first-contract.md`: phone UI/UX is the canonical design baseline.
-- Do not globally lock portrait or limit iOS to iPhone unless an explicit mechanic-specific ADR
-  requires it.
-- Android, iOS/iPadOS, and Web layouts use the full available viewport.
-- Expanded layouts retain touch/click access and the mobile hierarchy; hover and keyboard may
-  enhance interaction but never become essential.
+- Follow `.claude/docs/mobile-first-contract.md`: a portrait phone is the only design target.
+- Lock portrait: `SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp])` in
+  `main()`, `android:screenOrientation="portrait"`, portrait-only iOS orientations with
+  `UIRequiresFullScreen`.
+- Wrap `MaterialApp.builder` in the phone column so a tablet or desktop browser shows the same
+  phone screens over the game's background; no screen checks the width to change its layout.
+- Touch is the only input: no hover states, tooltips or keyboard shortcuts carry anything the
+  player needs.
 
 ---
 
@@ -629,6 +634,8 @@ Future<int> getHighScore() async {
 14. **`print()` in production** — use `debugPrint` or `Logger`
 15. **Player-facing strings in a language other than English**, unless the user explicitly
     asked for a different language — see CLAUDE.md → Language
-16. **A global phone-width cap or fake device frame** — the app must fill its host viewport
-17. **Unintentional expanded layout** — no centered phone strip, vast dead margins, blind scaling,
-    or desktop-only essential interaction
+16. **A desktop, tablet or landscape layout** — width breakpoints, side rails, split panes,
+    `NavigationRail`, or any composition other than the portrait phone one
+17. **A fake device frame, or a stretched game on a wide host** — wide hosts get the phone column
+    over the game's background, never a bezel and never the phone layout stretched across the window
+18. **Hover-, mouse- or keyboard-only interaction** — touch is the only input

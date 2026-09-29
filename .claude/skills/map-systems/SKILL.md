@@ -37,9 +37,9 @@ category and the mathematical model, and generate `design/gdd/systems-map.md`.
 - `AmbientParticles` (a living field — the screen is never static)
 
 ## 3. Flutter UI
-- `GameScreen` (full-viewport integrated composition from
+- `GameScreen` (full-screen portrait composition from
   `.claude/docs/mobile-first-contract.md` and `.claude/docs/gameplay-screen-contract.md`;
-  touch-first phone baseline, full-host responsive reflow, no nested window or core-loop scrolling)
+  touch only, one composition for every phone, no nested window or core-loop scrolling)
 - `HudWidget` (compact balance/bet/multiplier through a ValueNotifier)
 - `BetPanel` (bet selection, locked during a round)
 - `ActionButton` (a 300 ms debounce + disabled/pressed states + ≥48 wide/56 high primary target)

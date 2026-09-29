@@ -13,12 +13,13 @@ only at startup: empty game screen (black rectangle instead of reels), RenderFle
 overflow (yellow-black stripes), Flutter "red screen of death" (raw exception),
 layout curve at a specific resolution, `setState() called after dispose`, missing asset, etc.
 
-**This is an insurance skill**: launches the mobile-first game in **Chrome** (default, without an emulator),
+**This is an insurance skill**: launches the portrait phone game in **Chrome** (default, without an emulator),
 navigates through all screens, takes screenshots, **visually analyzes them through vision**
 and **parses flutter-run.log** for exceptions. Found - automatically repairs.
 
-Chrome is a full-viewport runtime target. Read `.claude/docs/mobile-first-contract.md`; verify the
-canonical phone UI/UX and intentional landscape, tablet, and desktop/Web reflow.
+Chrome is only the host for a portrait phone game. Read `.claude/docs/mobile-first-contract.md`;
+verify the four portrait phones, and that a wide host shows the unchanged phone screen in the
+phone column. A desktop, tablet or landscape layout is itself a defect (V17).
 
 **Platforms by priority:**
 1. **Chrome/Web (default)** - headless `flutter run -d web-server` + headless Chrome via CDP
@@ -208,11 +209,11 @@ correct and repeat. Maximum 3 iterations. If it fails, finish with a report.
 screen animation, and capture a screenshot. Chrome/Web is the default. Android uses ADB
 input events; iOS uses `xcrun simctl io booted screenshot`.
 
-### Chrome / Web screenshots (PLATFORM=web) - headless CDP responsive matrix
+### Chrome / Web screenshots (PLATFORM=web) - headless CDP phone matrix
 
 `flutter screenshot` **does not support web** (only `device`/`skia` for native devices),
 and `xdotool`/`osascript` are unavailable/unreliable headless. Therefore, the canonical tour plus
-phone and expanded geometry tours use `tools/web_verify.mjs`: it picks up headless Chrome itself, shoots footage via CDP,
+phone geometry tours use `tools/web_verify.mjs`: it picks up headless Chrome itself, shoots footage via CDP,
 taps on the canvas (on the semantic mark, otherwise on the thumb-zone), writes console/exceptions and
 always completes within `--budget` and cannot hang the pipeline.
 
@@ -228,14 +229,20 @@ timeout 220 node tools/web_verify.mjs \
   --url "$WEB_URL" --out "$SHOT_DIR" --size 390x844 --budget 180 ${QUICK_FLAG:-} \
   2>&1 | tee "$SHOT_DIR/web_verify.log"
 
-# Required mobile-first responsive geometry matrix. These are quick gameplay tours.
-for VIEWPORT_SIZE in 360x640 360x800 430x932 844x390 768x1024 1024x768 1440x900; do
+# The rest of the portrait phone matrix. These are quick gameplay tours.
+for VIEWPORT_SIZE in 360x640 360x800 430x932; do
   VIEWPORT_DIR="$SHOT_DIR/$VIEWPORT_SIZE"
   mkdir -p "$VIEWPORT_DIR"
   timeout 140 node tools/web_verify.mjs \
     --url "$WEB_URL" --out "$VIEWPORT_DIR" --size "$VIEWPORT_SIZE" --budget 120 --quick \
     2>&1 | tee "$VIEWPORT_DIR/web_verify.log"
 done
+
+# Wide-host smoke capture — not a design target: it must show the phone column.
+mkdir -p "$SHOT_DIR/wide-host"
+timeout 90 node tools/web_verify.mjs \
+  --url "$WEB_URL" --out "$SHOT_DIR/wide-host" --size 1440x900 --budget 60 --quick \
+  2>&1 | tee "$SHOT_DIR/wide-host/web_verify.log"
 ```
 
 The canonical script places in `$SHOT_DIR`: `01-splash.png … 05-game-after-action.png` (+ additional screens without
@@ -434,15 +441,16 @@ And visually check using the checklist:
 | V10 | **Low Contrast** | The text blends into the background, unreadable | MEDIUM | ui-programmer (Design DNA palette) |
 | V11 | **All graphics are default Material** | Blue AppBar, white buttons, generic look | MEDIUM | ui-programmer (no custom theme) |
 | V12 | **Balance/account not displayed** | HUD is empty or shows NaN/null | HIGH | mechanics-programmer (ValueNotifier not connected) |
-| V13 | **Gameplay field is a thumbnail** | Live field occupies <55% of usable portrait area or is conspicuously narrow without a documented mechanic reason | HIGH | ui-programmer (full-viewport recomposition) |
+| V13 | **Gameplay field is a thumbnail** | Live field occupies <55% of usable portrait area or is conspicuously narrow without a documented mechanic reason | HIGH | ui-programmer (full-screen recomposition) |
 | V14 | **Nested game window** | Field looks like a phone/browser/card inside the actual game screen, with large dead margins or a second unrelated panel | HIGH | ui-programmer (remove outer frame and integrate field/HUD/controls) |
 | V15 | **Core loop below the fold** | Player must vertically scroll to see the primary action, stake/risk control, or essential result | HIGH | ui-programmer (fixed-viewport core composition) |
-| V16 | **Poorly adjusted controls** | Buttons are cramped, uneven, clipped, undersized, ambiguously disabled, or visually disconnected from gameplay | HIGH | ui-programmer (responsive control deck and state pass) |
-| V17 | **Broken mobile-first responsiveness or targeting** | Phone hierarchy breaks; expanded hosts show a capped phone strip, fake frame, dead margins, blind scaling, pointer-only controls, or an undocumented native restriction | HIGH | ui-programmer + release-engineering (enforce mobile-first contract) |
+| V16 | **Poorly adjusted controls** | Buttons are cramped, uneven, clipped, undersized, ambiguously disabled, or visually disconnected from gameplay | HIGH | ui-programmer (control deck and state pass) |
+| V17 | **Not a portrait phone game** | The hierarchy breaks on a phone in the matrix; a desktop, tablet or landscape layout/breakpoint exists; a wide host stretches the game or shows a device frame instead of the phone column; hover/keyboard-only interaction; a missing portrait lock | HIGH | ui-programmer + release-engineering (enforce the mobile-only contract) |
 | V18 | **Stretched or squashed asset** | An asset is drawn at a different aspect ratio than its source file: the character is widened or elongated, a round coin is an oval, an icon is a lozenge, text baked into a sprite is distorted | HIGH | ui-programmer (or juice-artist for a Flame component size) |
 | V19 | **Menu composition contradicts direction** | The runtime menu does not realize its M/O/R recipe, attention order, or `menu_role`; dominant/supporting content is accidentally hidden or an absent storefront lead is forced back in | HIGH | ui-programmer (menu composition) |
 | V20 | **Gameplay field off-center** | The live play field is shoved toward one edge — an `Align`/`Padding`/`Positioned` offset with no reason — instead of sitting on the viewport's horizontal center by default | HIGH | ui-programmer (remove the unexplained offset, or record the state recipe/mechanic reason) |
-| V21 | **Mapped reference mismatch** | A named `examples-games/` game has a different character, symbol cast, background, palette, board topology, art finish or main composition than its mapped source | HIGH | art-director for assets; ui-programmer for composition |
+| V21 | **Reference mismatch** | A reference game (`design/reference-contract.md`: a named `examples-games/` family or the user's attached images) has a different character, symbol/sprite cast, reel strips or board, background, palette, art finish or main composition than its sources | HIGH | art-director for assets; ui-programmer for composition |
+| V22 | **Campaign background missing or broken** | `production/store-art/campaign.md` exists but a screen still shows the replaced background, the menu cuts or covers the character, or the campaign picture is stretched/letterboxed (see `autocreate-finalize` 10.5.2g) | HIGH | ui-programmer (wiring) |
 
 **V18 — asset distortion.** Run `python3 tools/check_asset_stretch.py --report
 <SHOT_DIR>/asset-stretch.md` for the static pass: it compares each asset's real pixel
@@ -461,15 +469,14 @@ idea and M/O/R recipe recorded in `design/art-direction.md`. Run
 `python3 tools/check_menu_lead.py --report <SHOT_DIR>/menu-lead.md` for the static half — it reads
 `lead_kind`, `menu_role: dominant | supporting | absent`, and the lead asset from the design docs;
 for dominant/supporting character roles it checks that the menu source draws the asset. Then judge
-`02-menu.png` at 390×844 and 1440×900:
+`02-menu.png` at 390×844 and 360×640:
 
 - the recorded M/O/R recipe and attention order are recognizable;
 - dominant/supporting content is visible and intentionally cropped, not accidentally hidden by
   controls or the viewport edge;
 - the runtime prominence matches `menu_role`; an absent lead remains absent;
 - alignment follows the recipe rather than a universal centering rule;
-- the expanded viewport preserves the composition instead of producing a phone-sized island or
-  stretched filler.
+- the short phone keeps the composition instead of pushing the lead under the controls.
 
 **Never satisfy V19 by inventing a character or forcing the storefront lead into the menu.** An
 object or mechanic may be dominant, supporting, or absent according to the documented recipe.
@@ -483,13 +490,12 @@ off-center field without a recorded cause reads as an accident, not a choice. Ru
 half — it finds every `Key('gameplaySurface')` site and walks its ancestor widgets for an
 explicit offset (`Align` toward an edge, asymmetric `Padding`, a `Positioned` pinned to or
 unevenly inset from one side) — then judge `03-game-idle.png` and `04-game-action.png` at 390×844
-and 1440×900:
+and 360×640:
 
 - the field's horizontal center sits inside the middle 60% of the viewport width;
 - an off-center placement is fine when `design/art-direction.md`'s state recipe calls for it
-  (L4's side rail, L5's split panel) and the field is still whole and dominant;
-- the expanded viewport keeps the same centered relationship rather than drifting toward one side
-  as the mechanic grows.
+  (an attached side control, an object-led composition) and the field is still whole and dominant;
+- no width breakpoint moves the field — there is no desktop reflow to drift into (V17).
 
 This is a static-plus-vision check like V18/V19: the script proves an *explicit* offset exists,
 not the resolved runtime position, so a screen that reads centered in both screenshots passes even
@@ -497,17 +503,16 @@ if the script flags a MEDIUM it cannot resolve.
 
 For every game-idle and active screenshot, also apply
 `.claude/docs/mobile-first-contract.md` and `.claude/docs/gameplay-screen-contract.md`.
-For a named mapped game, open the relevant source files beside the menu and idle/active gameplay
-captures. Record each mismatch under V21 with its source path and affected game asset or screen.
-Compare the actual phone runtime first; use expanded captures to check that the same identity
-survives responsive reflow. V13–V21 are release blockers. Run the screenshot tour across 360×640,
-360×800, 390×844, 430×932, 844×390, 768×1024, 1024×768 and 1440×900.
+For a reference game (`design/reference-contract.md`), open every source beside the menu and
+idle/active gameplay captures. Record each mismatch under V21 with its source path and affected
+game asset or screen. V13–V22 are release blockers. Run the screenshot tour across the four
+portrait phones — 360×640, 360×800, 390×844 and 430×932 — plus the one wide-host smoke capture.
 
 ### Create an entry for each screenshot
 
 ```markdown
 ### 03-game-idle.png
-- Expected: full-viewport integrated game screen with a dominant field, compact HUD and a visible,
+- Expected: full-screen portrait game screen with a dominant field, compact HUD and a visible,
   properly sized primary action; no nested window and no core-loop scrolling
 - Observed: [what is actually visible]
 - Issues:
@@ -617,12 +622,14 @@ Sort by severity: CRITICAL → HIGH → MEDIUM.
      offset so the field's horizontal center returns to the viewport's — or, if the state recipe
      genuinely calls for the offset, record why in `design/art-direction.md` instead of
      silently keeping it
-   - V21 (mapped reference mismatch): correct the asset through a source-image edit with its
-     mapped reference, or restore the documented board/background/composition in the UI; capture
-     the game again and compare beside the source
+   - V21 (reference mismatch): correct the asset through a source-image edit with its reference
+     source, or restore the documented board/background/composition in the UI; capture the game
+     again and compare beside the source
+   - V22 (campaign background): point the selector at `bg_campaign_menu`/`bg_campaign_game` with
+     `BoxFit.cover` + `Alignment.topCenter`; a background that cannot fit its character goes back
+     to campaign art, not to the UI
    - V13/V14/V15/V16 (gameplay composition): apply `gameplay-screen-contract.md`; expand and
-     integrate the field, remove nested framing/core scrolling, and rebuild the responsive control
-     deck. If this needs a whole-screen recomposition, route it through `/ui-audit --fix`.
+     integrate the field, remove nested framing/core scrolling, and rebuild the control deck. If this needs a whole-screen recomposition, route it through `/ui-audit --fix`.
 
    **mechanics-programmer**:
    - V4 (blank game screen): check [name]_world.dart - onLoad adds components,

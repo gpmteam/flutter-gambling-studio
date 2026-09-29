@@ -14,8 +14,8 @@ Gambling games live on visual feedback. This skill creates an isolated animation
 
 1. Create the file `prototypes/[mechanic-name]/main.dart`.
 2. Write a minimal `runApp` with a simple screen.
-   Compose the prototype mobile-first at 390×844, then verify an intentional full-viewport
-   reflow at 1440×900; do not add a global orientation lock or centered phone-width wrapper.
+   Compose the prototype for a portrait phone at 390×844 and check it at 360×640; build no
+   desktop, tablet or landscape layout.
 3. Add a Flame GameWidget if you are testing physics or Flame effects.
 4. Add Flutter animations if you are testing UI (glow, popup).
 5. Do not use dependencies from `lib/` (prototypes must build on their own).

@@ -83,13 +83,13 @@ test('uses Random.secure() — not math.Random()', () {
 
 - Follow `.claude/docs/mobile-first-contract.md` and
   `.claude/docs/gameplay-screen-contract.md`, and use the required stable keys.
-- Pump 360×640, 360×800, 390×844, 430×932, 844×390, 768×1024, 1024×768, and 1440×900.
+- Pump the four portrait phones: 360×640, 360×800, 390×844 and 430×932.
 - Assert field dominance, primary-action visibility/size, no vertical `Scrollable` ancestor for
   the core loop, no exception/overflow, and label fit at 1.3× text scale.
-- Verify phone sizes keep the touch-first hierarchy and expanded sizes use the full viewport
-  without a centered phone strip, fake device frame, dead margins, or oversized controls.
-- Verify responsive breakpoint changes preserve state and keep essential actions available by
-  touch/click without requiring hover or a keyboard.
+- Verify every phone keeps the same touch-first hierarchy, with the primary action in thumb
+  reach and nothing that needs hover or a keyboard.
+- Pump one wide host (1440×900) only to assert the phone column: the game renders at phone width
+  over the background surround, unchanged — never a different layout and never stretched.
 - Do not approve composition from widget tests alone; idle and active screenshots still need the
   runtime vision gate.
 

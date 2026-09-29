@@ -4,8 +4,8 @@ When the user types a slash command (`$name` or `/name`), Codex must treat it as
 matching runbook in `.claude/skills/`. For how the Claude mechanics (Agent tool, Skill tool,
 hooks, vision, image generation) are adapted, see `AGENTS.md` → "Execution Model".
 
-All commands inherit `.claude/docs/mobile-first-contract.md`: games begin with touch-first phone
-UI/UX and responsively fill landscape, tablet, desktop, and Web viewports without a phone frame.
+All commands inherit `.claude/docs/mobile-first-contract.md`: games are portrait phone games,
+touch only, with no tablet, desktop or landscape layout.
 
 ## The game production pipeline
 
@@ -58,7 +58,7 @@ UI/UX and responsively fill landscape, tablet, desktop, and Web viewports withou
 | `/release-checklist` | `.claude/skills/release-checklist/SKILL.md` | GO/NO-GO checklist (release-manager persona; takes the playtest and asset-review verdicts into account) |
 | `/release-engineering` | `.claude/skills/release-engineering/SKILL.md` | Icons/splash/version/signed AAB/store metadata/CI. Inside the pipeline: only `--prep-only --no-keystore` |
 | `/release-package` | `.claude/skills/release-package/SKILL.md` | Screenshots + release APK/AAB + `flutter clean` + an archive in `project_zip/`. **An explicit user action**, NOT an automatic call from the pipeline |
-| `/store-screenshots` | `.claude/skills/store-screenshots/SKILL.md` | Context-based store kit with character/object/mechanic lead, flexible gameplay, real captures, feature graphic and ZIP; preserve runtime backgrounds. |
+| `/store-screenshots` | `.claude/skills/store-screenshots/SKILL.md` | Context-based store kit with character/object/mechanic lead, flexible gameplay, real captures, feature graphic and ZIP, built on the finalization campaign art (banner and game background). |
 
 ## Execution rule
 

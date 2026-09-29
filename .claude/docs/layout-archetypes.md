@@ -12,22 +12,24 @@
 Game UI = mechanic and state needs
         × per-screen composition recipe
         × Design Signature
-        × mobile/expanded reflow
+        × portrait phone-height adaptation
 ```
 
 ## Invariants
 
 Every recipe still follows the product contracts:
 
-- phone-first, touch-first, full-viewport layout;
+- portrait phone only, touch only, full-screen layout (`mobile-first-contract.md`);
 - tap targets at least 48x48 logical pixels;
 - safe-area protection for essential controls and text;
 - the live field is the first read, meets `gameplay-screen-contract.md`, and does not require
   page scrolling with its core controls;
-- no phone mockup, nested mini-game window, unrelated information card, or fixed-width phone strip;
+- no phone mockup or device frame, nested mini-game window, or unrelated information card (the
+  wide-host phone column from the contract is presentation, not a mockup);
 - a visible primary action or direct-manipulation affordance in thumb reach;
 - a reliable back path and supported-input focus order;
-- intentional medium/expanded reflow instead of blind scaling.
+- one portrait composition that adapts to phone height (the P axis) — no width breakpoints and
+  no desktop, tablet or landscape variant, ever.
 
 These invariants define usability, not aesthetics. They do not prescribe a top bar, centered
 button, dark background, card surface, or any particular field alignment.
@@ -54,7 +56,7 @@ state change genuinely needs it. The codes make plans concise; they are not pref
 |---|---|---|
 | C1 | Attached | Controls are physically or visually attached to the field/object they affect. |
 | C2 | Thumb dock | A compact lower control cluster; it need not span the screen or look like a panel. |
-| C3 | Edge rail | Controls occupy one safe edge and may move to a side on wider viewports. |
+| C3 | Edge rail | A slim vertical control strip on one side edge, within thumb reach, beside a tall field. |
 | C4 | Distributed | Small controls sit near their consequences, with one clear recurring action. |
 | C5 | Direct manipulation | Drag, scratch, place, aim, or choose on the field; chrome is secondary. |
 | C6 | Context action | The primary action changes with state in one stable location. |
@@ -94,15 +96,17 @@ state change genuinely needs it. The codes make plans concise; they are not pref
 | O5 | Full-state takeover | Major result/bonus changes the whole scene, proportionate to importance. |
 | O6 | Dedicated screen | Long rules, odds, settings, collection, and history get readable space. |
 
-### R — expanded-viewport reflow
+### P — phone-height adaptation
+
+The same portrait composition runs on every phone from 360×640 to 430×932. Width barely changes;
+height does. Choose how the one composition absorbs that — never by switching to another layout.
 
 | Code | Direction | Description |
 |---|---|---|
-| R1 | Grow the field | Extra space primarily enlarges or reveals more of the mechanic/world. |
-| R2 | Relocate controls | A phone dock becomes a side attachment or rail while meaning stays stable. |
-| R3 | Add supporting zone | History, build detail, or progression appears beside the dominant field. |
-| R4 | Rebalance a split | The same two subjects change proportion/orientation at content breakpoints. |
-| R5 | Reveal environment | Art/world expands while critical UI holds a readable max measure. |
+| P1 | Grow the field | Extra height enlarges the mechanic; a short phone shrinks it to its 55% floor, never below. |
+| P2 | Reveal the scene | Extra height shows more of the background art above the field — the campaign character's head and shoulders, the world's sky. The field and controls keep their size. |
+| P3 | Compress secondary | On a short phone, secondary readouts collapse to compact chips and history/details move into a sheet; the core loop never scrolls. |
+| P4 | Breathing room | Extra height goes to spacing between the HUD, field and command deck, keeping thumb reach for the primary action. |
 
 ## Building recipes
 
@@ -113,30 +117,29 @@ jobs are genuinely similar.
 ```markdown
 ## Layout & Composition Direction
 
-### Main menu — M3 + O2 + R5
+### Main menu — M3 + O2 + P2
 - Why: [the machine is the brand and the menu; secondary entries remain discoverable]
-- Compact: [phone composition and thumb path]
-- Expanded: [what grows, moves, or becomes visible]
+- 390×844: [phone composition and thumb path]
+- Short phone (360×640): [what compresses] · Tall phone (430×932): [what the extra height shows]
 
-### Live setup — F2 + C1 + H4 + O1 + R1
+### Live setup — F2 + C1 + H4 + O1 + P1
 - Attention order: [field -> wager control -> action]
 - Persistent/contextual information: [...]
 - Primary field alignment: [centered | intentionally offset because ...]
 
-### Anticipation — F2 + C6 + H4 + O1 + R1
+### Anticipation — F2 + C6 + H4 + O1 + P1
 - What changes from setup: [...]
 - What stays spatially stable: [...]
 
-### Result — F2 + C6 + H5 + O4 + R1
+### Result — F2 + C6 + H5 + O4 + P1
 - Win/loss attention shift: [...]
 - Return-to-play path: [...]
 
-### Rules/odds — M7 + O6 + R3
+### Rules/odds — M7 + O6 + P3
 - Scan and disclosure strategy: [...]
 
-### Viewport proof
-- Phone: [360x640, 360x800, 390x844, 430x932]
-- Expanded: [844x390, 768x1024, 1024x768, 1440x900]
+### Phone proof
+- Portrait phones: [360x640, 360x800, 390x844, 430x932] — the only layout targets
 ```
 
 This example is syntax, not a recommended combination. Do not copy it into every concept.
@@ -160,7 +163,8 @@ This example is syntax, not a recommended combination. Do not copy it into every
 3. Choose controls based on the repeated input, hand posture, and action frequency.
 4. Choose HUD behavior based on when information is needed, not where a template has space.
 5. Choose overlays by interruption level and content length.
-6. Define compact composition first, then choose an expanded reflow strategy.
+6. Define the 390×844 composition, then the P strategy for the short (360×640) and tall
+   (430×932) phones.
 7. Compare the resulting recipes with recent/nearest games. If the same F+C+H+M combination
    recurs, either justify it from the mechanic/reference or choose a stronger alternative.
 8. Record the recipes and Similarity Check in `design/art-direction.md`.
@@ -180,4 +184,4 @@ anti-repeat gate; exact pixels, title/logo, and paytable numbers remain excluded
 Do not select one L1-L6 archetype for a new game. Existing concepts that already record L1-L6 may
 be implemented for backward compatibility, but convert them into explicit per-screen recipes when
 the project is next redesigned. The old names are not accepted as sufficient art direction because
-they omit state changes, information behavior, and expanded reflow.
+they omit state changes, information behavior, and phone-height adaptation.

@@ -21,9 +21,9 @@ allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Agent
 - Manually by the user, for any finished project: `/release-package`
 
 **Important**: this skill does NOT change the source code. It only builds, screenshots and packs.
-Read `.claude/docs/mobile-first-contract.md` during preflight. Package only after both the phone
-baseline and expanded full-viewport layouts pass; a capped phone wrapper, fake device frame,
-broken reflow, or undocumented native orientation/device-family restriction is a blocker.
+Read `.claude/docs/mobile-first-contract.md` during preflight. Package only after the four
+portrait phones pass; a desktop/tablet/landscape layout, a fake device frame, or a missing portrait
+lock is a blocker.
 
 ---
 
@@ -159,7 +159,7 @@ Read the first 5 screenshots and every gameplay-state screenshot through Read (v
 V1–V20 problems from `emulator-test` plus `.claude/docs/mobile-first-contract.md` and
 `.claude/docs/gameplay-screen-contract.md`. If any
 CRITICAL/HIGH issue remains—including a thumbnail/nested play field, core-loop scrolling, or poor
-button proportions, capped phone layout, broken expanded reflow, or undocumented targeting—stop before
+button proportions, a desktop/tablet/landscape layout, or a missing portrait lock—stop before
 building/archiving and route the project back to `/ui-audit --fix`
 or `/autocreate-implement --resume`. This skill does not change source code and must not package a
 known-broken gameplay composition.

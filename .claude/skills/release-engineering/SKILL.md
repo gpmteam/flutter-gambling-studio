@@ -39,8 +39,8 @@ echo "Project: $APP_NAME"
 Read from the concept (`design/gdd/game-concept.md`): the human-readable game title (for the
 launcher label and the listing), the splash background colour (from the Design DNA → Background),
 the category C1–C6 and the compliance profile (for the metadata and the age rating).
-Read `.claude/docs/mobile-first-contract.md`. This studio ships mobile-first responsive games;
-an artificial phone-width cap or undocumented orientation/iPhone-only restriction is a blocker.
+Read `.claude/docs/mobile-first-contract.md`. This studio ships portrait phone games: a missing
+portrait lock, a desktop/tablet/landscape layout, or a desktop platform scaffold is a blocker.
 
 ---
 
@@ -148,11 +148,10 @@ The launcher label (the human-readable name) is set in
 asked for the game in another language.
 Application ID / bundle id: `com.gamestudio.<name>` (already set by `flutter create --org`).
 
-### 2.1 — Android responsive target
+### 2.1 — Android portrait target
 
-Keep the launcher activity responsive: do not add `android:screenOrientation="portrait"` unless
-the game has the explicit mechanic-specific ADR allowed by the mobile-first contract. Android
-phones and tablets must receive the full-host composition for their current viewport.
+The launcher activity declares `android:screenOrientation="portrait"`, matching the
+`SystemChrome` lock in `main()`. Tablets run the same phone game (the phone column).
 
 ---
 
@@ -251,8 +250,9 @@ An IPA cannot be built on Linux (it needs macOS/Xcode). But the preparation can 
 - Create an `ios/ExportOptions.plist` template (method: app-store) for a later `xcodebuild`.
 - Record the mac build command in `RELEASE_INFO`/CI:
   `flutter build ipa --release --export-options-plist=ios/ExportOptions.plist`.
-- In `ios/Runner/Info.plist`, preserve supported iPhone and iPad orientations so the responsive
-  layout can use portrait and landscape, unless the game has the documented mechanic exception.
+- In `ios/Runner/Info.plist`, list only `UIInterfaceOrientationPortrait` in
+  `UISupportedInterfaceOrientations` and `UISupportedInterfaceOrientations~ipad`, and set
+  `UIRequiresFullScreen` to true so an iPad accepts the portrait-only app.
 - In `ios/Runner.xcodeproj/project.pbxproj`, retain iPhone + iPad device-family support (`"1,2"`)
   unless the release brief explicitly narrows the platform for a documented product reason.
 
@@ -320,7 +320,7 @@ template.
 🚀 RELEASE ENGINEERING COMPLETE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🎨 Icons: Android (adaptive) + iOS/iPadOS + Web — generated
-📱 Target: mobile-first responsive Android/iOS/Web — verified
+📱 Target: portrait phone game (Android/iOS, portrait-locked; Web preview in the phone column) — verified
 🌅 Native splash: colour from the DNA, Android 12+ supported
 🔢 Version: [name]+[build]
 🤖 Android: app-release.aab [signed/debug] ([size]) + app-release.apk

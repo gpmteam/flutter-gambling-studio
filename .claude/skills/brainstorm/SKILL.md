@@ -22,9 +22,8 @@ use 3×3; store gameplay placement is flexible and object-led games need no inve
 > with a tumble cascade, category C1, archetype C).
 >
 > The canonical reference for categories and archetypes: `.claude/docs/gambling-categories.md`.
-> Every concept is mobile-first. Read `.claude/docs/mobile-first-contract.md`; start with
-> touch-first phone UI/UX and include intentional full-viewport landscape, tablet, desktop, and
-> Web behavior without a fixed-width phone frame.
+> Every concept is a portrait phone game. Read `.claude/docs/mobile-first-contract.md`: design
+> for a phone held upright and played by thumb; there is no tablet, desktop or landscape layout.
 
 When this skill is invoked:
 
@@ -112,11 +111,10 @@ When this skill is invoked:
      field framing, controls, HUD behavior, materials, type, color/value, motion, and depth (see
      `.claude/rules/anti-slop-design.md`). Do not infer a fixed token count or default darkness.
    - **Per-screen layout recipes** (see `.claude/docs/layout-archetypes.md`): choose independent
-     field/control/HUD/menu/overlay/reflow ingredients for the menu, live states, result, and
+     field/control/HUD/menu/overlay/phone-height ingredients for the menu, live states, result, and
      information screens. Compare with nearby games; changing only style is not enough.
-   - **Mobile-first proof**: how the phone composition adapts across 360×640, 360×800, 390×844
-     and 430×932 while keeping the primary action in thumb reach and the core loop above the fold;
-     then how it fills 844×390, 768×1024, 1024×768 and 1440×900 intentionally.
+   - **Phone proof**: how the one portrait composition holds across 360×640, 360×800, 390×844
+     and 430×932 while keeping the primary action in thumb reach and the core loop above the fold.
 
    **Phase 6: the compliance profile**
    - The full profile (disclaimer + responsible play) — the default.
@@ -137,7 +135,7 @@ When this skill is invoked:
 4. **Writing the document**: create `design/gdd/game-concept.md` from the
    `.claude/docs/templates/gambling-concept.md` template — starting with the **Classification**
    block (category, archetype, model, target metric, config, compliance profile).
-   Record the mobile-first full-viewport target in the Classification and Layout sections.
+   Record the portrait-phone target in the Classification and Layout sections.
 
 5. **Next steps**:
    - "Use `/design-system [system]` to design the mechanic in detail"

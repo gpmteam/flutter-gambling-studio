@@ -14,10 +14,9 @@ metadata. The only exception is an explicit user request for another language: t
 player-facing copy uses that language and everything else stays English. Never switch the
 game's language on your own initiative or because of the language the user types in.
 
-PRODUCT TARGET: mobile-first Android/iOS and full-viewport Web. Start from touch-first phone
-UI/UX, then responsively fill landscape, tablet, and desktop viewports without a phone-width cap
-or fake device frame. Follow `.claude/docs/mobile-first-contract.md`, including its phone and
-expanded verification matrices.
+PRODUCT TARGET: portrait phone games for Android/iOS, touch only. Design every screen for a phone
+held upright; build no tablet, desktop or landscape layout. Web is only the preview host (phone
+column). Follow `.claude/docs/mobile-first-contract.md` and its four-phone matrix.
 
 BEFORE writing any code, read the relevant rule files in `.claude/rules/` and `.claude/docs/` (the studio ground truth):
 - Categories & archetypes: .claude/docs/gambling-categories.md

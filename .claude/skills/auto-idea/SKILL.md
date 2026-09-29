@@ -35,8 +35,8 @@ Don't ask the user questions! Create `design/gdd/game-concept.md` completely aut
 > are the reference's, recorded
 > from it rather than invented — matching it is the goal, not a slop risk. “Gambling” ≠ “dark neon and gold”: bingo can be warm and papery,
 > gashapon can be pastel, while a roguelike can use strict typography. Vary both style and composition.
-> Every concept starts from touch-first phone UI/UX and includes intentional full-viewport
-> landscape, tablet, desktop, and Web behavior. Never create a capped phone wrapper or fake frame.
+> Every concept is a portrait phone game played by touch (`.claude/docs/mobile-first-contract.md`):
+> design each screen for a phone held upright, and plan no tablet, desktop or landscape layout.
 
 ## Catalog of Archetypes (A–AF)
 
@@ -239,7 +239,7 @@ The archetype sets the MECHANICS. To make two games of the same archetype look a
 - **Target Metric**: ["RTP 96.0% ±1%" | "hard pity 70, SSR 1.2%" | “run win-rate 32%” | …]
 - **Model config**: design/balance/[file].json
 - **Compliance profile**: [full | reduced C5 - justification]
-- **Product target**: mobile-first Android/iOS and responsive full-viewport Web
+- **Product target**: portrait phone game (Android/iOS, portrait-locked, touch only); Web is the preview host
 ```
 
 ### Section 1: Overview
@@ -426,13 +426,12 @@ Apply `.claude/docs/mobile-first-contract.md` and `.claude/docs/gameplay-screen-
 [same fields]
 
 ## Layout & Composition Direction
-- Main Menu: [M# + O# + R#; why; `menu_role: dominant | supporting | absent` for the recorded
+- Main Menu: [M# + O# + P#; why; `menu_role: dominant | supporting | absent` for the recorded
   `lead_kind`]
 - Live Game: [state recipes; primary field alignment and any documented offset reason]
 - Rules/Odds: [recipe; disclosure and scan strategy]
 - Collection/Profile/Progression: [recipe appropriate to category]
-- Mobile-first proof: [360x640, 360x800, 390x844, 430x932]
-- Expanded proof: [844x390, 768x1024, 1024x768, 1440x900]
+- Phone proof: [360x640, 360x800, 390x844, 430x932; P strategy for short and tall phones]
 
 ## Similarity Check
 - Compared with: [up to three recent/nearest games]
@@ -690,7 +689,7 @@ manifesto literally.
       unless a mapped reference or mechanic justifies repetition
 - [ ] Semantic type, spacing, color, shape, material, and motion roles are defined without a
       studio-wide count or aesthetic preset
-- [ ] Gameplay screen contract satisfied: dominant full-viewport field, integrated controls,
+- [ ] Gameplay screen contract satisfied: dominant full-screen portrait field, integrated controls,
       core loop visible without scrolling, and usable button proportions at all four target sizes
 - [ ] Motion/transition choices communicate feedback, hierarchy, continuity, or anticipation
 - [ ] All 12+ screens are described with full content

@@ -6,7 +6,7 @@
 > neither quality signals nor failures by themselves.
 >
 > A game passes when its interface expresses its mechanic, world, audience, and moment-to-moment
-> states; remains usable on every required viewport; and is materially different from nearby
+> states; remains usable on every phone in the portrait matrix; and is materially different from nearby
 > studio output for reasons stronger than a new palette.
 
 ## 1. Precedence: contracts first, creative choices second
@@ -16,7 +16,7 @@ Hard contracts are not optional:
 - the user's brief and supplied reference;
 - gambling classification, math truth, and responsible-play requirements;
 - `.claude/docs/mobile-first-contract.md` and `.claude/docs/gameplay-screen-contract.md`;
-- readable text, safe areas, touch targets, keyboard/controller focus, reduced motion, and
+- readable text, safe areas, touch targets, assistive focus, reduced motion, and
   non-color-only state communication;
 - the studio asset rendering baseline below.
 
@@ -26,8 +26,8 @@ rounded or angular geometry, light or dark presentation, or quiet or theatrical 
 promoted into a universal rule.
 
 When rules conflict, protect gameplay truth and usability before visual novelty. Distinctiveness
-never excuses a hidden action, unreadable HUD, misleading outcome, cramped phone layout, or broken
-expanded layout.
+never excuses a hidden action, unreadable HUD, misleading outcome, cramped phone layout, or a
+layout that only works on a wide screen, with a mouse, or in landscape.
 
 ## 2. Start with a Game UI Read
 
@@ -41,7 +41,7 @@ Before choosing tokens or arranging widgets, write a concise read in `design/art
 - Information pressure: [what must be known instantly; what can wait]
 - World and tone: [specific fiction and attitude, not a generic adjective list]
 - Reference contract: [exact reference to match, or patterns borrowed from named examples]
-- Constraints: [category, accessibility, viewport, input, compliance]
+- Constraints: [category, accessibility, portrait phone + touch only, compliance]
 - Memorable interface idea: [one interaction or spatial idea the player will remember]
 ```
 
@@ -99,7 +99,7 @@ For every key screen/state, record:
 - Primary input: [tap, drag, hold, choose, set value, inspect]
 - Persistent information: [only what is needed throughout]
 - Contextual information: [what appears for this state, then leaves]
-- Composition recipe: [field frame + controls + HUD + overlay + expanded reflow]
+- Composition recipe: [field frame + controls + HUD + overlay + phone-height adaptation]
 - Transition reason: [feedback, hierarchy, continuity, or anticipation]
 ```
 
@@ -133,7 +133,7 @@ the game. Do not poll state each frame merely to keep the HUD current.
 
 Build a per-screen recipe from independent choices documented in
 `.claude/docs/layout-archetypes.md`: field framing, control topology, HUD behavior, menu structure,
-overlay behavior, and expanded-viewport reflow. A game may use different compatible recipes for
+overlay behavior, and phone-height adaptation. A game may use different compatible recipes for
 its menu, live round, result, collection, and settings screens.
 
 Variation must not harm orientation. Reuse navigation placement, input meanings, semantic tokens,
@@ -193,7 +193,7 @@ Randomness may break a tie between equally appropriate directions; it may not re
 
 ### Interaction states
 
-Every interactive control needs idle, focus/hover where applicable, pressed, disabled, and
+Every interactive control needs idle, pressed, disabled, focus (for assistive technology), and
 loading/committed behavior. Touch feedback begins immediately. Dangerous or irreversible actions
 need separation and confirmation appropriate to their risk. Empty, error, locked, insufficient-
 funds, interrupted, and offline states must tell the player what happened and what to do next.
@@ -208,17 +208,25 @@ funds, interrupted, and offline states must tell the player what happened and wh
 - Centralize timings and curves in `lib/theme/animations.dart`, but derive their values from this
   game's motion character. Do not copy one timing preset to every game.
 
-## 8. Mobile, expanded layouts, and input
+## 8. Portrait phone and touch — designed in, not checked in
 
-- Design the compact phone state first with real thumb reach and 48x48 minimum touch targets.
+Every choice in §3–§7 is made for a phone held upright and played with a thumb
+(`.claude/docs/mobile-first-contract.md`). This is a design input from the first Game UI Read, not
+an audit applied afterwards: a signature, recipe or component that only works with a mouse, a wide
+window or a landscape screen is the wrong design, however distinctive.
+
+- Compose the 390×844 screen first and only. Place the primary action in the lower thumb zone,
+  48×48 minimum targets, 56-high primary action, one column, body text at least 14 sp.
 - Protect essential UI with `SafeArea`/reported insets while allowing noncritical art to bleed.
-- Use anchors, constraints, and containers rather than screenshot-specific coordinates.
-- At medium and expanded widths, recompose: grow the mechanic, relocate secondary information,
-  or create an intentional second zone. Never preserve a narrow phone strip inside empty space.
-- The live loop stays in one viewport as required by `gameplay-screen-contract.md`.
-- Pointer, keyboard, controller, and touch behavior must coexist when supported. Give every screen
-  an initial focus, visible non-color-only focus state, logical traversal, modal focus trap, and
-  reliable back path. Resolve displayed prompts from the active binding instead of hardcoding keys.
+- Use anchors, constraints, and containers rather than screenshot-specific coordinates, and choose
+  a P strategy (`layout-archetypes.md`) for how the same composition holds on a 360×640 and a
+  430×932 phone. Never add a width breakpoint, side rail for wide screens, split pane, second
+  panel or landscape variant; wide hosts get the phone column from the contract.
+- The live loop stays in one screen as required by `gameplay-screen-contract.md`.
+- Touch is the only input. Every state a player needs — pressed, disabled, selected, locked,
+  insufficient funds — is visible without hover; no information lives only in a tooltip. Give
+  every screen a reliable back path (system back and an on-screen control) and visible focus for
+  assistive technologies.
 
 ## 9. Studio asset rendering baseline
 
@@ -246,7 +254,8 @@ An anti-slop review must answer with evidence, not taste:
 - [ ] The design remains recognizable in grayscale/wireframe; its distinction is not only color/art.
 - [ ] Controls expose complete states and immediate touch feedback.
 - [ ] HUD information is readable over worst-case gameplay frames and is not color-only.
-- [ ] Compact and expanded viewport matrices pass without clipping, fake device framing, or dead space.
+- [ ] The four portrait phones pass without clipping or dead space; no width breakpoint, desktop,
+      tablet or landscape variant exists, and a wide host shows the phone column.
 - [ ] Text scale, reduced motion, safe areas, focus traversal, back behavior, and input prompts pass.
 - [ ] Motion and effects communicate something and remain proportional to event importance.
 - [ ] Generated assets follow the concept/reference and studio rendering baseline.

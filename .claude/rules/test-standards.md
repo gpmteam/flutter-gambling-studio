@@ -130,8 +130,7 @@ group('State leakage — nothing leaks between spins', () {
 
 Every `GameScreen` must expose `Key('gameplaySurface')` and `Key('primaryAction')` as required by
 `.claude/docs/mobile-first-contract.md` and `.claude/docs/gameplay-screen-contract.md`. Pump the
-real screen at 360×640, 360×800, 390×844, 430×932, 844×390, 768×1024, 1024×768, and 1440×900 and
-verify:
+real screen at the four portrait phones — 360×640, 360×800, 390×844 and 430×932 — and verify:
 
 - `tester.takeException()` stays null and no overflow is logged;
 - both keys are present, on-screen, and not under a vertical `Scrollable`;
@@ -141,10 +140,9 @@ verify:
   the first viewport;
 - 1.3× text scale does not clip the primary or stake/risk labels.
 - phone sizes preserve the thumb-reachable, touch-first hierarchy.
-- expanded sizes use the full host intentionally: no centered phone strip, fake device frame,
-  unexplained dead margins, or stretched/oversized controls.
-- breakpoint changes preserve the mechanic, primary action, and game state without duplication or
-  reset.
+- the same composition renders at every phone (no width breakpoint switches layouts);
+- pumped once at 1440×900 inside the app's `MaterialApp.builder`, the screen renders at phone-column
+  width over the background surround, not stretched and not recomposed.
 
 Name the file `test/screens/game_screen_layout_test.dart`. Geometry tests complement rather than
 replace the mandatory idle/active screenshot vision pass.
@@ -158,7 +156,7 @@ replace the mandatory idle/active screenshot vision pass.
 | SlotConfig / mathematics | 90% |
 | The GameState machine | 85% |
 | HUD widgets | 70% |
-| GameScreen geometry at the phone + expanded viewport matrix | 100% of required sizes |
+| GameScreen geometry at the four portrait phones (+ the wide-host column check) | 100% of required sizes |
 | Animations (components) | 60% |
 
 ## Test format (AAA)

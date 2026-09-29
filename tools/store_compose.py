@@ -76,9 +76,10 @@ Examples:
   python3 tools/store_compose.py fonts --font-dir assets/fonts
   python3 tools/store_compose.py triptych --src art/keyart-integrated.png \\
       --out store/ --panels 3 --size 1320x2868 --art-gate off
-  # Explicit standalone operation; never part of /store-screenshots by default.
-  python3 tools/store_compose.py backdrop --src art/keyart-integrated.png \\
-      --out-dir assets/images/backgrounds --variants menu,game --offset -0.6 \\
+  # Campaign art only (references/campaign-art.md): the game background.
+  python3 tools/store_compose.py backdrop --src production/store-art/shared-background.png \\
+      --out-dir assets/images/backgrounds --prefix bg_campaign --variants menu,game \\
+      --size 1080x2340 --pop off --calm 0.15 --vignette 0 \\
       --confirm-game-background-replacement
   python3 tools/store_compose.py showcase --shot raw/02-menu.png \\
       --bg art/keyart-integrated.png \\
@@ -4023,18 +4024,20 @@ BACKDROP_VARIANTS = {
 
 
 def cmd_backdrop(args) -> None:
-    """Explicitly export store key art for a separately requested app redesign.
+    """Export the campaign game background as the app's runtime backgrounds.
 
-    The store-screenshot workflow preserves the app's existing backgrounds.
-    This command is retained for users who deliberately request a matching
-    runtime backdrop, and requires an unmistakable confirmation flag because
-    wiring its output changes the actual game.
+    The one sanctioned caller is the campaign-art procedure
+    (.claude/skills/store-screenshots/references/campaign-art.md), run by
+    /autocreate-finalize and by /store-screenshots when a game has no campaign
+    art yet. The rest of the store kit preserves the app's backgrounds, so the
+    command still demands an unmistakable confirmation flag: wiring its output
+    changes the actual game.
     """
     if not getattr(args, "confirm_game_background_replacement", False):
         die(
-            "backdrop changes the actual game's visual background and is never "
-            "part of /store-screenshots by default. Re-run only after an explicit "
-            "user request, with --confirm-game-background-replacement."
+            "backdrop changes the actual game's visual background. Only the "
+            "campaign-art procedure (store-screenshots/references/campaign-art.md) "
+            "runs it, with --confirm-game-background-replacement."
         )
 
     w, h = parse_size(args.size)
@@ -4451,9 +4454,8 @@ def main() -> None:
     d.add_argument(
         "--confirm-game-background-replacement",
         action="store_true",
-        help="required acknowledgement that this standalone command prepares assets "
-             "for an intentional runtime-background redesign; /store-screenshots "
-             "never supplies it automatically",
+        help="required acknowledgement that the output replaces the game's "
+             "runtime background; only the campaign-art procedure supplies it",
     )
     add_pop_args(d)
     d.set_defaults(func=cmd_backdrop)

@@ -98,7 +98,7 @@ This allows you to use the same agents/skills/workflows as in Claude Code, but w
 |-----------|-----------|
 | **Engine** | Flutter 3.27+ / Flame 1.18+ |
 | **Language** | Dart 3.6+ (null-safe, sealed classes, pattern matching) |
-| **Product target** | Mobile-first Android/iOS and responsive full-viewport Web |
+| **Product target** | Portrait phone games for Android/iOS (touch only); Web as the preview host |
 | **Rendering** | Impeller (Android/iOS); CanvasKit/Skia on Web |
 | **Audio** | flame_audio ^2.1.0 |
 | **SVG** | flame_svg ^1.10.0 |

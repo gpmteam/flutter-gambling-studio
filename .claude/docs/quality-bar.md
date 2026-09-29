@@ -98,8 +98,8 @@ The game must visibly respond to input and state changes. Continuous ambient mot
 
 ## 8. Visual integrity
 
-- The game is designed mobile-first and passes 360×640, 360×800, 390×844 and 430×932 as its
-  canonical phone baseline, then fills and adapts at 844×390, 768×1024, 1024×768 and 1440×900.
+- The game is a portrait phone game and passes 360×640, 360×800, 390×844 and 430×932; it has no
+  desktop, tablet or landscape layout, and a wide host shows it in the phone column.
 - Every asset looks like the work of one artist (checked by /asset-review, criteria AR1–AR11).
 - The UI passes the recorded Similarity Check and remains distinctive in wireframe/grayscale;
   changing only palette and art would not produce the same game.
@@ -119,8 +119,8 @@ These duplicate the studio's critical rules; here they act as a final checklist:
 - A double click or spam on the main button does not break the state.
 - Every player-facing string is in English (unless the user explicitly asked otherwise) and
   free of untranslated placeholders.
-- The app has no global phone-width wrapper or undocumented orientation/device-family restriction;
-  Android, iOS/iPadOS, and Web receive an appropriate full-viewport composition.
+- The app is portrait-locked on Android and iOS, touch is its only required input, and no
+  screen branches on width to a desktop/tablet/landscape layout.
 
 ---
 

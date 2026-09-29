@@ -8,9 +8,9 @@
 > For Codex: `AGENTS.md` and `.codex/`
 > For Cursor: `.cursorrules`
 
-Every generated game is designed mobile-first: touch-first phone UI/UX is the baseline, while
-landscape, tablet, desktop, and Web use the full available viewport responsively. Do not add a
-fixed-width phone canvas or fake device frame. See `.claude/docs/mobile-first-contract.md`.
+Every generated game is a portrait phone game played by touch: no tablet, desktop or landscape
+layout; a wide host shows the phone screens in the phone column. See
+`.claude/docs/mobile-first-contract.md`.
 
 ## Installation and integration (Gemini CLI)
 

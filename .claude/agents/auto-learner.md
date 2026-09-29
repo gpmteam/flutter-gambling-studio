@@ -21,7 +21,7 @@ and report measurements. Fix root causes rather than teaching an agent to hide e
 
 Respect the game's context. An asset-led Plinko scene does not prove that character-led games
 should remove their protagonists; a 3×3 slot default does not prohibit explicitly chosen video
-slots. Keep gameplay truth, secure randomness, verifiable math, mobile-first responsiveness,
+slots. Keep gameplay truth, secure randomness, verifiable math, the portrait-phone-only target,
 quality gates, and the owner's language and authorization choices intact.
 
 Work only in the helper's isolated worktree. Never stage or commit the main checkout's work.

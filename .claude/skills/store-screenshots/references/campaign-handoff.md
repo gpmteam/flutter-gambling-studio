@@ -1,39 +1,60 @@
-# Campaign handoff from autocreate-finalize
+# Campaign handoff
 
-Finalization owns the initial banner and the shared runtime/phone-showcase background. Store
-screenshots consumes them to create the panorama, icon/emblem, feature graphic and mobile slides.
+[Campaign art](campaign-art.md) — run by `/autocreate-finalize` Phase 10.4 — owns the banner and
+the game background. `/store-screenshots` builds everything else on top of them:
 
-Persist these outside timestamped store exports:
+- the **panorama** is a new composition generated with the accepted banner as world context;
+- the **icon and emblem** use the banner as world context and the shipped assets as identity;
+- the **feature graphic** is the banner with one phone on the right;
+- the **mobile screenshots** put real captures on the game background — the same picture the
+  captured game already shows, with its character whole in the frame.
 
-- `production/store-art/long-banner.png`: accepted device-free store banner.
-- `production/store-art/shared-background.png`: clean environment used both in the game and
-  behind phones on real-capture slides; no promotional multipliers or baked gameplay.
-- `production/store-art/banner-prompt.txt`: exact generation prompt.
-- `production/store-art/campaign.md`: game/package identity, lead kind, Design DNA/reference
-  sources, ordered generation references and their SHA-256 hashes, preliminary gameplay context
-  path and topology/outcome, banner/background paths and SHA-256 hashes, runtime background copy
-  path/hash and selector edits, acceptance/correction results, and final runtime evidence paths.
+## What finalization leaves in `production/store-art/`
 
-In store preflight, read this handoff and verify files/hashes, game identity, shipped character,
-ball/symbol assets and topology against the current game. A background-only change after the
-preliminary capture is expected: the final captures must show the integrated background.
-Copy the accepted banner and shared background unchanged into the store run's `art/` directory;
-record provenance in `STORE_BRIEF.md` and `STORE_INFO.md`. Do not regenerate a valid banner.
-If stale or missing, use the existing Phase 1a prompt and correction policy to generate the banner
-for this store run and report why reuse was unavailable. A standalone store run preserves runtime
-backgrounds; it does not silently perform finalization's background replacement.
+`long-banner.png`, `banner-prompt.txt`, `shared-background.png`, `background-prompt.txt`,
+`background-crops.png`, `context-capture.png`, and `campaign.md`, which records:
 
-For a valid handoff, use `art/shared-background.png` as the `showcase --bg` input with no
-`--bg-panel` or `--bg-subject` panorama crop options. It is the same image as the registered
-runtime background; only responsive cropping may differ. The panorama remains a separate new
-composition generated with the accepted banner as world context. The icon uses the banner as
-world context and original shipped assets as identity authority. Reuse a suitable existing icon
-only if it matches that campaign; otherwise generate it under the existing icon budget.
+- `status: ACCEPTED | BLOCKED` and the reason for a block;
+- game/package identity, `lead_kind`, and the template ids used (`banner-character`, …);
+- the ordered references for each image call with their SHA-256 — the original character asset
+  first, the multiplier reference, the context capture, sprites, reference sources;
+- SHA-256 of `long-banner.png`, `shared-background.png` and both prompt files;
+- the context capture's topology and outcome;
+- the runtime pictures (`bg_campaign_menu.png`, `bg_campaign_game.png`) with SHA-256, the
+  replaced background files, and every `file: selector` wiring edit;
+- the review verdicts, retries and corrections;
+- the final runtime evidence paths once Phase 10.5 has verified the integrated background (V22).
 
-With `--panels 0`, reuse the shared background for real-capture phone slides and omit the separate
-multiplier showcase generation. The five marketing balls remain mandatory in the banner and,
-when generated, panorama (one or more per panel); the shared clean background is exempt.
-Without a valid shared-background handoff, retain the standalone panorama/showcase backdrop path.
+Preliminary captures and an unverified background are never labelled accepted.
 
-Finalization updates the handoff with final runtime captures after integration and verification.
-On interrupted runs, do not label preliminary captures or an unverified background as accepted.
+## Validating it in `/store-screenshots` preflight
+
+The handoff is **valid** only when all of these hold:
+
+1. `campaign.md` says ACCEPTED and every listed file exists with its recorded SHA-256.
+2. Both prompt files still pass `python3 tools/prompt_template.py check` against the current
+   `campaign-prompts.md` for their recorded template ids. A banner made from an older prompt is
+   stale: the banner rules changed, so the banner is remade under the new ones.
+3. The original character asset, the multiplier reference and the game's topology/symbols are
+   unchanged (hashes and the math config agree with the record).
+4. `bg_campaign_menu.png` and `bg_campaign_game.png` exist with their recorded hashes and are
+   still selected from `lib/`.
+
+**Valid** → copy `long-banner.png` and `shared-background.png` unchanged into the run's `art/`
+directory and record their provenance in `STORE_BRIEF.md` and `STORE_INFO.md`. Do not regenerate
+either.
+
+**Missing or stale** → run [campaign-art.md](campaign-art.md) now, before the store kit —
+reusing whatever part still validates — and record in `STORE_INFO.md` why reuse was unavailable
+and which runtime files changed. The store run then continues exactly as if finalization had
+made the art. The single exception is an explicit `--keep-runtime-background`: the banner is
+still generated through the banner step of campaign-art.md (same template, same check), but the
+game background is neither generated nor wired, and the phone slides use the standalone fallback
+in `/store-screenshots` Phase 5.
+
+## After the handoff
+
+The background guard in [runtime-branding.md](runtime-branding.md) takes its baseline after this
+step, so the store kit's own edits (icon, emblem) can never touch the campaign background. The five
+multiplier balls stay mandatory in the banner and the panorama (at least one per panel). The game
+background carries none: it is a runtime asset, not a marketing scene.

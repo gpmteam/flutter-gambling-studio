@@ -332,7 +332,7 @@ def render_report(findings: list[Finding], context: dict,
         "an ancestor of the gameplay surface; it cannot resolve true on-screen "
         "position from runtime constraints (parent size, safe-area insets, "
         "`Expanded` siblings). Confirm on `03-game-idle.png` and "
-        "`04-game-action.png` at 390×844 and 1440×900: the field's horizontal "
+        "`04-game-action.png` at 390×844 and 360×640: the field's horizontal "
         "center should sit inside the middle 60% of the viewport width, unless "
         "the recorded state recipe and a documented reason justify otherwise.",
         "",

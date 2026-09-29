@@ -26,16 +26,20 @@ Session 1 (autocreate)  →[handoff-1]→  Session 2 (THIS skill)  →[autocreat
 3. ✅ Reads `design/asset-format.md` to determine the asset format (PNG vs SVG) and passes it to
    the agents (Agent B: `Image.asset()` for PNG, `SvgPicture` for SVG; Agent A: file extensions)
 4. ✅ Reads `.claude/docs/mobile-first-contract.md` and
-   `.claude/docs/gameplay-screen-contract.md`, then passes the touch-first phone baseline,
-   responsive full-viewport composition, stable keys, control sizing, and phone + expanded
-   viewport matrices to Agent B, QA, integration, and UI audit
-5. ✅ Runs **Phases 4 → 10** using this skill's execution map, role briefs, and exit criteria.
+   `.claude/docs/gameplay-screen-contract.md`, then passes the portrait-phone-only target (one
+   composition per screen, touch only, portrait lock, the phone column in `MaterialApp.builder`),
+   stable keys, control sizing, and the four-phone matrix to Agent B, QA, integration, and UI
+   audit. Agent B builds no tablet, desktop or landscape layout — there is none to build.
+5. ✅ For a reference game, passes `design/reference-contract.md` to every agent that touches
+   visuals (B, C) and keeps the game identical to its sources: no substituted symbols, re-themed
+   screens or "improved" palette
+6. ✅ Runs **Phases 4 → 10** using this skill's execution map, role briefs, and exit criteria.
    `.claude/skills/autocreate/SKILL.md` owns Session 1 and routes here; it does not contain
    the implementation phase definitions.
-6. ✅ **Delegates the heavy phases to sub-agents** (see the map below) — the orchestrator does
+7. ✅ **Delegates the heavy phases to sub-agents** (see the map below) — the orchestrator does
    NOT read all of `lib/` itself, it works from command output (`dart analyze`/`flutter test`)
    and the agents' summaries
-7. ✅ At the end (Phase 10.7) writes `autocreate-handoff.md` and **spawns Session 3** through
+8. ✅ At the end (Phase 10.7) writes `autocreate-handoff.md` and **spawns Session 3** through
    the Agent tool
 
 **Forbidden:**
@@ -166,7 +170,7 @@ below is the Session 2 quality-gate definition:
 | 6. Build | `dart analyze lib/` 0 errors | 10 |
 | 6.5. Feel Pass | the field is alive (F1–F5), analyze + test clean | 2 |
 | 7. Tests | `flutter test` all green (including test/services/) | 5 |
-| 8. UI Audit | 100+ checks, including the blocking mobile-first full-viewport gate across the phone and expanded matrices | 3 |
+| 8. UI Audit | 100+ checks, including the blocking portrait-phone gate at the four phones (no desktop/tablet/landscape layout) | 3 |
 | 9. Balance | RTP/difficulty in range across the WHOLE curve | 3 |
 | 10. Crash Prevention | 20/20 + (gambling) disclaimer; analyze + test clean | 3 |
 
@@ -175,9 +179,9 @@ below is the Session 2 quality-gate definition:
 in place, (gambling) the compliance flags wired up, and every player-facing string in English
 (unless the user explicitly asked for another language). The live field, essential HUD, stake/risk
 controls and primary action must be visible together without page scrolling; a thumbnail field or
-nested game window blocks the handoff even when analyzer and tests are green. The app must use the
-full host canvas at every required viewport, without a phone-width wrapper or undocumented native
-orientation/device-family restriction.
+nested game window blocks the handoff even when analyzer and tests are green. Every screen is one
+portrait composition that holds at 360×640, 360×800, 390×844 and 430×932; the app is
+portrait-locked, touch-only, and shows the phone column on a wide host.
 
 ---
 
@@ -193,10 +197,11 @@ asset format and known limits. Include exact runtime launch and navigation detai
 ```text
 You are Session 3 of /autocreate. First read
 production/session-state/autocreate-handoff.md, then
-.claude/skills/autocreate-finalize/SKILL.md. Execute its store banner and shared runtime/phone-showcase background phase, runtime and soak
-verification, playtest, session state, release-engineering PREP and final report. Preserve the
-existing concept, character/symbol assets and verified balance; integrate the shared background
-as explicitly required by finalization. Do not build an AAB/APK, create an
+.claude/skills/autocreate-finalize/SKILL.md. Execute its campaign-art phase (the store banner
+from the shared store-screenshots template, and the game background with the main character whole
+in frame, wired into the game), runtime and soak verification, playtest, session state,
+release-engineering PREP and final report. Preserve the existing concept, character/symbol assets,
+reference contract and verified balance. Do not build an AAB/APK, create an
 upload keystore or call release-package; those require a separate explicit request.
 Return the actual checks, evidence paths and any unresolved blockers.
 ```

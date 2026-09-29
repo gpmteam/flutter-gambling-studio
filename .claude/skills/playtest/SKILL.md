@@ -16,9 +16,9 @@ game" (see `.claude/docs/quality-bar.md`).
 **Preconditions**: `dart analyze lib/` with 0 errors; `node` ≥21 and Chrome/Chromium available
 (otherwise report an honest SKIPPED, as `/emulator-test` does).
 
-Read `.claude/docs/mobile-first-contract.md` and run the game first at the canonical phone size,
-then at an expanded Web viewport. Chrome must use the full host canvas; a centered phone strip,
-fake device frame, dead margins, or pointer-only essential interaction is a HIGH failure.
+Read `.claude/docs/mobile-first-contract.md` and play the game at the canonical phone size, then
+on the short phone (360×640). A portrait phone is the only target: a desktop/landscape layout, a
+fake device frame, or interaction that needs hover or a keyboard is a HIGH failure.
 
 ---
 
@@ -57,11 +57,11 @@ timeout 220 node tools/web_verify.mjs --url "$WEB_URL" --out "$PT_DIR" --budget 
 timeout 240 node tools/web_verify.mjs --url "$WEB_URL" --out "$PT_DIR" --soak "${ROUNDS:-60}" \
   2>&1 | tee -a "$PT_DIR/web_verify.log"
 
-# 2.3 Expanded Web gameplay: prove the same core loop fills and works at desktop size
-mkdir -p "$PT_DIR/1440x900"
-timeout 180 node tools/web_verify.mjs --url "$WEB_URL" --out "$PT_DIR/1440x900" \
-  --size 1440x900 --budget 150 --quick \
-  2>&1 | tee "$PT_DIR/1440x900/web_verify.log"
+# 2.3 Short phone: prove the same core loop fits and plays at 360x640 without scrolling
+mkdir -p "$PT_DIR/360x640"
+timeout 180 node tools/web_verify.mjs --url "$WEB_URL" --out "$PT_DIR/360x640" \
+  --size 360x640 --budget 150 --quick \
+  2>&1 | tee "$PT_DIR/360x640/web_verify.log"
 ```
 
 Afterwards, stop the server: `kill "$(cat .claude/runtime-logs/flutter.pid)" 2>/dev/null`.

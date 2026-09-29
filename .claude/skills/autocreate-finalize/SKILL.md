@@ -1,6 +1,6 @@
 ---
 name: autocreate-finalize
-description: "Session 3 of the /autocreate pipeline (Phases 10.4 → 10.5 → 10.6 → 11 → 11.5 → 12): shared store banner and runtime/showcase background, runtime + soak verification (Chrome CDP, auto-fix), playtest (a real gameplay session, P1–P10), session state, release-engineering PREP (icons/splash/version/store-metadata/CI — WITHOUT building the AAB/APK and without a keystore) and the final report. Leaves the project release-ready. It does NOT build artifacts and does NOT call /release-package — that is an explicit user action. Started automatically through the Agent tool at the end of Session 2 (autocreate-implement), or manually in a new conversation."
+description: "Session 3 of the /autocreate pipeline (Phases 10.4 → 10.5 → 10.6 → 11 → 11.5 → 12): campaign art — the store banner (the exact store-screenshots banner prompt) and the game background with the main character whole in frame, wired into the game and reused behind the store's phone slides — runtime + soak verification (Chrome CDP, auto-fix), playtest (a real gameplay session, P1–P10), session state, release-engineering PREP (icons/splash/version/store-metadata/CI — WITHOUT building the AAB/APK and without a keystore) and the final report. Leaves the project release-ready. It does NOT build artifacts and does NOT call /release-package — that is an explicit user action. Started automatically through the Agent tool at the end of Session 2 (autocreate-implement), or manually in a new conversation."
 argument-hint: "[--skip-emulator | --no-fix]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Agent, Skill
@@ -10,7 +10,8 @@ allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Agent, Skill
 
 **Purpose**: finish `/autocreate` after Session 2 (`autocreate-implement`) has brought the
 project to `dart analyze` 0 errors + `flutter test` green. In this session:
-- **campaign art** (Phase 10.4): the store banner plus a shared runtime/phone-showcase background;
+- **campaign art** (Phase 10.4): the store banner and the game background (character whole in the
+  portrait frame), wired into the game and later reused by `/store-screenshots`;
 - runtime verification: Chrome/CDP (screenshots + console + auto-fix) plus a soak probe for leaks;
   Android (`--platform android`) is a Gradle compile-only check, with no emulator and no APK
 - **playtest** (Phase 10.6): a real gameplay session — the P1–P10 checks from
@@ -30,7 +31,8 @@ project to `dart analyze` 0 errors + `flutter test` green. In this session:
   crashed, or to repeat the runtime check after edits
 
 **What it does NOT do:**
-- It permits targeted background asset/wiring edits in Phase 10.4 and records the art-direction update; it does not rewrite game logic or change balance
+- It does NOT rewrite game logic or change balance; Phase 10.4's background export/wiring is the
+  one sanctioned art change, recorded in the manifest and art direction
 - It does NOT create new screens
 - It does NOT run Phases 1–10 — Session 2 already did those
 
@@ -41,9 +43,9 @@ project to `dart analyze` 0 errors + `flutter test` green. In this session:
 1. ✅ Reads `production/session-state/autocreate-handoff.md` **as its first action**
 2. ✅ Validates that Session 2's artifacts exist (`pubspec.yaml`, `lib/main.dart`,
    `dart analyze` still 0 errors)
-3. ✅ Reads `.claude/docs/mobile-first-contract.md` and
-   `.claude/docs/gameplay-screen-contract.md` before runtime capture and treats every V13–V21
-   defect as a HIGH release blocker
+3. ✅ Reads `.claude/docs/mobile-first-contract.md` (portrait phone only — no desktop, tablet
+   or landscape design) and `.claude/docs/gameplay-screen-contract.md` before runtime capture and
+   treats every V13–V22 defect as a HIGH release blocker
 4. ✅ Runs Phases 10.4 → 10.5 → 10.6 → 11 → 11.5 → 12 in that order
 5. ✅ Returns the final report to the parent session (or prints it for the user)
 
@@ -88,43 +90,42 @@ Read the handoff file and extract:
 
 ---
 
-## Phase 10.4 — store banner and shared game/showcase background
+## Phase 10.4 — campaign art: the store banner and the game background
 
-Read `.claude/skills/store-screenshots/SKILL.md` Phase 0, Phase 1's shared composition rules,
-Phase 1a, First-prompt requirements, and Correcting a generated scene. These sections are the
-single source of the banner prompt: use the current wording, reference order, character framing,
-foreground, five flying balls, and correction limits unchanged, adapting only game-specific
-subjects and banner geometry as that runbook already instructs. Do not invoke the full store-kit
-workflow here. Use `production/store-art/` as the persistent art directory.
+Run [the campaign-art procedure](../store-screenshots/references/campaign-art.md) in full. It is
+the same procedure `/store-screenshots` runs when a game has no campaign art, so the two can never
+disagree:
 
-1. Read [the campaign handoff contract](../store-screenshots/references/campaign-handoff.md).
-   Inventory the shipped assets and inspect matching references. Capture a real active gameplay
-   frame for banner context using the handoff's launch/navigation instructions. This is a
-   preliminary capture; final verification and captures follow background integration.
-2. Generate and review `production/store-art/long-banner.png` using the store banner instructions.
-   This is the complete device-free banner scene. Save the exact prompt and reference paths.
-   On reruns, reuse a valid accepted banner whose identity/topology/source assets still match.
-3. Using the accepted banner as world context, generate the clean environment-only
-   `production/store-art/shared-background.png`: same environment, palette, materials and light,
-   with room for live controls and gameplay. Remove promotional multiplier balls/inscriptions,
-   baked gameplay, character, foreground obstruction, text and devices. This clean companion is
-   exempt from the marketing-scene ball/character requirements; the banner retains all of them.
-   Allow one fresh retry for an objective readability or scene-match failure, then report blocked.
-4. Copy that exact clean image into `assets/images/backgrounds/bg_campaign.png` and register/wire
-   it as the game's shared menu/gameplay background. Update existing shared/splash selectors where
-   they use the game scene; native splash preparation still follows Phase 11.5. Use responsive
-   cover/focal positioning without stretching, device frames or fixed-width canvases. Preserve
-   screen hierarchy, original character/symbol assets and all math/content data. Record original
-   background paths/hashes, changed selectors and the new source in the asset manifest/art direction.
-   This background change is an explicit part of `/autocreate`, requiring no additional opt-in.
-5. Write the campaign handoff, format changed Dart, run `dart analyze lib/` and `flutter test`.
-   Proceed to the complete Phase 10.5 viewport matrix and Phase 10.6 playtest against this version.
-   Both the game and later phone showcase slides must use this same background image.
+1. **Banner** — `production/store-art/long-banner.png`, from the `banner-character` or
+   `banner-object` template in
+   [campaign-prompts.md](../store-screenshots/references/campaign-prompts.md). This is the
+   `/store-screenshots` banner prompt, word for word: render it with this game's values and run
+   `tools/prompt_template.py check` before the image call. Never write or paraphrase a banner
+   prompt yourself; a prompt that fails `check` is not sent.
+2. **Game background** — `production/store-art/shared-background.png`, a portrait phone picture
+   in the banner's world with the main character **whole inside the frame** (head, headwear,
+   shoulders, hands and held props clear of every edge, torso-to-head, no legs), like the
+   backdrop behind the phones on the store slides — because it *is* that backdrop. No multiplier
+   balls, lettering, board or UI in it. Object/mechanic games use their own templates and never
+   gain a character.
+3. **Into the game** — export `bg_campaign_menu.png` / `bg_campaign_game.png`, wire them as the
+   menu, splash-route, secondary-screen and game-screen background, and make them the phone
+   column's surround on wide hosts. This is the explicitly required background change of
+   `/autocreate`; it needs no further opt-in. Then `dart format`, `dart analyze lib/`,
+   `flutter test`, and record everything in `production/store-art/campaign.md`.
 
-If image generation, a genuine context capture, integration or art validation fails, record the
-blocker and continue only independent checks. Never claim production readiness with this phase
-incomplete. Runtime opt-outs do not waive the banner/background deliverables; without a current
-real frame, report them blocked. Do not create a panorama or store ZIP in finalization.
+A reference game (`design/reference-contract.md`) attaches its reference sources to both image
+calls: the campaign art is that reference's world.
+
+Phase 10.5 then verifies the integrated background at the phone matrix as **V22**; Phase 10.6
+plays against it. `/store-screenshots` later reuses the banner for the panorama, icon and feature
+graphic, and the game background behind the phones — it does not regenerate either while the
+handoff is valid. Do not make a panorama or a store ZIP here.
+
+If image generation, the context capture, the integration or a review fails, record BLOCKED in
+`campaign.md`, keep the previous background wired, and continue only the independent checks.
+Runtime opt-outs do not waive the campaign art: without a current real frame it is BLOCKED. A
+BLOCKED campaign art is never production-ready.
 
 ---
 
@@ -219,40 +220,49 @@ done
 TS=$(date +%Y%m%d-%H%M%S); SHOT_DIR="production/runtime-screenshots/$TS"; mkdir -p "$SHOT_DIR"
 
 if [ -n "$WEB_URL" ]; then
-  # 3) Canonical phone tour plus the complete mobile-first responsive matrix.
+  # 3) Canonical phone tour plus the rest of the portrait phone matrix.
   timeout 220 node tools/web_verify.mjs --url "$WEB_URL" --out "$SHOT_DIR" \
     --size 390x844 --budget 180 --quick \
     2>&1 | tee "$SHOT_DIR/web_verify.log"
-  for VIEWPORT_SIZE in 360x640 360x800 430x932 844x390 768x1024 1024x768 1440x900; do
+  for VIEWPORT_SIZE in 360x640 360x800 430x932; do
     VIEWPORT_DIR="$SHOT_DIR/$VIEWPORT_SIZE"; mkdir -p "$VIEWPORT_DIR"
     timeout 140 node tools/web_verify.mjs --url "$WEB_URL" --out "$VIEWPORT_DIR" \
       --size "$VIEWPORT_SIZE" --budget 120 --quick \
       2>&1 | tee "$VIEWPORT_DIR/web_verify.log"
   done
+  # 4) Wide-host smoke capture: NOT a design target. It only proves a desktop browser shows the
+  #    phone column over the campaign surround instead of a stretched game.
+  mkdir -p "$SHOT_DIR/wide-host"
+  timeout 90 node tools/web_verify.mjs --url "$WEB_URL" --out "$SHOT_DIR/wide-host" \
+    --size 1440x900 --budget 60 --quick \
+    2>&1 | tee "$SHOT_DIR/wide-host/web_verify.log"
 else
   echo "❌ the web server did not come up — the build is broken. Log: .claude/runtime-logs/flutter-run.log" \
     | tee "$SHOT_DIR/web_verify.log"
 fi
 
-# 4) Server cleanup (the script kills its own headless Chrome)
+# 5) Server cleanup (the script kills its own headless Chrome)
 kill "$(cat .claude/runtime-logs/flutter.pid 2>/dev/null)" 2>/dev/null || true
 ```
 
 Then:
-- **Visual analysis** of each `$SHOT_DIR/*.png` through Read (vision) against the V1–V21 checklist,
+- **Visual analysis** of each `$SHOT_DIR/*.png` through Read (vision) against the V1–V22 checklist,
   `.claude/docs/mobile-first-contract.md`, and `.claude/docs/gameplay-screen-contract.md`.
   For a named `examples-games/` game, compare the mapped source files beside the menu and
   idle/active gameplay captures. Record wrong character, symbol, background, palette, topology,
   finish or composition as HIGH V21 and route the fix to art or UI before a PASS verdict.
-  Inspect the required phone matrix at 360×640, 360×800, 390×844 and 430×932 and the expanded
-  matrix at 844×390, 768×1024, 1024×768 and 1440×900, with idle and active gameplay at 390×844
-  and 1440×900. Confirm the product fills each viewport without a framed phone canvas.
+  Inspect the portrait phone matrix at 360×640, 360×800, 390×844 and 430×932, with idle and
+  active gameplay at 390×844 and 360×640. These are the only design gates: there is no
+  landscape, tablet or desktop layout to verify, and one found in the code is V17. The wide-host
+  capture must show the unchanged phone composition in a centered column over the campaign
+  surround — never a stretched or recomposed game, and never a device bezel.
 - **Error parsing**: inspect every `manifest.json` and `webconsole.log` under `$SHOT_DIR`,
   and `.claude/runtime-logs/flutter-run.log` (EXCEPTION CAUGHT, RenderFlex overflowed, Unable to load asset).
-- **Asset distortion (V18)**, **menu composition/role (V19)** and **gameplay-field centering (V20)**: run
-  steps 10.5.2d, 10.5.2e and 10.5.2f below. A screenshot that "has the sprite in it" is not proof
-  the sprite kept its shape, a menu that renders is not proof it shows the game, and a field that
-  is on-screen is not proof it is centered.
+- **Asset distortion (V18)**, **menu composition/role (V19)**, **gameplay-field centering (V20)**
+  and the **campaign background (V22)**: run steps 10.5.2d–10.5.2g below. A screenshot that "has
+  the sprite in it" is not proof the sprite kept its shape, a menu that renders is not proof it
+  shows the game, a field that is on-screen is not proof it is centered, and a background that
+  loads is not proof it is the campaign's.
 
 ### 10.5.2c — Android compile verification (only when `PLATFORM=android`)
 
@@ -332,8 +342,9 @@ from runtime constraints):
   slanted or condensed.
 - Judge the ratio, not the size. Drawing a 512×512 sprite at 64×64 is correct; drawing it at
   96×64 is V18.
-- Check the expanded viewports specifically (1024×768, 1440×900): a background or panel that is
-  honest on a phone is often the one stretched wide on desktop.
+- Check the tallest and shortest phones specifically (430×932, 360×640): a background or panel
+  that is honest at 390×844 is often the one squeezed on a short phone, and check the wide-host
+  surround is `BoxFit.cover`, not stretched.
 
 Every confirmed finding is **V18, HIGH** and enters the 10.5.3 auto-fix loop. Fix the draw site,
 never the source artwork: switch to `BoxFit.contain`/`BoxFit.cover`, make the box match the source
@@ -362,7 +373,7 @@ dominant or supporting character role, it checks that the main-menu source actua
 asset. If the concept never recorded the role, it says so as a MEDIUM instead of guessing — read
 the concept and re-run with `--lead-kind`, `--menu-role`, and `--lead-asset` as needed.
 
-Then judge `02-menu.png` at 390×844 and 1440×900, which is the half the script cannot do:
+Then judge `02-menu.png` at 390×844 and 360×640, which is the half the script cannot do:
 
 - the documented M/O/R recipe is recognizable and its attention order is intentional;
 - a dominant or supporting lead is visible on the first viewport and important features are not
@@ -370,11 +381,10 @@ Then judge `02-menu.png` at 390×844 and 1440×900, which is the half the script
 - a dominant lead actually leads; a supporting lead supports; an absent lead is not reintroduced
   just to satisfy a generic menu pattern;
 - its alignment and crop follow the recorded recipe instead of an undocumented centering default;
-- the expanded viewport preserves that relationship rather than turning the composition into a
-  phone-sized island or stretching it to fill space.
+- the short phone preserves that relationship rather than pushing the lead under the controls.
 
-A confirmed failure is **V19, HIGH** and enters the 10.5.3 loop: restore the documented menu role,
-attention order, or responsive relationship with a targeted edit on the menu screen.
+A confirmed failure is **V19, HIGH** and enters the 10.5.3 loop: restore the documented menu role
+or attention order with a targeted edit on the menu screen.
 
 > **Never satisfy V19 by inventing a character or forcing the storefront lead into the menu.**
 > Object- and mechanic-led games may use their object or field as dominant, supporting, or absent
@@ -402,24 +412,43 @@ one side or given unequal `left`/`right` insets. It cannot resolve the box that 
 constraints (parent size, safe-area insets, `Expanded` siblings) actually produce, so the vision
 pass is not optional:
 
-- Read `03-game-idle.png` and `04-game-action.png` at 390×844 and 1440×900 together with the
+- Read `03-game-idle.png` and `04-game-action.png` at 390×844 and 360×640 together with the
   state recipe recorded in `design/art-direction.md`.
 - The field's horizontal center should sit inside the middle 60% of the viewport width.
 - An off-center placement is fine when the recorded state recipe genuinely calls for it (for
   example, an edge rail or split relationship), but that reason has to be written down in
   `design/art-direction.md`, not just visible in the screenshot; an unexplained offset is V20.
-- Check the expanded viewports specifically: a field that is centered on a phone can drift toward
-  one side once desktop-width reflow logic kicks in.
+- A width-based layout branch that moves the field is itself a defect (V17): there is no
+  desktop reflow to drift into.
 
 Every confirmed finding is **V20, HIGH** and enters the 10.5.3 auto-fix loop. Fix the offending
 `Padding`/`Align`/`Positioned` so the field's center returns to the viewport's center, or — only
 when the composition genuinely calls for an offset — record the reason in
 `design/art-direction.md` rather than leaving it silent.
 
+### 10.5.2g — campaign background audit (V22) [~1 min]
+
+Phase 10.4 put the campaign background into the game; this proves it arrived. Read
+`production/store-art/campaign.md`, `shared-background.png` and `background-crops.png`, then the
+menu and game captures at all four phone sizes:
+
+- `rg -n 'bg_campaign' lib` finds the menu, the splash route, the secondary screens that showed
+  the shared scene, and the game screen; no screen still selects the replaced background;
+- the menu shows the whole character (or the lead object) — nothing cut by the screen edge,
+  nothing covering the face;
+- the game screen uses `bg_campaign_game.png`; the field keeps its contract size and position,
+  and where the recipe leaves the upper band open the character's head shows above it;
+- the picture is `BoxFit.cover` with top alignment — never stretched (V18), never letterboxed;
+- the wide-host capture uses the campaign picture as the column's surround.
+
+A confirmed failure is **V22, HIGH** and enters the 10.5.3 loop as a targeted wiring edit. A
+background that cannot fit its character is not a wiring defect: it goes back to Phase 10.4's
+review, and campaign art stays BLOCKED until it passes.
+
 ### 10.5.3 — the auto-fix loop (up to 3 iterations)
 
 Consolidate the problems, mark their severity (CRITICAL/HIGH/MEDIUM) and assign agents:
-- V2/V3/V5/V7/V8/V9/V10/V11/V13/V14/V15/V16/V18/V19/V20 → **ui-programmer**
+- V2/V3/V5/V7/V8/V9/V10/V11/V13/V14/V15/V16/V17/V18/V19/V20/V22 → **ui-programmer**
 - V4/V12 → **mechanics-programmer**
 - V18 on a Flame component `size:` → **juice-artist** or **mechanics-programmer**, whoever owns
   the component
@@ -442,6 +471,8 @@ Consolidate the problems, mark their severity (CRITICAL/HIGH/MEDIUM) and assign 
 | An asset is stretched or squashed (V18) | `BoxFit.fill`, a Flame `size:` off the source ratio, or a non-uniform `Transform.scale` | Fix the draw site: `BoxFit.contain`/`cover`, a box matching the source ratio, or derive one side from the other — never re-export or regenerate the asset |
 | The documented menu role or composition is not realized (V19) | The runtime menu contradicts its M/O/R recipe, attention order, or `menu_role` | A targeted menu-screen edit that restores the documented relationship — never invent a character or force a storefront lead into an `absent` role |
 | The play field sits off-center (V20) | An unexplained `Padding`/`Align`/`Positioned` offset on an ancestor of `Key('gameplaySurface')` | Remove the offset so the field's horizontal center returns to the viewport's, or record and verify the state recipe/mechanic reason in `design/art-direction.md` |
+| A screen still shows the old background, or the campaign picture is stretched/letterboxed (V22) | A missed selector, or a fit/alignment other than `BoxFit.cover` + top | Point the selector at `bg_campaign_menu`/`bg_campaign_game`, set `BoxFit.cover` + `Alignment.topCenter` |
+| A desktop/tablet/landscape layout branch, or a wide host that stretches the game (V17) | A width breakpoint or a missing phone column | Delete the branch so every width renders the phone composition; wrap `MaterialApp.builder` in the phone column from `mobile-first-contract.md` |
 
 **Forbidden "auto-fixes":**
 - Changing `game_config.dart` (the balance is frozen)
@@ -458,8 +489,8 @@ or downgrade the defect. Mark finalization FAIL and route it back to `/ui-audit 
 **The web path (the default):**
 - **Success**: 0 CRITICAL + 0 HIGH visual problems, 0 FATAL exceptions, the asset-distortion,
   menu-lead and gameplay-centering audits report no HIGH finding (`STRETCH_EXIT=0`,
-  `MENU_LEAD_EXIT=0`, `GAMEPLAY_CENTER_EXIT=0`, and the vision confirmations agree), and the
-  gameplay-screen contract passes in idle and active states
+  `MENU_LEAD_EXIT=0`, `GAMEPLAY_CENTER_EXIT=0`, and the vision confirmations agree), V22 passes,
+  and the gameplay-screen contract passes in idle and active states at every phone size
 - **Partial success**: CRITICAL/HIGH are cleared but MEDIUMs remain — go on to Phase 11 with CONCERNS
 - **Failure**: after 3 iterations any CRITICAL/HIGH remains — save
   `production/runtime-screenshots/<ts>/REPORT.md`, report with the verdict FAIL;
@@ -632,7 +663,8 @@ generation, integration and verification have passed. Otherwise use
 
 🌐 Runtime verification (Chrome, Phase 10.5):
    [PASS / CONCERNS / FAIL / SKIPPED] — [N] CRITICAL, [N] HIGH issues
-   Gameplay composition: [PASS / FAIL / UNVERIFIED] — full-viewport field + integrated controls, centered by default (V20)
+   Gameplay composition: [PASS / FAIL / UNVERIFIED] — portrait phone screen, dominant field + integrated controls, centered by default (V20)
+   Campaign background in game (V22): [PASS / FAIL / BLOCKED]
    Screenshots: production/runtime-screenshots/<ts>/
    Report: production/runtime-screenshots/<ts>/REPORT.md
 
@@ -647,9 +679,10 @@ generation, integration and verification have passed. Otherwise use
 
 🎨 Campaign art (Phase 10.4):
    [PASS / BLOCKED] — production/store-art/campaign.md
-   Banner: production/store-art/long-banner.png
-   Shared runtime/phone-slide background: production/store-art/shared-background.png
-   /store-screenshots reuses these for the panorama, icon and mobile screenshots
+   Banner: production/store-art/long-banner.png (template [id], prompt check PASS)
+   Game background: production/store-art/shared-background.png → assets/images/backgrounds/bg_campaign_*.png
+   /store-screenshots builds the panorama, icon and feature graphic on the banner and puts the
+   phone slides on this same game background
 
 🚀 Release-ready (Phase 11.5, PREP — no build):
    ✅ Icons (Android adaptive + iOS + web) + a native splash (colour from the DNA)
@@ -688,8 +721,8 @@ generation, integration and verification have passed. Otherwise use
 | Phase | Exit criterion | Max iterations |
 |-------|----------------|----------------|
 | 0. Preflight | The handoff exists + `dart analyze` 0 errors | 1 (fail-fast) |
-| 10.4. Campaign art | Accepted store banner, shared background wired, campaign.md complete, analyzer/tests pass | Existing banner correction budget; background: 1 retry |
-| 10.5. Runtime Chrome / Android compile | Web: 0 CRITICAL/HIGH visual, gameplay-screen contract PASS, no HIGH in the V18 asset-distortion, V19 menu-composition/role or V20 gameplay-centering audits, 0 FATAL in flutter-run.log (+ soak: no leak). Android (`--platform android`): `flutter build apk --debug` exit 0 | 3 (Chrome is always available) / 2 (Android compile) |
+| 10.4. Campaign art | Banner and background prompts pass `prompt_template.py check`; accepted banner; background with the character whole in frame; wired; campaign.md complete; analyzer/tests pass | Banner: 1 retry + 1 targeted edit; background: 1 retry |
+| 10.5. Runtime Chrome / Android compile | Web: 0 CRITICAL/HIGH visual at every phone size, gameplay-screen contract PASS, no HIGH in the V18 asset-distortion, V19 menu-composition/role, V20 gameplay-centering or V22 campaign-background audits, wide host shows the phone column, 0 FATAL in flutter-run.log (+ soak: no leak). Android (`--platform android`): `flutter build apk --debug` exit 0 | 3 (Chrome is always available) / 2 (Android compile) |
 | 10.6. Playtest | PLAYTEST-REPORT.md, verdict ≠ NOT-PLAYABLE (P1–P10) | 2 |
 | 11. Session state | `active.md` updated | 1 |
 | 11.5. Release-eng prep | Icons/splash generated, `store/` created (AAB best-effort) | 1 |
@@ -700,7 +733,7 @@ generation, integration and verification have passed. Otherwise use
 - The final report is printed, with the runtime verification verdict
 
 This minimum permits an honest blocked report; it does not permit a production-ready claim. Any
-remaining V13–V21/HIGH defect or a failed mobile-phone/gameplay-screen contract keeps the project blocked.
+remaining V13–V22/HIGH defect, BLOCKED campaign art, or a failed mobile-phone/gameplay-screen contract keeps the project blocked.
 
 ---
 
@@ -710,6 +743,8 @@ remaining V13–V21/HIGH defect or a failed mobile-phone/gameplay-screen contrac
 conversation. The skill:
 1. Reads `autocreate-handoff.md` and `active.md`
 2. Works out which phase to continue from (by which artifacts exist):
+   - `production/store-art/campaign.md` missing, not ACCEPTED, or `bg_campaign_*` not wired →
+     start at 10.4 (reusing every campaign file that still validates)
    - No `production/runtime-screenshots/<ts>/` and no `.claude/runtime-logs/android-build.log` → start at 10.5
    - There are shots (or, on the Android path, an `android-build.log` with exit 0) but no
      `production/playtest/<ts>/PLAYTEST-REPORT.md` → start at 10.6 (on the Android path this step

@@ -35,21 +35,21 @@ The following items are mandatory for **all six categories**:
 - [ ] **Anti-slop UI**: does it pass the `.claude/rules/anti-slop-design.md` audit?
   No CircularProgressIndicator, no ThemeData.dark() without customisation,
   at least 2 fonts, custom screen transitions?
-- [ ] **Full-viewport gameplay**: do idle and active captures pass
+- [ ] **Full-screen gameplay**: do idle and active captures pass
   `.claude/docs/gameplay-screen-contract.md`—dominant integrated field, no nested mini-window,
   no core-loop scrolling, and field/HUD/controls reading as one composition?
 - [ ] **Control usability**: do the primary and secondary controls meet tap-size, label-fit,
   alignment, responsive-sizing, and distinct enabled/disabled-state requirements?
-- [ ] **Mobile-first responsive target**: does the game pass the phone baseline at 360×640,
-  360×800, 390×844 and 430×932, then fill and adapt at 844×390, 768×1024, 1024×768 and 1440×900?
+- [ ] **Portrait phone target**: does the game pass 360×640, 360×800, 390×844 and 430×932 in
+  portrait, with no desktop, tablet or landscape layout, and does a wide host show the phone column?
 - [ ] **At least 10 screens**: is every required MVP screen implemented?
 - [ ] **Language**: is every player-facing string in English (or in the language the user
   explicitly requested), with no untranslated leftovers or placeholders?
 
 #### 3. Platform
 
-- [ ] **Platform targeting**: are there no undocumented portrait locks or iPhone-only restrictions,
-  and do Android, iOS/iPadOS, and Web use the appropriate full viewport?
+- [ ] **Platform targeting**: is portrait locked on Android and iOS (`UIRequiresFullScreen` on
+  iPad), with no desktop platform scaffolds, and does the Web build show the phone column?
 - [ ] **No errors**: does `flutter analyze` pass without a single error?
 - [ ] **No warnings**: are there no critical warnings (only TODOs are allowed)?
 - [ ] **Tests green**: are all `flutter test` tests green?

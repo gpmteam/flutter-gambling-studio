@@ -24,13 +24,13 @@ if [ -f "pubspec.yaml" ]; then
   GAME_SCREEN_FILES=$(find lib/screens -type f -name "*game*screen*.dart" 2>/dev/null)
   if [ -n "$GAME_SCREEN_FILES" ]; then
     if ! grep -q "gameplaySurface" $GAME_SCREEN_FILES 2>/dev/null; then
-      GAPS+=("❌ GameScreen is missing Key('gameplaySurface') — full-viewport geometry cannot be verified")
+      GAPS+=("❌ GameScreen is missing Key('gameplaySurface') — portrait phone geometry cannot be verified")
     fi
     if ! grep -q "primaryAction" $GAME_SCREEN_FILES 2>/dev/null; then
       GAPS+=("❌ GameScreen is missing Key('primaryAction') — action visibility/size cannot be verified")
     fi
     if [ ! -f "test/screens/game_screen_layout_test.dart" ]; then
-      GAPS+=("❌ test/screens/game_screen_layout_test.dart is missing — run the mobile-first phone + expanded layout gate")
+      GAPS+=("❌ test/screens/game_screen_layout_test.dart is missing — run the four-phone portrait layout gate")
     fi
   fi
 

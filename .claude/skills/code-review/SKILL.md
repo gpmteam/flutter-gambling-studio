@@ -43,11 +43,13 @@ The `lead-programmer` agent checks:
 - [ ] No business logic in `screens/` (UI only)
 - [ ] No `BuildContext` in Flame components
 
-**Mobile-first target:**
-- [ ] The phone and expanded viewport matrices both pass
-- [ ] Android, iOS/iPadOS, and Web have no undocumented orientation/device-family restriction
-- [ ] Essential interaction remains touch/click accessible without hover or keyboard dependence
-- [ ] Wide Web fills the viewport with an intentional responsive composition, not a capped phone strip
+**Portrait phone target:**
+- [ ] The four portrait phones pass; no screen branches on width to another layout (no desktop,
+      tablet, landscape, side-rail or split-pane code)
+- [ ] Portrait lock in `main()`, the Android manifest and the iOS plist
+- [ ] Touch is the only required input: nothing needs hover, a tooltip or a keyboard
+- [ ] `MaterialApp.builder` wraps the app in the phone column; a wide host shows the phone screen
+      over the background surround, not stretched and not framed
 
 **Dart patterns:**
 - [ ] No `dynamic` outside JSON boundaries
@@ -96,8 +98,8 @@ The `qa-tester` agent checks:
 - [ ] Test: a double click does not start two spins
 - [ ] Test: GameState returns to Idle after a spin
 - [ ] Test: the balance is correct after N spins
-- [ ] `game_screen_layout_test.dart` covers 360×640, 360×800, 390×844, 430×932, 844×390,
-      768×1024, 1024×768 and 1440×900
+- [ ] `game_screen_layout_test.dart` covers 360×640, 360×800, 390×844 and 430×932, plus the
+      1440×900 phone-column check
 
 **Test quality:**
 - [ ] `Random.secure()` or a seed-based mock is used, not `Random()`

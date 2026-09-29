@@ -104,16 +104,28 @@ class StoreScreenshotTopologyGuidanceTest(unittest.TestCase):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, self.phase1)
 
-    def test_phone_slides_use_the_opening_panel_with_the_whole_character(self) -> None:
+    def test_phone_slides_sit_on_the_game_background(self) -> None:
         phase5 = " ".join(
             self.guidance.split("## Phase 5 — showcases and feature graphic", 1)[1]
             .split("## Phase 6", 1)[0].split())
         for phrase in (
-            "**Real-capture backdrops show the opening panel with the whole character.**",
+            "**Phone slides sit on the game background.**",
+            '--bg "$ART_DIR/shared-background.png"',
+            "with no `--bg-panel`, `--bg-gutter` or `--bg-subject`",
+            "the character whole inside the frame",
+        ):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, phase5)
+
+    def test_keep_runtime_background_falls_back_to_the_opening_panel(self) -> None:
+        phase5 = " ".join(
+            self.guidance.split("## Phase 5 — showcases and feature graphic", 1)[1]
+            .split("## Phase 6", 1)[0].split())
+        for phrase in (
+            "**Fallback with `--keep-runtime-background` only.**",
             "pass `--bg-panel 1`",
             "`--bg-subject LEFT,RIGHT`",
             "slides right only as far as the whole character needs",
-            '--bg "$ART_DIR/panorama.png" --bg-panel 1 --bg-subject',
         ):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, phase5)
@@ -131,6 +143,82 @@ class StoreScreenshotTopologyGuidanceTest(unittest.TestCase):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, self.guidance_flat)
         self.assertNotIn("optional typography", self.guidance_flat)
+
+
+class CampaignArtGuidanceTest(unittest.TestCase):
+    """Finalization and the store kit make the banner from one template and share one background."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        repo = Path(__file__).resolve().parents[2]
+        refs = repo / ".claude/skills/store-screenshots/references"
+        cls.store = " ".join((repo / ".claude/skills/store-screenshots/SKILL.md")
+                             .read_text(encoding="utf-8").split())
+        cls.finalize = " ".join((repo / ".claude/skills/autocreate-finalize/SKILL.md")
+                                .read_text(encoding="utf-8").split())
+        cls.art = " ".join((refs / "campaign-art.md").read_text(encoding="utf-8").split())
+        cls.handoff = " ".join((refs / "campaign-handoff.md").read_text(encoding="utf-8").split())
+
+    def test_both_runbooks_render_the_banner_from_the_shared_template(self) -> None:
+        for name, text in (("store-screenshots", self.store), ("autocreate-finalize", self.finalize)):
+            with self.subTest(runbook=name):
+                self.assertIn("campaign-prompts.md", text)
+                self.assertIn("tools/prompt_template.py check", text)
+                self.assertIn("campaign-art.md", text)
+        self.assertIn("`banner-character` or `banner-object`", self.finalize)
+
+    def test_the_game_background_keeps_the_character_whole_and_is_wired_into_the_game(self) -> None:
+        self.assertIn("with the main character **whole inside the frame**", self.finalize)
+        for phrase in ("--confirm-game-background-replacement",
+                       "bg_campaign_menu.png",
+                       "bg_campaign_game.png",
+                       "alignment: Alignment.topCenter",
+                       "**the character does not fit**",
+                       "background-crops.png"):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, self.art)
+        self.assertNotIn("Remove promotional multiplier balls/inscriptions, baked gameplay, character",
+                         self.finalize)
+
+    def test_the_store_kit_reuses_a_valid_handoff_and_otherwise_makes_campaign_art(self) -> None:
+        for phrase in ("**Valid** → copy `long-banner.png` and `shared-background.png` unchanged",
+                       "**Missing or stale** → run [campaign-art.md](campaign-art.md) now",
+                       "prompt_template.py check`"):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, self.handoff)
+        self.assertIn("**Campaign art comes first.**", self.store)
+        self.assertIn("V22", self.finalize)
+
+
+class MobileOnlyGuidanceTest(unittest.TestCase):
+    """The studio designs portrait phone games; no rule may ask for a desktop/tablet layout."""
+
+    RETIRED_MATRIX = ("844×390", "844x390", "768×1024", "768x1024", "1024×768", "1024x768",
+                      "expanded matrix", "expanded viewport", "expanded reflow",
+                      "full-host responsive")
+
+    def test_no_studio_rule_or_skill_requires_an_expanded_layout(self) -> None:
+        repo = Path(__file__).resolve().parents[2]
+        roots = [repo / ".claude", repo / ".gemini", repo / ".codex", repo / ".github"]
+        files = [p for root in roots for p in root.rglob("*.md")]
+        files += [repo / "CLAUDE.md", repo / "agents.md", repo / "GEMINI.md", repo / "README.md"]
+        for path in files:
+            text = path.read_text(encoding="utf-8")
+            for phrase in self.RETIRED_MATRIX:
+                with self.subTest(file=str(path.relative_to(repo)), phrase=phrase):
+                    self.assertNotIn(phrase, text)
+
+    def test_the_contract_is_portrait_phone_only_with_a_phone_column(self) -> None:
+        repo = Path(__file__).resolve().parents[2]
+        contract = (repo / ".claude/docs/mobile-first-contract.md").read_text(encoding="utf-8")
+        for phrase in ("# Mobile-Only Phone Contract", "class PhoneColumn",
+                       "DeviceOrientation.portraitUp", "UIRequiresFullScreen",
+                       "| 360×640 |", "| 430×932 |"):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, contract)
+        layout = (repo / ".claude/docs/layout-archetypes.md").read_text(encoding="utf-8")
+        self.assertIn("### P — phone-height adaptation", layout)
+        self.assertNotIn("### R — expanded-viewport reflow", layout)
 
 
 if __name__ == "__main__":

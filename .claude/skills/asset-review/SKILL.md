@@ -87,8 +87,9 @@ The criteria (details in `art-director.md`):
 | AR5 | Readable at 64 px | AR10 | No AI artefacts |
 | AR11 | Reference match — the set looks like the reference's | | |
 
-**AR11** applies whenever the request mapped to a local preview
-(`.claude/docs/game-concept-examples.md`). Open the reference beside the contact sheet and compare
+**AR11** applies whenever `design/reference-contract.md` records a reference — a local preview
+family (`.claude/docs/game-concept-examples.md`) or images the user attached. Open every source
+beside the contact sheet and compare
 object for object: the same subjects, the same materials and colours, the same light, the same
 character and finish. Anything re-themed, substituted, recoloured or "improved" fails AR11 and
 is corrected toward the reference. Verify each source image appears in the ledger and that relevant

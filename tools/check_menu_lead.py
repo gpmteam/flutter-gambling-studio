@@ -270,7 +270,7 @@ def render_report(findings: list[Finding], context: dict, min_side: float) -> st
         "Static analysis only. For dominant/supporting character roles it proves "
         "the menu draws the declared asset; it cannot judge attention order, "
         "clipping, or the overall M/O/R recipe. Confirm on `02-menu.png` at "
-        "390×844 and 1440×900.",
+        "390×844 and 360×640.",
         "",
     ]
     return "\n".join(lines)

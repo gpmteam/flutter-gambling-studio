@@ -20,6 +20,32 @@ lead kind, and topology decision in the generated concept before producing asset
 | Plinko / Plinko game | `examples-games/plinko.jpeg` | C6 / AE / M6 | Mechanic; glossy colored balls, pegs, buckets, charged coins | Active tilted peg field can fill all three panels; trajectories and coins carry motion; no invented person or mascot |
 | Chicken risk game | No exact local preview required | C2 / M / M2 step model, if using safe-step wagering | Character; expressive chicken, safe/risk tiles, supported reward tokens | Chicken on first panel; actual staged risk path may span the remaining panels or whole scene |
 
+## Detecting a reference request
+
+Detection is deterministic: `/autocreate` Phase 0 runs `tools/reference_detect.py` on the user's
+exact request and writes `design/references/detection.json` and `design/reference-contract.md`.
+The table above is the detector's family list; change both together (a test keeps them in step).
+
+| Trigger | Examples it catches | Binding |
+|---|---|---|
+| A named family | "Joker Jewels", "Joker's Jewels", "joker-jewels", "джокер джуэлс", "Zeus", "зевс", "Book of Ra", "книга ра", "Shining Crown", "шайнинг краун", "Plinko", "плинко" | exact — the mapped files |
+| Images attached to the request | anything the web service saved in `design/references/user/` | exact — on a new game always; on a follow-up when the message asks to match them |
+| An explicit reproduction ask with no image | "exactly like Gates of Olympus", "копия игры …", "один в один как …" | description — match every described trait |
+
+Two rules keep detection honest:
+
+- **Only additions.** The detector can miss a reference, so an agent may add one; it may never
+  drop one the detector found, reinterpret a named family as "inspiration", or treat attached
+  images as mood boards.
+- **Identity and mechanics are separate.** When the user names a family and also names a
+  different mechanic or grid ("Zeus Lightning Dice", "Joker hi-lo", "Joker slot 5x3"), the
+  detector reports `topology_source: user mechanic | user grid`. The user's mechanic and grid then
+  govern play; the family still governs identity — the character, symbols, board and frame
+  materials, background, palette and finish.
+
+User attachments are held to the same standard as the mapped previews: every section of "How close
+to the reference — match it" below applies to them, with the attachment as the source image.
+
 **Joker and Joker Jewels are separate families.** A request that names only a Joker resolves to the
 3×3 row and `joker2.png`. A request that names Joker Jewels, Joker's Jewels, Jokers Jewels or
 `joker-jewels` resolves to the `examples-games/joker-jewels/` folder and its 5×3 topology, and is
@@ -36,14 +62,16 @@ model.
 
 ## How close to the reference — match it
 
-When a request maps to a reference, **recreate what the reference shows.** Not a reinterpretation,
+When a request maps to a reference — a named family or the user's attached images — **recreate
+what the reference shows.** Not a reinterpretation,
 not an homage, not "inspired by": put the generated game beside the reference and they should read
 as the same game. Match all of it, as closely as the generator can get —
 
 - the theme and setting;
 - the character: costume colours and pattern, cap or headwear shape and bell count, face paint,
   build, pose and expression;
-- the full cast of symbols, object for object, with their materials and colours;
+- the full cast of symbols and sprites, object for object, with their materials and colours;
+- the reel strips, board, frame and their ornament;
 - the palette, the light and the background treatment;
 - the board topology and the frame around it;
 - the composition — what sits where on the menu and on the game screen;
@@ -138,6 +166,6 @@ are disclosed; target RTP is 96–99%.
 
 Every seed's *look* comes from its preview and every seed's *numbers* come from its model — those
 are the only two sources. Finish the normal concept around them: complete loop, production plan,
-mobile/expanded layout, asset manifest, meta systems, required screens, responsible-play copy and
+portrait phone layout, asset manifest, meta systems, required screens, responsible-play copy and
 a verifiable JSON model. The preview alone never proves playable UI, balance, or a completed
 game.

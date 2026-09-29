@@ -23,15 +23,15 @@ language.
 
 1. `design/gdd/game-concept.md` → the **Game UI Read and Design Signature** (mechanic, world,
    information, field, controls, HUD, materials, type, color/value, motion)
-2. `design/art-direction.md` → the **State Composition Map**, per-screen F/C/H/M/O/R recipes,
-   Similarity Check, and viewport proofs. The grammar is `.claude/docs/layout-archetypes.md`.
+2. `design/art-direction.md` → the **State Composition Map**, per-screen F/C/H/M/O/P recipes,
+   Similarity Check, and phone proofs. The grammar is `.claude/docs/layout-archetypes.md`.
 3. `design/asset-format.md` → `format: png|svg`. Under Codex `/autocreate` this is usually `png`.
 4. `.claude/rules/anti-slop-design.md` → the principle plus the craft fundamentals
 5. `.claude/rules/ui-code.md` → crash safety
-6. `.claude/docs/mobile-first-contract.md` → touch-first phone baseline, expanded viewport matrix,
-   full-host composition, and responsive platform guidance
-7. `.claude/docs/gameplay-screen-contract.md` → full-viewport composition, measurable field
-   dominance, control sizing, stable test keys, and the required viewport matrix
+6. `.claude/docs/mobile-first-contract.md` → portrait phone only, touch only, the four-phone
+   matrix, the phone column for wide hosts, and the portrait lock
+7. `.claude/docs/gameplay-screen-contract.md` → full-screen phone composition, measurable field
+   dominance, control sizing, stable test keys, and the phone matrix
 
 The state map says what the player needs now. The per-screen recipe says how it is composed. The
 Design Signature says how interaction and presentation behave. Implement their intersection, not
@@ -127,7 +127,7 @@ class MainMenuScreen extends StatefulWidget { ... }
 > styled from the Design Signature but calibrated to the live state's attention order.
 
 ```dart
-// A full-viewport GameWidget composition + integrated overlay/edge HUD. The field follows the
+// A full-screen portrait GameWidget composition + integrated overlay/edge HUD. The field follows the
 // measurable gameplay-screen contract and stays the first focus; it is never a nested mini-window.
 // The HUD follows its H recipe: edge anchors, strip, embedded, contextual, state panel, or dense
 // tactical. It must not cover the field's critical interaction zone.
@@ -435,16 +435,21 @@ especially on settings and form-like screens.
 
 ## UI rules
 
-- **Mobile-first**: implement the compact touch-first phone composition first, then reflow the
-  same hierarchy across landscape, tablet, desktop, and Web sizes.
-- **Full viewport**: backgrounds and gameplay own the host canvas. Never add a global 430-pixel
-  cap, `phoneViewport` wrapper, centered phone strip, or fake device frame.
+- **Portrait phone only**: design and build every screen for a phone held upright and played
+  with a thumb. There is no tablet, desktop or landscape layout to build — not later, not as a
+  bonus. Primary action in the lower thumb zone, 48×48 targets, one column, text ≥ 14 sp.
+- **Full-bleed phone screen**: backgrounds and gameplay own the phone screen edge to edge. Wide
+  hosts get the phone column from `mobile-first-contract.md` in `MaterialApp.builder` (the game's
+  background as surround, no device frame); screens never branch on width.
+- **Touch only**: nothing the player needs lives in a hover state, tooltip or keyboard shortcut.
+- **Portrait lock** in `main()`, the Android manifest and the iOS plist.
 - **No `BuildContext` in Flame components**
 - **`ValueNotifier` only** for passing state from Flame to Flutter
 - **Theme roles come from the Design Signature** (light/warm/dark/mixed-value are contextual)
-- **Screen composition follows its recorded state and F/C/H/M/O/R recipe**
-- **Responsive**: use `LayoutBuilder` and `MediaQuery`; cover compact-height treatment at 360×640
-  and intentional medium/expanded recomposition through 1440×900
+- **Screen composition follows its recorded state and F/C/H/M/O/P recipe**
+- **Phone heights**: use `LayoutBuilder` and `MediaQuery` so the one composition holds from
+  360×640 to 430×932 by its P strategy (what compresses on the short phone, what the tall one
+  reveals) — never a width breakpoint
 - **Accessibility**: `Semantics` on every interactive element, text contrast ≥ 4.5:1
 - **Performance**: `const` constructors wherever possible, `RepaintBoundary` on animations
 

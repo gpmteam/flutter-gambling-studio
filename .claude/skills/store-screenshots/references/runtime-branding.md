@@ -1,17 +1,18 @@
-# Runtime branding and background preservation
+# Runtime branding and the campaign background
 
-Read when applying the icon/emblem or an explicitly requested background redesign.
-Variables are initialized by the main runbook. This operation follows art verification
-and precedes final runtime capture.
+Read when applying the icon/emblem. Variables are initialized by the main runbook. This operation
+follows art verification and precedes final runtime capture.
 
-## Phase 3 — apply branding without replacing the game's backgrounds
+## Phase 3 — apply branding without touching the game's background
 
 The reference-only context frame from preflight remains an input to the artwork and is never part
-of the upload set. The icon and emblem may be applied before final capture, but ordinary
-`/store-screenshots` runs do **not** replace, rewire, recolour, blur, or regenerate a menu,
+of the upload set. The game's background is the campaign game background, and the only procedure
+that changes it is [campaign-art.md](campaign-art.md) (finalization, or this run's preflight when
+the handoff was missing or stale). After that, the icon and emblem may be applied before final
+capture, but nothing in the store kit replaces, rewires, recolours, blurs, or regenerates a menu,
 gameplay, splash, or shared runtime background.
 
-Before any project edit, record a background guard under `$ART_DIR`:
+After campaign art and before any other project edit, record a background guard under `$ART_DIR`:
 
 ```bash
 {
@@ -33,13 +34,13 @@ rg -n -i 'background|backdrop|bg_' lib pubspec.yaml 2>/dev/null \
 These files establish both halves of the invariant: the existing image bytes and the code/config
 references that select them.
 
-**Campaign context.** Read `campaign-handoff.md` when finalization artifacts exist. Use the
-accepted banner as world context for icon/emblem generation, alongside original shipped identity
-assets. Validate any existing icon against this campaign before reuse. The background guard
-protects the background already integrated by finalization.
+**Campaign context.** The accepted banner (`art/long-banner.png`) is the world context for
+icon/emblem generation, alongside the original shipped identity assets, which remain the identity
+authority. Validate any existing icon against this campaign before reuse. The background guard
+protects the campaign background already integrated in the game.
 
 **Launcher icon.** If no suitable square icon art exists yet (`assets/branding/app_icon.png` or a
-game-world emblem crop from `art/panorama.png`), generate one with the same Codex GPT
+game-world emblem crop from `art/long-banner.png`), generate one with the same Codex GPT
 Images 2.0 path as the rest of the asset set (`generate-png-asset/SKILL.md`, budgeted as one
 `generate` source): a full-bleed square composition of the game's hero character/object/emblem
 on its own themed background, matching the Design DNA.
@@ -72,29 +73,16 @@ and a rounded-square mask; reject and regenerate if any drawn border/frame is vi
 **Emblem.** Copy the emblem to `assets/images/ui/ui_game_logo.png`, register it in `pubspec.yaml` or the shared asset registry, and—unless `--no-wire-logo`—add one responsive `Image.asset` to the main menu. Do not rewrite the screen.
 
 **Runtime backgrounds.** Leave the files and their wiring alone. A mismatch between storefront art
-and the existing game is fixed by regenerating storefront art from the existing backgrounds,
-runtime frames, field, hero, and sprites. It is never fixed by silently replacing the game.
-
-Only when the user explicitly requested a runtime-background redesign and supplied
-`--apply-backdrop` may this separate operation run:
-
-```bash
-"$STORE_PYTHON" tools/store_compose.py backdrop --src "$ART_DIR/panorama.png" \
-  --out-dir assets/images/backgrounds --prefix bg_keyart \
-  --variants menu,game --size 1080x1920 --offset -0.55 --pop soft --calm 0.45 \
-  --confirm-game-background-replacement
-```
-
-`store_compose.py backdrop` refuses to write without the long confirmation flag. The presence of
-`--apply-backdrop` alone is not permission: the user's request must explicitly mention changing
-the actual game's background. Record that request and every affected file in `STORE_INFO.md`.
+and the game is fixed by regenerating storefront art from the campaign art, runtime frames,
+field, hero, and sprites. It is never fixed by replacing the game's background with the panorama
+or any other store scene; `store_compose.py backdrop` refuses to write without
+`--confirm-game-background-replacement`, and only campaign-art.md passes it.
 
 Run formatting and analysis after these targeted edits. Revert any wiring that introduces an error,
 an overflow, or a contrast regression, and say so in the final report — a broken screen is worse
 than a missing emblem.
 
-Unless the explicit backdrop opt-in was valid, recompute the background hashes/references and
-compare them before continuing:
+Recompute the background hashes/references and compare them before continuing:
 
 ```bash
 {

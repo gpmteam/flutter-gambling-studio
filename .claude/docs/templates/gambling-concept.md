@@ -9,7 +9,7 @@
 - **Model config**: `design/balance/[file].json`
 - **Compliance profile**: [full (disclaimer) | relaxed C5 — with justification]
 - **Game language**: English (default) | [another language, only if the user explicitly asked]
-- **Product target**: mobile-first Android/iOS and responsive full-viewport Web
+- **Product target**: portrait phone game (Android/iOS, portrait-locked, touch only); Web is the preview host
 
 ## 1. Elevator pitch
 What is the main emotion this game delivers? Where is its hook?
@@ -56,15 +56,16 @@ absent. Do not assume an explosion, shake, particle shower, or full-screen takeo
 ## 7. State composition and layout direction
 > See `.claude/docs/mobile-first-contract.md` and `.claude/docs/layout-archetypes.md`.
 - **State map**: [setup / commitment / anticipation / result / recovery attention order]
-- **Per-screen recipes**: [main menu M/O/R; live states F/C/H/O/R; secondary screens]
+- **Per-screen recipes**: [main menu M/O/P; live states F/C/H/O/P; secondary screens]
 - **Store lead and menu role**: [lead_kind: character | object | mechanic;
   menu_role: dominant | supporting | absent, with reason from the M recipe]
 - **Primary field alignment**: [centered, or documented mechanic/recipe reason for an offset]
-- **Phone-baseline proof**: [360×640 / 360×800 / 390×844 / 430×932; thumb reach; no core scroll]
-- **Expanded proof**: [844×390 / 768×1024 / 1024×768 / 1440×900; full-viewport reflow strategy]
+- **Phone proof**: [360×640 / 360×800 / 390×844 / 430×932; thumb reach; no core scroll; the P
+  strategy for short and tall phones]
 - **Similarity Check**: [neighbors, intentional repeats, at least four material differences,
   remaining risk/correction; skip anti-repeat drift for an exact mapped reference]
-- **Non-targets**: no fixed-width phone wrapper, fake device frame, or pointer-only interaction.
+- **Non-targets**: no desktop, tablet or landscape layout, no width breakpoints, no device frame,
+  no hover/pointer/keyboard-only interaction.
 
 ## 8. Screen map (at least 12+, each with a job and appropriate recipe)
 - Splash, main menu, game + HUD, paytable/rules, settings, help, win overlays (3 tiers),

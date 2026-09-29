@@ -6,8 +6,11 @@ For matching new-game requests, inspect the relevant previews in `examples-games
 and read `.claude/docs/game-concept-examples.md`. They are visual references, not runtime assets
 or complete game specifications. A missing reference does not block an unrelated concept.
 
-`/autocreate` requests named **Book of Ra**, **Joker**, **Joker Jewels**, **Shining Crown**,
-**Zeus Game**, or **Plinko** must use the exact local reference mapping in
+Whether a request is a reference request is decided by `tools/reference_detect.py` (see
+`game-concept-examples.md` → "Detecting a reference request") and recorded in
+`design/reference-contract.md`; images the user attached are references on the same footing as the
+local previews. `/autocreate` requests named **Book of Ra**, **Joker**, **Joker Jewels**, **Shining
+Crown**, **Zeus Game**, or **Plinko** must use the exact local reference mapping in
 `game-concept-examples.md`, on the `--from-concept` path as well; do not replace it with a generic
 category reference. Recreate what the preview shows: theme, character, symbol cast, palette,
 board and composition are matched, not reinterpreted. The full rule is "How close to the
@@ -46,7 +49,8 @@ than inventing it only for the store. Existing games retain their established le
 
 ## Reference-led original assets
 
-For a mapped request, rebuild the example's asset family object for object: the same subjects,
+For a reference request (a mapped family or user attachments), rebuild the source's asset family
+object for object: the same subjects,
 costume, pose, materials, colours, light and rendering style, at runtime resolution. Inspect every
 mapped image at full size and make a reference ledger for the character, each symbol, board,
 background, UI materials and composition. Supply the relevant source image(s) directly to a
@@ -55,7 +59,7 @@ the source is available. The local `tools/gpt_image.py edit --image <reference> 
 path accepts JPEG and PNG. If the tool caps input count or bytes, select the relevant references
 for each asset and document which ones were used; never silently drop a required identity image.
 Use the resulting coherent assets in the real game, then compare runtime screenshots beside the
-source at phone and expanded sizes. Fix mismatched character traits, symbol identity, background,
+source at the phone sizes. Fix mismatched character traits, symbol identity, background,
 topology and palette before declaring the asset set complete. See "How close to the reference —
 match it" in `game-concept-examples.md`.
 
