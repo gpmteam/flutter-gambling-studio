@@ -346,9 +346,11 @@ labelled balls in flight with at least one in every panel, and the environment.
 
 Attach, in order: the original character asset (identity authority), the accepted banner (world
 context — not a character reference), the multiplier reference (ball model), the gameplay
-capture (context only), visible shipped sprites, matching previews. When the tool takes custom
-sizes, `3456x2384` (about 1.45:1) covers three 1320×2868 panels plus the default hidden seam
-allowance.
+capture (context only), visible shipped sprites. Inspect the matching previews as visual context;
+attach them too when the image tool allows a sixth reference. A five-image limit must not displace
+the character, banner, multiplier, gameplay capture, or shipped-sprite reference.
+When the tool takes custom sizes, `3456x2384` (about 1.45:1) covers three
+1320×2868 panels plus the default hidden seam allowance.
 
 Only for `--panels 0 --keep-runtime-background`, generate the portrait
 `art/multiplier-showcase-bg.png` the same way, with the banner as world context, all five
