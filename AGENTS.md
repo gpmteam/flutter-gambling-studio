@@ -60,7 +60,12 @@ Matching `examples-games/` previews are default references; other relevant `exam
 record what is borrowed and keep the actual game's assets, mechanics and Design DNA authoritative.
 Store-screenshot generation preserves the actual game's existing menu, gameplay, splash, and shared
 background assets and wiring. A runtime-background redesign is a separate, explicit opt-in; never
-replace the game's background merely to make it match newly generated marketing art.
+replace the game's background merely to make it match newly generated marketing art. During `/autocreate-finalize`,
+the shared runtime/phone-showcase background is an explicitly required exception: generate the
+banner using the current store-screenshots prompt, derive its clean environment background, wire
+it into the game before runtime verification, and persist both in `production/store-art/`. Later
+`/store-screenshots` reuses that banner for panorama/icon generation and the same clean background
+for phone slides, preserving the integrated runtime background.
 
 Unspecified classic slots use 3 reels × 3 visible rows (3×3), not 4×4. Preserve explicit or existing
 variants. Joker defaults to a mischievous, slightly vicious theatrical trickster, playful rather than
@@ -86,7 +91,7 @@ Note on `/autocreate`: it is the full Zero-to-Production pipeline, split across 
 
 1. Session 1 — pre-production: concept, classification (category C1-C6 + math model M1-M6), Production Plan, `flutter create --platforms android,ios,web`, assets and audio.
 2. Session 2 (`autocreate-implement`, Phases 4 → 10) — implementation: code plus meta systems, content wiring, integration, `dart analyze lib/` looped until 0 errors, `flutter test` all green, feel pass, UI audit, curve-based balancing, crash prevention.
-3. Session 3 (`autocreate-finalize`, Phases 10.5 → 12) — runtime and soak verification via Chrome CDP with auto-fix, `/playtest`, session state, release-engineering PREP (icons, splash, versioning, store metadata, CI — WITHOUT building the AAB/APK and without a keystore) and the final report.
+3. Session 3 (`autocreate-finalize`, Phases 10.4 → 12) — store banner and shared runtime/phone-showcase background, runtime and soak verification via Chrome CDP with auto-fix, `/playtest`, session state, release-engineering PREP (icons, splash, versioning, store metadata, CI — WITHOUT building the AAB/APK and without a keystore) and the final report.
 
 `/autocreate` leaves the project release-ready but does NOT produce the downloadable archive. Building the release artifact is an explicit user action: `/release-package` takes the screenshots, runs `flutter build apk --release`, runs `flutter clean` and archives the whole project into a **`.zip`** in `project_zip/`.
 

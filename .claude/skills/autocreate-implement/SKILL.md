@@ -193,9 +193,10 @@ asset format and known limits. Include exact runtime launch and navigation detai
 ```text
 You are Session 3 of /autocreate. First read
 production/session-state/autocreate-handoff.md, then
-.claude/skills/autocreate-finalize/SKILL.md. Execute its runtime and soak verification,
-playtest, session state, release-engineering PREP and final report. Preserve the
-existing concept, assets and verified balance. Do not build an AAB/APK, create an
+.claude/skills/autocreate-finalize/SKILL.md. Execute its store banner and shared runtime/phone-showcase background phase, runtime and soak
+verification, playtest, session state, release-engineering PREP and final report. Preserve the
+existing concept, character/symbol assets and verified balance; integrate the shared background
+as explicitly required by finalization. Do not build an AAB/APK, create an
 upload keystore or call release-package; those require a separate explicit request.
 Return the actual checks, evidence paths and any unresolved blockers.
 ```

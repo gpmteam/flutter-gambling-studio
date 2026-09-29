@@ -1,6 +1,6 @@
 ---
 name: store-screenshots
-description: "Create a store kit: generate the feature banner first (torso-to-head character on the left), then a complete panorama with the torso-to-head character (never standing, flying or showing legs), gameplay and mandatory flying x5/x10/x25/x50/x100 multiplier balls in every panel, rendered in one image-generation call from the banner and a shipped ball asset as references. Add real capture slides, feature graphic, icon/emblem and ZIP. Match game assets and topology; preserve runtime backgrounds."
+description: "Create a store kit: reuse the autocreate-finalize banner and shared background, or generate the feature banner first (torso-to-head character on the left), then a complete panorama with the torso-to-head character (never standing, flying or showing legs), gameplay and mandatory flying x5/x10/x25/x50/x100 multiplier balls in every panel, rendered in one image-generation call from the banner and a shipped ball asset as references. Add real capture slides, feature graphic, icon/emblem and ZIP. Match game assets and topology; preserve runtime backgrounds."
 argument-hint: "[--count 8] [--panels 3] [--lead-kind character|object|mechanic] [--character-framing bust|mascot] [--banner-layout free|left-heavy] [--size 1320x2868|play] [--no-play-set] [--frame ios|android|none] [--no-apply] [--no-wire-logo] [--no-captions] [--apply-backdrop]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Agent
@@ -13,7 +13,12 @@ concept, art direction, asset manifest, math config and runtime evidence. Inspec
 `examples-games/` previews by default. References guide composition; the shipped assets and
 mechanics govern identity. Never change a real game to match a preview's topology or palette.
 
-**Generation order: banner first, then panorama.** The horizontal feature banner, with the
+**Generation order: accepted banner first, then panorama.** Read
+[references/campaign-handoff.md](references/campaign-handoff.md) in preflight. Reuse the accepted
+`autocreate-finalize` banner and shared background when valid; generate the banner here only
+when no valid banner exists. The banner prompt below remains authoritative for both skills.
+
+The horizontal feature banner, with the
 character on the left, is the first image generated. It establishes the campaign's world:
 environment, palette, lighting, board housing, lower-edge band and multiplier-ball look. The
 accepted banner is then attached as **world context** to the panorama call (and to the
@@ -38,7 +43,11 @@ mascots follow the same rule in species-appropriate terms: body to head, with no
 talons or feet visible. A full-body, standing, flying or leg-revealing character is an
 objective failure.
 
-**Flying multiplier balls are mandatory in every scene.** The banner, the panorama and any
+**Scope:** the clean shared runtime/phone-slide environment from the campaign handoff is
+exempt from marketing-scene composition, character and multiplier requirements throughout this
+runbook. Those requirements apply to the banner, panorama and standalone multiplier showcase.
+
+**Flying multiplier balls are mandatory in every marketing scene.** The banner, the panorama and any
 showcase background each contain all five labelled balls (`x5`, `x10`, `x25`, `x50`, `x100`),
 visibly airborne and scattered at varied heights and depths around the character and across the
 gameplay. Every panorama panel carries at least one ball. That includes the character's panel,
@@ -70,7 +79,7 @@ was explicitly requested. All copy is English unless another game language was r
 
 Default N=8 screenshots: P=3 adjacent concept panels sliced from one complete panorama followed by
 N−P actual gameplay/meta captures with optional device frames and captions, set on the
-panorama's opening panel shifted to keep the whole character (see Phase 5). Produce `store/`
+shared background from finalization, or the panorama's opening panel for standalone runs (see Phase 5). Produce `store/`
 at 1320×2868 and `store-play/` at 1080×1920 independently, not by resizing one set into the other.
 Include a dedicated text-free 1024×500 feature graphic: the banner scene plus one phone on the
 right holding a real screenshot, with no title or copy on the left or anywhere else (see Phase 5),
@@ -78,7 +87,8 @@ icon masters/platform densities (1024 launcher master, 512×512 Play listing ico
 see Phase 3), transparent emblem, `STORE_BRIEF.md`, `STORE_INFO.md`, and ZIP under `project_zip/`.
 `--no-play-set` omits Play screenshots. `--panels 0` skips panorama work and uses real captures
 for all N screenshots, with the required multiplier balls in a themed showcase background; it
-still generates the banner first and produces the feature graphic. Marketing portrait formats
+still reuses or generates the banner first and produces the feature graphic. With a valid
+finalization handoff, use its clean shared background instead of generating a multiplier showcase. Marketing portrait formats
 never constrain the runtime app's full mobile/expanded viewport behavior.
 
 ## Phase 0 — context and preflight
@@ -276,7 +286,8 @@ cluster. Match any user-supplied size reference.
 
 ### 1a — Banner (the first generation call)
 
-Generate `art/long-banner.png` before anything else. For a character-led game the character
+Reuse the accepted finalization banner as `art/long-banner.png` when the campaign handoff is valid.
+Otherwise generate it before other campaign scenes using the following unchanged prompt contract. For a character-led game the character
 appears large on the left, framed from torso to head: the bottom edge or the foreground band cuts
 the body through the torso, with no legs or feet visible, and the character is neither standing
 full length nor flying. Object/mechanic leads put the lead object or the angled gameplay
@@ -311,7 +322,7 @@ capture (context only), visible shipped sprites, matching previews. When the too
 sizes, `3456x2384` (about 1.45:1) covers three 1320×2868 panels plus the default hidden seam
 allowance.
 
-For `--panels 0`, generate the portrait `art/multiplier-showcase-bg.png` the same way, with the
+For `--panels 0` without a valid shared-background handoff, generate the portrait `art/multiplier-showcase-bg.png` the same way, with the
 banner as world context, all five labelled balls in the scene and the existing game background
 as inspiration. Keep runtime background files unchanged.
 
@@ -461,7 +472,12 @@ Use `showcase` on real captures with the game's fonts/type mood and secondary de
 Typical Joker typography is bold/playful, not automatic elegance. Captions describe actual play.
 Resolve filenames and words from this game's inventory; honor frame/no-captions/language/count.
 
-**Real-capture backdrops show the opening panel with the whole character.** Every phone slide
+**Finalized games use the shared background.** With a valid campaign handoff, pass
+`--bg "$ART_DIR/shared-background.png"` to every real-capture showcase, without `--bg-panel`,
+`--bg-gutter` or `--bg-subject`. Use the same image already wired into the game. Keep its clean
+environment free of promotional balls; the banner and panorama carry those.
+
+**Standalone fallback: real-capture backdrops show the opening panel with the whole character.** Every phone slide
 sits on the panorama's first panel, not the cover-cropped middle: pass `--bg-panel 1` (and the
 triptych's `--gutter` as `--bg-gutter` if Phase 4 changed it). Panel 1's cut ignores content, so
 a hand, held prop, hair or headwear that crosses into panel 2 would be lost. Read the character's
@@ -480,7 +496,7 @@ object/mechanic lead, `--bg-subject` spans the lead object instead.
   --size 1320x2868 --caption "Every Spin Counts" --type-mood playful --pop soft
 ```
 
-With panels 0, use `art/multiplier-showcase-bg.png` (Phase 1b) behind at least one real-capture
+With panels 0 and no valid shared-background handoff, use `art/multiplier-showcase-bg.png` (Phase 1b) behind at least one real-capture
 showcase; keep the capture and runtime background files unchanged. Compose Play separately.
 
 Feature example:

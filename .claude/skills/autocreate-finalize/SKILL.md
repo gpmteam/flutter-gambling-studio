@@ -1,6 +1,6 @@
 ---
 name: autocreate-finalize
-description: "Session 3 of the /autocreate pipeline (Phases 10.5 → 10.6 → 11 → 11.5 → 12): runtime + soak verification (Chrome CDP, auto-fix), playtest (a real gameplay session, P1–P10), session state, release-engineering PREP (icons/splash/version/store-metadata/CI — WITHOUT building the AAB/APK and without a keystore) and the final report. Leaves the project release-ready. It does NOT build artifacts and does NOT call /release-package — that is an explicit user action. Started automatically through the Agent tool at the end of Session 2 (autocreate-implement), or manually in a new conversation."
+description: "Session 3 of the /autocreate pipeline (Phases 10.4 → 10.5 → 10.6 → 11 → 11.5 → 12): shared store banner and runtime/showcase background, runtime + soak verification (Chrome CDP, auto-fix), playtest (a real gameplay session, P1–P10), session state, release-engineering PREP (icons/splash/version/store-metadata/CI — WITHOUT building the AAB/APK and without a keystore) and the final report. Leaves the project release-ready. It does NOT build artifacts and does NOT call /release-package — that is an explicit user action. Started automatically through the Agent tool at the end of Session 2 (autocreate-implement), or manually in a new conversation."
 argument-hint: "[--skip-emulator | --no-fix]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Agent, Skill
@@ -10,6 +10,7 @@ allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Agent, Skill
 
 **Purpose**: finish `/autocreate` after Session 2 (`autocreate-implement`) has brought the
 project to `dart analyze` 0 errors + `flutter test` green. In this session:
+- **campaign art** (Phase 10.4): the store banner plus a shared runtime/phone-showcase background;
 - runtime verification: Chrome/CDP (screenshots + console + auto-fix) plus a soak probe for leaks;
   Android (`--platform android`) is a Gradle compile-only check, with no emulator and no APK
 - **playtest** (Phase 10.6): a real gameplay session — the P1–P10 checks from
@@ -29,7 +30,7 @@ project to `dart analyze` 0 errors + `flutter test` green. In this session:
   crashed, or to repeat the runtime check after edits
 
 **What it does NOT do:**
-- It does NOT rewrite the game code, change the GDD or change the balance
+- It permits targeted background asset/wiring edits in Phase 10.4 and records the art-direction update; it does not rewrite game logic or change balance
 - It does NOT create new screens
 - It does NOT run Phases 1–10 — Session 2 already did those
 
@@ -43,14 +44,15 @@ project to `dart analyze` 0 errors + `flutter test` green. In this session:
 3. ✅ Reads `.claude/docs/mobile-first-contract.md` and
    `.claude/docs/gameplay-screen-contract.md` before runtime capture and treats every V13–V21
    defect as a HIGH release blocker
-4. ✅ Runs Phases 10.5 → 11 → 11.5 → 12 in that order
+4. ✅ Runs Phases 10.4 → 10.5 → 10.6 → 11 → 11.5 → 12 in that order
 5. ✅ Returns the final report to the parent session (or prints it for the user)
 
 **Forbidden:**
 - ❌ Changing `lib/game/game_config.dart`, `design/balance/*.json` or `assets/data/*.json` —
   the balance and content are frozen
 - ❌ Rewriting whole screens — only targeted runtime auto-fixes are allowed
-  (overflow, setState after dispose, a missing asset path, a null ValueNotifier)
+  (overflow, setState after dispose, a missing asset path, a null ValueNotifier), plus the
+  targeted background integration explicitly required by Phase 10.4
 - ❌ Generating a release upload keystore — Phase 11.5 runs ONLY with `--no-keystore`;
   a signed AAB is the user's explicit `/release-engineering`
 - ❌ Calling `/release-package` — packaging is a separate, explicit run
@@ -83,6 +85,46 @@ Read the handoff file and extract:
 - The game's name → for the archive's name
 - The category (C1–C6) and the math model (M1–M6) → for the final report
 - The path to the main game class → for emulator-test navigation
+
+---
+
+## Phase 10.4 — store banner and shared game/showcase background
+
+Read `.claude/skills/store-screenshots/SKILL.md` Phase 0, Phase 1's shared composition rules,
+Phase 1a, First-prompt requirements, and Correcting a generated scene. These sections are the
+single source of the banner prompt: use the current wording, reference order, character framing,
+foreground, five flying balls, and correction limits unchanged, adapting only game-specific
+subjects and banner geometry as that runbook already instructs. Do not invoke the full store-kit
+workflow here. Use `production/store-art/` as the persistent art directory.
+
+1. Read [the campaign handoff contract](../store-screenshots/references/campaign-handoff.md).
+   Inventory the shipped assets and inspect matching references. Capture a real active gameplay
+   frame for banner context using the handoff's launch/navigation instructions. This is a
+   preliminary capture; final verification and captures follow background integration.
+2. Generate and review `production/store-art/long-banner.png` using the store banner instructions.
+   This is the complete device-free banner scene. Save the exact prompt and reference paths.
+   On reruns, reuse a valid accepted banner whose identity/topology/source assets still match.
+3. Using the accepted banner as world context, generate the clean environment-only
+   `production/store-art/shared-background.png`: same environment, palette, materials and light,
+   with room for live controls and gameplay. Remove promotional multiplier balls/inscriptions,
+   baked gameplay, character, foreground obstruction, text and devices. This clean companion is
+   exempt from the marketing-scene ball/character requirements; the banner retains all of them.
+   Allow one fresh retry for an objective readability or scene-match failure, then report blocked.
+4. Copy that exact clean image into `assets/images/backgrounds/bg_campaign.png` and register/wire
+   it as the game's shared menu/gameplay background. Update existing shared/splash selectors where
+   they use the game scene; native splash preparation still follows Phase 11.5. Use responsive
+   cover/focal positioning without stretching, device frames or fixed-width canvases. Preserve
+   screen hierarchy, original character/symbol assets and all math/content data. Record original
+   background paths/hashes, changed selectors and the new source in the asset manifest/art direction.
+   This background change is an explicit part of `/autocreate`, requiring no additional opt-in.
+5. Write the campaign handoff, format changed Dart, run `dart analyze lib/` and `flutter test`.
+   Proceed to the complete Phase 10.5 viewport matrix and Phase 10.6 playtest against this version.
+   Both the game and later phone showcase slides must use this same background image.
+
+If image generation, a genuine context capture, integration or art validation fails, record the
+blocker and continue only independent checks. Never claim production readiness with this phase
+incomplete. Runtime opt-outs do not waive the banner/background deliverables; without a current
+real frame, report them blocked. Do not create a panorama or store ZIP in finalization.
 
 ---
 
@@ -474,6 +516,9 @@ reason).
 
 ## Phase 11 — session state update [~1 min]
 
+Update `production/store-art/campaign.md` with the final capture/report paths and the actual
+background integration verdict. Keep an incomplete art phase marked BLOCKED in session state.
+
 Update `production/session-state/active.md`:
 
 ```markdown
@@ -484,15 +529,21 @@ Task: Production-ready
 <!-- /STATUS -->
 
 ## Status
-[If runtime/playtest/layout pass: The game is fully implemented and verified. To get the APK and
+[If campaign art/background and runtime/playtest/layout pass: The game is fully implemented and verified. To get the APK and
 the archive, run /release-package.]
-[If any CRITICAL/HIGH or NOT-PLAYABLE remains: RELEASE BLOCKED. Return to /ui-audit --fix or
+[If campaign art/background is incomplete or any CRITICAL/HIGH or NOT-PLAYABLE remains: RELEASE BLOCKED. Return to /ui-audit --fix or
 /autocreate-implement --resume; do not run /release-package yet.]
 
 ## Runtime verification
 - Verdict: [PASS / CONCERNS / FAIL / SKIPPED]
 - Screenshots: production/runtime-screenshots/<ts>/
 - Report: production/runtime-screenshots/<ts>/REPORT.md
+
+## Campaign art
+- Handoff: production/store-art/campaign.md
+- Banner: production/store-art/long-banner.png
+- Shared background: production/store-art/shared-background.png
+- Integration and visual verdict: [PASS / BLOCKED, evidence paths]
 
 ## Session 2's tests
 - Unit: [N] green
@@ -542,7 +593,8 @@ flutter pub get >/dev/null 2>&1 || true
 
 Print to the user (or, when invoked as a sub-agent, return it to the parent session). Use
 `AUTOCREATE COMPLETE — PRODUCTION READY` only when runtime has 0 CRITICAL/HIGH issues, the
-gameplay-screen contract passes, and playtest is not NOT-PLAYABLE. Otherwise use
+gameplay-screen contract passes, playtest is not NOT-PLAYABLE, and Phase 10.4 banner/background
+generation, integration and verification have passed. Otherwise use
 `AUTOCREATE BLOCKED — UI/GAMEPLAY REWORK REQUIRED` and put the blocking rerun command first.
 
 ```
@@ -593,6 +645,12 @@ gameplay-screen contract passes, and playtest is not NOT-PLAYABLE. Otherwise use
    [Gambling: RTP XX.X% (target 95-97%)]
    [Math model M1–M6: the metric is inside its window, the report is in design/balance/simulation-report.md]
 
+🎨 Campaign art (Phase 10.4):
+   [PASS / BLOCKED] — production/store-art/campaign.md
+   Banner: production/store-art/long-banner.png
+   Shared runtime/phone-slide background: production/store-art/shared-background.png
+   /store-screenshots reuses these for the panorama, icon and mobile screenshots
+
 🚀 Release-ready (Phase 11.5, PREP — no build):
    ✅ Icons (Android adaptive + iOS + web) + a native splash (colour from the DNA)
    ✅ Version [name]+[build], store/ (listing + privacy + data-safety + age-rating)
@@ -630,6 +688,7 @@ gameplay-screen contract passes, and playtest is not NOT-PLAYABLE. Otherwise use
 | Phase | Exit criterion | Max iterations |
 |-------|----------------|----------------|
 | 0. Preflight | The handoff exists + `dart analyze` 0 errors | 1 (fail-fast) |
+| 10.4. Campaign art | Accepted store banner, shared background wired, campaign.md complete, analyzer/tests pass | Existing banner correction budget; background: 1 retry |
 | 10.5. Runtime Chrome / Android compile | Web: 0 CRITICAL/HIGH visual, gameplay-screen contract PASS, no HIGH in the V18 asset-distortion, V19 menu-composition/role or V20 gameplay-centering audits, 0 FATAL in flutter-run.log (+ soak: no leak). Android (`--platform android`): `flutter build apk --debug` exit 0 | 3 (Chrome is always available) / 2 (Android compile) |
 | 10.6. Playtest | PLAYTEST-REPORT.md, verdict ≠ NOT-PLAYABLE (P1–P10) | 2 |
 | 11. Session state | `active.md` updated | 1 |

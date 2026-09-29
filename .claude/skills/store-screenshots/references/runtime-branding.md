@@ -33,6 +33,11 @@ rg -n -i 'background|backdrop|bg_' lib pubspec.yaml 2>/dev/null \
 These files establish both halves of the invariant: the existing image bytes and the code/config
 references that select them.
 
+**Campaign context.** Read `campaign-handoff.md` when finalization artifacts exist. Use the
+accepted banner as world context for icon/emblem generation, alongside original shipped identity
+assets. Validate any existing icon against this campaign before reuse. The background guard
+protects the background already integrated by finalization.
+
 **Launcher icon.** If no suitable square icon art exists yet (`assets/branding/app_icon.png` or a
 game-world emblem crop from `art/panorama.png`), generate one with the same Codex GPT
 Images 2.0 path as the rest of the asset set (`generate-png-asset/SKILL.md`, budgeted as one

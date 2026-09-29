@@ -32,7 +32,7 @@ The pipeline is split into three context sessions:
 
 1. **Session 1 — pre-production (this skill, Phases 1–3.8):** concept, project bootstrap, structure and layout, assets, audio, content/economy data, then a handoff to Session 2.
 2. **Session 2 — implementation (`autocreate-implement`, Phases 4–10):** game code, meta systems, content wiring, integration, build fixes, feel pass, tests, UI/compliance audit, balance, and crash prevention.
-3. **Session 3 — finalize (`autocreate-finalize`, Phases 10.5–12):** runtime/soak verification, playtest, session state, release-engineering preparation, and final report.
+3. **Session 3 — finalize (`autocreate-finalize`, Phases 10.4–12):** store banner and shared runtime/phone-showcase background, runtime/soak verification, playtest, session state, release-engineering preparation, and final report.
 
 Every session must hand control to the next one with the Agent tool. If Agent is unavailable, write the handoff and continue in the same session by reading the next skill. Do not copy full history into a phase agent; give it only the handoff path, skill path, and exit criterion.
 
