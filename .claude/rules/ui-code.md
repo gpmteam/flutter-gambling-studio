@@ -592,6 +592,11 @@ Future<int> getHighScore() async {
 
 ---
 
+Player-facing claims that a served Web game starts without external resources require
+the fresh-profile, external-request-blocked startup and gameplay verification in
+`.claude/docs/technical-preferences.md` → "Web font and engine resource verification".
+Bundled theme fonts or a normal-network run alone do not establish that behavior.
+
 ## 9. PORTRAIT PHONE TARGETING
 
 - Follow `.claude/docs/mobile-first-contract.md`: a portrait phone is the only design target.
