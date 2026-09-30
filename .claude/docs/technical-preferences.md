@@ -12,6 +12,9 @@
 
 Before claiming that a served Web game starts without external resources, use a fresh browser
 profile with cache disabled and external HTTP(S) requests blocked before first navigation.
+Confirm the profile directory does not already exist before launch; choose a new output
+directory rather than mixing historical captures or cache with the current run. Preserve
+prior evidence and reject accidental profile reuse before writing new browser data.
 Verify successful startup and real gameplay, and inspect the request/error log. Bundled theme
 fonts and `--no-web-resources-cdn` alone are not proof: inspect the installed engine and its
 font manifest if a fallback request remains. For example, Flutter 3.44.5 CanvasKit loads remote
