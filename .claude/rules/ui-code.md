@@ -590,6 +590,17 @@ Future<int> getHighScore() async {
 - Text contrast against the background at least 4.5:1
 - Every interactive element at least 48x48
 
+### Pinned recognizer retention
+
+Stable widget/route counts do not prove that a long-lived control releases pointer data.
+If forced-GC heap growth is rooted through a tap recognizer's arena-entry map, inspect the
+installed framework's default acceptance path. For a confirmed pinned-version omission,
+a scoped recognizer may settle the accepted pointer entry after normal tap callbacks;
+do not replace gesture competition with an unconditional pointer-up action. Verify the
+same repeated-touch workload, canceled drags, simultaneous pointers, keyboard/semantic
+activation and unchanged touch bounds. Preserve the pinned SDK and standard input behavior;
+do not prescribe custom recognizers when there is no measured retention path.
+
 ---
 
 ## 9. PORTRAIT PHONE TARGETING
