@@ -140,6 +140,24 @@ class MenuLeadTests(unittest.TestCase):
             self.assertEqual(findings, [])
             self.assertEqual(len(context["references"]), 1)
 
+    def test_inferred_constant_draw_site_is_found(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Project(tmp)
+            asset_file = project.root / "lib/assets.dart"
+            asset_file.write_text(asset_file.read_text().replace("const String", "const"))
+            findings, context = project.audit()
+            self.assertEqual(findings, [])
+            self.assertEqual(len(context["references"]), 1)
+
+    def test_inferred_constant_does_not_hide_actual_missing_hero(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Project(tmp, menu=MENU_WITHOUT_LEAD)
+            asset_file = project.root / "lib/assets.dart"
+            asset_file.write_text(asset_file.read_text().replace("const String", "const"))
+            findings, _ = project.audit()
+            self.assertEqual([f.code for f in findings], ["lead-absent-from-menu"])
+            self.assertEqual(findings[0].severity, "HIGH")
+
     def test_a_cameo_sized_lead_is_medium(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             cameo = MENU_WITH_LEAD.replace("width: 260, height: 260",

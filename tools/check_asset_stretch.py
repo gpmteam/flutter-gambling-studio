@@ -197,7 +197,7 @@ def index_assets(root: Path) -> dict[str, Size]:
 # --------------------------------------------------------------------------
 
 _CONST_RE = re.compile(
-    r"static\s+const\s+String\s+(\w+)\s*=\s*['\"]([^'\"]+\.(?:png|jpe?g|webp|svg))['\"]",
+    r"static\s+const\s+(?:String\s+)?(\w+)\s*=\s*['\"]([^'\"]+\.(?:png|jpe?g|webp|svg))['\"]",
     re.I)
 _LITERAL_RE = re.compile(r"['\"]([^'\"]*\.(?:png|jpe?g|webp|svg))['\"]", re.I)
 _MEMBER_RE = re.compile(r"\b(?:\w+\.)?(\w+)\b")

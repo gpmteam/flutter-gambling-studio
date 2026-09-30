@@ -59,6 +59,23 @@ class IntrinsicSizeTests(unittest.TestCase):
             self.assertIsNone(stretch.intrinsic_size(junk))
 
 
+class AssetConstantTests(unittest.TestCase):
+    def test_typed_and_inferred_image_constants_are_resolved(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "art.dart").write_text("""
+                class Art {
+                  static const String typed = 'assets/typed.png';
+                  static const inferred = "assets/inferred.webp";
+                  static const int count = 3;
+                  static final dynamicImage = 'assets/dynamic.png';
+                  static const label = 'Zeus';
+                }
+            """, encoding="utf-8")
+            self.assertEqual(stretch.asset_constants(root), {
+                "typed": "assets/typed.png", "inferred": "assets/inferred.webp"})
+
+
 class DeviationTests(unittest.TestCase):
     def test_identical_ratio_is_zero(self) -> None:
         self.assertAlmostEqual(stretch.deviation(2.0, 2.0), 0.0)
