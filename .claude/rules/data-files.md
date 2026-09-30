@@ -20,6 +20,14 @@ for `tools/simulate_balance.py`; reference files that pass a run out of the box 
 
 The run command and the thresholds are in `.claude/docs/balance-models.md`.
 
+## Report serialization and file extensions
+
+Every file named `*.json`, including historical balance evidence, must contain valid JSON.
+`tools/simulate_balance.py --report` writes Markdown; give that output a `.md` extension.
+Keep machine-readable configs and actual-engine `bot-report.json` as JSON. Validate their
+serialization before naming or committing them; do not rename Markdown to `.json` or relax
+JSON/no-gambling parsing to admit a report. Preserve historical evidence when correcting names.
+
 ## level-config.json — the board schema (G1 / model B1)
 
 ```json
