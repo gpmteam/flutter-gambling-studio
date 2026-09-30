@@ -144,6 +144,14 @@ class AudioService {
 }
 ```
 
+## Delta-plan presentation
+
+- A resolved fall list may contain only displaced pieces; it is not the complete field.
+- During falling, draw stationary survivors as well as moving pieces and refills. Prepare
+  membership masks outside `update()`/`render()`; never recompute gameplay to fill visual gaps.
+- Inspect a mid-fall frame after a small clear and one that displaces other pieces. Verify
+  unchanged survivors remain visible and the committed board and score stay unchanged.
+
 ## Performance
 
 - No allocation in `update()` or `render()` — pre-initialise Vector2, Rect, Paint
