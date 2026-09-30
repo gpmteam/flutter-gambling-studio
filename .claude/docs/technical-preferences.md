@@ -68,6 +68,14 @@ For the juiciness of a move we use *ParticleSystemComponent* effects.
 - Limit concurrent playback: at most 3 overlapping sounds (for example 1 BGM loop, 1 action
   sound loop, 1 effect overlay).
 - For rising effects use pitch scaling: `playbackRate` 1.0 → 1.5.
+- On Web, diagnose growing native audio nodes with forced-GC before/after heap snapshots
+  and strong retaining paths; an active-voice cap alone does not bound retained sources.
+  If the installed backend recreates media elements when a voice changes URLs and those
+  sources remain rooted after release, reuse prepared sources from the finite SFX catalog
+  (for example by channel and asset). Stop the previous source on a channel, preserve at
+  most three concurrently playing voices, and dispose every prepared player. Verify the
+  same alternating-event workload again, including source counts, errors and playback
+  cancellation. This is a measured backend-specific remedy, not a universal pool mandate.
 
 ### Graphical assets
 - For `/autocreate` under Codex the default graphics path is **PNG via GPT Images 2.0**, and
