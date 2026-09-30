@@ -590,6 +590,18 @@ Future<int> getHighScore() async {
 - Text contrast against the background at least 4.5:1
 - Every interactive element at least 48x48
 
+### Historical pointer-kind maps in pinned tap controls
+
+If forced-GC heaps trace growth to a mounted recognizer's historical pointer-kind map,
+inspect the pinned implementation separately from arena-entry or engine pointer-state owners.
+For a confirmed tap-only control, a scoped recognizer may retain only the primary down kind
+needed by its callbacks, preserving permission checks, standard arena tracking and callback
+kind lookup. Do not introduce an unbounded replacement map or remove supported gestures.
+Preserve simultaneous pointers, canceled drags, active touch/mouse/pen, keyboard and semantic
+activation, and unchanged touch bounds. Recheck the same warmed workload and every previously
+proven owner; stable DOM alone is insufficient. Keep the pinned SDK; use no override without
+an actual strong retention path and regression evidence.
+
 ---
 
 ## 9. PORTRAIT PHONE TARGETING

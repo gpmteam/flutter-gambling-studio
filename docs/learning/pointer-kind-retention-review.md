@@ -1,0 +1,9 @@
+# Historical pointer-kind proposal review
+
+Observed source: Flutter 3.27 GestureRecognizer.addPointer stores each new pointer kind in _pointerToKind without removal. Forced-GC profile roots point through the mounted menu's RawGestureDetector and tap recognizer; this is independent of arena entries, native audio sources and engine pointer state.
+
+Evidence reviewed: ten warm/thirty measured cycles: 619→649 cells; 100 warm/100 measured: 709→809 before the fix and 609→609 after. Game routes/controls are constant; source/build hashes and strong paths are persisted in the evidence checkpoint. Eight input/feedback tests and all 115 tests pass in the game. The framework worktree is guidance-only, not a separately compiled Flutter app.
+
+The proposed paragraph requires an actual strong path and pinned implementation diagnosis. Its remedy applies only to a confirmed tap-only control whose callback needs the primary down kind. Standard permission checks and arena tracking remain obligations, rather than encouraging bypass of the gesture system. It explicitly prohibits another unbounded map or removal of supported gestures. Multiple-pointer/cancellation, active touch/mouse/pen, keyboard/semantic activation and touch bounds are retained. Previous owners require separate rechecks, because one fix cannot imply all maps are bounded. Stable DOM cannot substitute for the heap comparison.
+
+No universal tap-recognizer ban, engine upgrade, SDK edit, gameplay-state change or removal of accessibility is proposed. Existing engine-before-animation, seeded RNG, balance and no-gambling gates remain untouched. Prior UI guidance is preserved byte-for-byte outside the addition; referenced mobile-first and test rules remain present. It is reviewable without depending on the preceding unmerged arena-entry proposal.
