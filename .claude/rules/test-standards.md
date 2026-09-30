@@ -144,6 +144,16 @@ real screen at the four portrait phones — 360×640, 360×800, 390×844 and 430
 Name the file `test/screens/game_screen_layout_test.dart`. Geometry tests complement rather than
 replace the mandatory idle/active screenshot vision pass.
 
+## Component motion inside a route host
+
+When asserting a component's animation properties inside `MaterialApp` or another route host,
+scope the finder to that component's subtree and assert the expected node count before reading
+transforms, opacity or other motion values. A global finder can include unrelated page transition
+widgets and report a false failure even when the component has settled correctly.
+Keep the real route host for navigation and lifecycle coverage; verify its transitions separately
+when they are part of the behavior under test. Narrowing a finder must not remove expected
+component nodes, relax motion assertions, or replace real lifecycle checks.
+
 ## Minimum coverage by area
 
 | Area | Minimum |
