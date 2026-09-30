@@ -1,7 +1,9 @@
-# Gemini CLI / Antigravity Guide for Flutter Gambling Studio
+# Gemini CLI / Antigravity Guide for the Flutter Casual Game Studio
 
-> Drive the gambling studio through the Gemini / Antigravity agent.
-> The studio builds ONLY gambling games: six categories C1–C6, 32 archetypes A–AF.
+> Drive the studio through the Gemini / Antigravity agent.
+> The studio builds casual mini-games — casino-grade looks, never gambling gameplay: six
+> categories G1–G6, 28 archetypes A–AB. The repository keeps its historical name,
+> `flutter-gambling-studio`.
 > This file adapts the studio's commands for use in the `gemini` CLI.
 >
 > For Claude: `CLAUDE.md` and `.claude/`
@@ -31,13 +33,13 @@ mention the agent.
 | Command | Description |
 |---------|-------------|
 | `/brainstorm` | Interactive concept generator |
-| `/auto-idea` | Autonomous concept (32 archetypes A–AF across 6 categories + Variety Dimensions + Layout Archetype) |
+| `/auto-idea` | Autonomous concept (28 archetypes A–AB across 6 categories + Variety Dimensions + layout recipes) |
 | `/autocreate` | The full game creation cycle |
 | `/team-dev` | Developer team orchestration |
-| `/ui-audit` | Find anti-slop design problems |
+| `/ui-audit` | Find anti-slop design problems and gambling copy |
 | `/emulator-test` | Runtime testing — Chrome/Web by default, with a real Android emulator over ADB as the fallback. Screenshots come from `flutter screenshot`, falling back to `adb screencap`, with PNG validation. Use `--no-impeller` if the frames come out invalid. |
 | `/code-review` | Review of the Flame and Flutter architecture |
-| `/balance-check` | Math model verification M1–M6 via `tools/simulate_math.py` |
+| `/balance-check` | Balance model verification B1–B6 via `tools/simulate_balance.py` |
 
 For the full list see [CLAUDE.md](CLAUDE.md).
 
@@ -57,10 +59,10 @@ When writing code, the Gemini bot follows the standards described in:
 - `.claude/rules/ui-code.md`
 - `.claude/docs/mobile-first-contract.md`
 
-Always pay attention to the `Random.secure()` and "stateless outcomes" requirements, and
-avoid magic numbers outside `game_config.dart`.
+Always pay attention to "logic before animation", the one seeded `GameRng`, and avoid magic
+numbers outside `game_config.dart`.
 
 Required reading before starting work:
-- `.claude/docs/gambling-categories.md` — the six categories and 32 archetypes
-- `.claude/docs/math-models.md` — models M1–M6 and their verification thresholds
-- `.claude/rules/responsible-gaming.md` — the compliance layer (a release blocker)
+- `.claude/docs/game-categories.md` — the six categories, 28 archetypes and the gambling-ask translation table
+- `.claude/docs/balance-models.md` — models B1–B6 and their verification thresholds
+- `.claude/rules/no-gambling.md` — the no-gambling gate (a release blocker)

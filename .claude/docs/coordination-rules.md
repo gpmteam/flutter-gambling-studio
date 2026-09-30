@@ -1,6 +1,6 @@
 # Game Studio Coordination Rules
 
-A mini-game succeeds when balance (mathematics/difficulty), code design and juiciness stay in sync.
+A mini-game succeeds when balance (difficulty and pacing), code design and juiciness stay in sync.
 
 ## Collaboration principles
 
@@ -18,15 +18,16 @@ A mini-game succeeds when balance (mathematics/difficulty), code design and juic
 
 3. **Respect the chain of command**
    - Only `creative-director` changes the core gameplay and the vision (pillars).
-   - Only `game-mathematician` approves a new balance model after `/balance-check` passes.
+   - Only `balance-designer` approves a new balance model after `/balance-check` passes.
    - `mechanics-programmer` MAY NOT hardcode game parameters. They must be read from
      `GameConfig`/the GDD.
-   - `mechanics-programmer` does not hardcode a win chance (e.g. `if (Random().nextDouble() < 0.1) win!`)
-     and does not substitute anything for `Random.secure()`.
+   - `mechanics-programmer` does not hardcode spawn weights or budgets, does not construct its own
+     `Random()` (all gameplay randomness goes through the seeded `GameRng`), and never adds a
+     chance-based reward (e.g. `if (Random().nextDouble() < 0.1) awardBooster();`).
    - `juice-artist` does not make an animation longer than 3–4 seconds, so the game loop does
      not slow down. `game-designer` approves the length.
-   - `release-manager` is the only agent who can lift a compliance blocker. No agent
-     "simplifies" the disclaimer for the sake of speed.
+   - Nobody lifts a no-gambling blocker (`.claude/rules/no-gambling.md`). No agent adds a wager,
+     a currency or a chance-based reward "to make it more exciting"; `release-manager` enforces it.
 
 ## Conflict resolution
 
@@ -40,17 +41,17 @@ Mistakes are inevitable. If one mechanic contradicts another, pause and bring in
 **If the code contradicts the GDD:** `lead-programmer` and `game-designer` find common ground.
 If a feature is impossible because of Flame's architecture, the GDD is updated.
 
-**If the math model is outside its window** (`tools/simulate_math.py` returns FAIL): production
-stops. Bring in `game-mathematician`, who iterates ONLY on the numbers in the model's JSON
+**If the balance model is outside its window** (`tools/simulate_balance.py` returns FAIL):
+production stops. Bring in `balance-designer`, who iterates ONLY on the numbers in the model's JSON
 config. Only after a green run does `mechanics-programmer` update the code. The thresholds for
-models M1–M6 are in `.claude/docs/math-models.md`.
+models B1–B6 are in `.claude/docs/balance-models.md`.
 
-**If "prettier" conflicts with "honest":** honesty wins. A visual near-miss is acceptable only
-when it reflects the real outcome; tuning the animation to feel more like a win is a breach of
+**If "prettier" conflicts with "honest":** honesty wins. Feedback shows exactly what the move
+did; a fake "almost cleared" moment or a celebration bigger than the event is a breach of
 game integrity, not a juice-artist's clever find.
 
 ## Handing off work
 
-When passing a task from the mathematician → designer → programmer → VFX, use the `/team-dev`
+When passing a task from the balance designer → designer → programmer → VFX, use the `/team-dev`
 skill. Each agent must pass the exact reference to the working documents (for example the GDD
 at `design/gdd/[file].md`) to the next agent in the chain.

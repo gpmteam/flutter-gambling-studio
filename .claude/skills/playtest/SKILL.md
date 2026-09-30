@@ -1,6 +1,6 @@
 ---
 name: playtest
-description: "Deep GAMEPLAY verification (not just 'the screens open'): actually plays the game through headless Chrome CDP — N gameplay actions, checking that the score/balance CHANGE, that the win path is reachable, that game-over is handled, that progression works, that active-state feedback is readable through vision-based frame comparison, and that there are no exceptions or leaks. Produces a PLAYTEST REPORT with a verdict and prioritised fixes. Called from /autocreate-finalize (Phase 10.6) or run manually."
+description: "Deep GAMEPLAY verification (not just 'the screens open'): actually plays the game through headless Chrome CDP — N gameplay actions, checking that the score/goal progress CHANGE, that the win path is reachable, that game-over is handled, that progression works, that active-state feedback is readable through vision-based frame comparison, and that there are no exceptions or leaks. Produces a PLAYTEST REPORT with a verdict and prioritised fixes. Called from /autocreate-finalize (Phase 10.6) or run manually."
 argument-hint: "[--rounds N] [--no-fix]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Agent
@@ -64,6 +64,14 @@ timeout 180 node tools/web_verify.mjs --url "$WEB_URL" --out "$PT_DIR/360x640" \
   2>&1 | tee "$PT_DIR/360x640/web_verify.log"
 ```
 
+For direct board mechanics (swap, link, drag, merge, pipes), repeating a button or tapping the
+thumb zone does not prove playability. Read the actual rules and drive valid touch sequences
+through CDP: adjacent-cell drags for swap, a complete matching path for link, cell taps for blast,
+board swipes for slide merge, and aim-and-release for physics. Use the game's actual field
+bounds/semantics; never invent a SPIN button for test convenience. Save the action trace and
+before/after captures, play to a genuine complete/fail path, and verify progression on restart.
+The generic tour/soak is only a screen and crash probe until these checks are completed.
+
 Afterwards, stop the server: `kill "$(cat .claude/runtime-logs/flutter.pid)" 2>/dev/null`.
 
 ## Phase 3 — the gameplay checks (P1–P10)
@@ -74,12 +82,12 @@ Sources: the screenshots (`Read` vision), `manifest.json` (`semanticLabels`, `co
 | # | Check | How to verify it | Severity on FAIL |
 |---|-------|------------------|------------------|
 | P1 | **An action produces a result** | Compare the frames before/after the action (vision): the field changed, the pixels are not identical | CRITICAL |
-| P2 | **The numbers change** | The score/balance in the screenshot AFTER a series of actions ≠ the value BEFORE (vision-reading the HUD digits) | CRITICAL |
+| P2 | **The numbers change** | The score/goal progress in the screenshot AFTER a series of actions ≠ the value BEFORE (vision-reading the HUD digits) | CRITICAL |
 | P3 | **The win path is reachable** | Over N rounds, win feedback is visible at least once (overlay/particles/a rising number) | HIGH |
-| P4 | **A loss is handled** | Game-over / insufficient-funds appears and there is a way out of it (restart/menu) | HIGH |
+| P4 | **A loss is handled** | Level failed / run over appears and there is a way out of it (restart/menu) | HIGH |
 | P5 | **The board communicates state** | During a real action, before/anticipation/result frames change meaningfully and the player can read what changed. A deliberately still idle state is valid; decorative perpetual motion is not required — vision | HIGH |
 | P6 | **Progression works** | Level/Mode Select opens, and choosing a level starts the game with a different config | HIGH |
-| P7 | **Pause/return** | Going to the menu and back does not break the state (the balance is preserved, no red screen) | HIGH |
+| P7 | **Pause/return** | Going to the menu and back does not break the state (score and progression are preserved, no red screen) | HIGH |
 | P8 | **0 exceptions during the session** | `consoleErrors` is empty; no EXCEPTION CAUGHT in flutter-run.log | CRITICAL |
 | P9 | **No leak** | `soak.suspectLeak == false`, the heap does not grow monotonically | MEDIUM |
 | P10 | **The starting experience** | From launch to the first game action is ≤ 3 taps (splash→menu→play) | MEDIUM |

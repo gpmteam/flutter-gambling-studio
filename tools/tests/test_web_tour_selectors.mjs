@@ -22,7 +22,7 @@ test('exact gameplay label wins over Flutter composite semantics root', () => {
 
 test('variant labels fall back to the shortest matching leaf', () => {
   const nodes = [
-    {label: 'Play now — balance and paytable', x: 195, y: 422},
+    {label: 'Play now — score and how to play', x: 195, y: 422},
     {label: 'Play now', x: 195, y: 730},
   ];
   const selected = findLeafByLabel(nodes, ['play'], /play/i);

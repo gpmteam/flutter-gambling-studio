@@ -1,9 +1,9 @@
 ---
 name: team-dev
-description: "Orchestrates development of a gambling game mechanic across several specialists. Coordinates the game designer, the mathematician, the mechanics programmer, the VFX artist and the sound designer."
+description: "Orchestrates development of a casual game mechanic across several specialists. Coordinates the game designer, the balance designer, the mechanics programmer, the VFX artist and the sound designer."
 user-invocable: true
 allowed-tools: Bash, Read, Edit, Write, Agent
-argument-hint: "<feature/system description> (e.g. 'Cascading reels with free spins', 'Cash-out with round history', 'A pity counter and an odds screen')"
+argument-hint: "<feature/system description> (e.g. 'Specials from 5-matches', 'Undo with three charges', 'A daily challenge on a seeded level')"
 ---
 
 # `team-dev` — studio orchestration
@@ -13,40 +13,45 @@ Runs the agents in the right order to implement a complex feature.
 ## Instructions
 
 1. Clarify the task with the user: which feature, and is there already a GDD?
-   Read the **Classification** block in `design/gdd/game-concept.md` — the category (C1–C6)
-   and the mathematical model (M1–M6) determine who to call and in what order.
+   Read the **Classification** block in `design/gdd/game-concept.md` — the category (G1–G6)
+   and the balance model (B1–B6) determine who to call and in what order.
 
 2. If there is no GDD, call `game-designer` to write one.
-   They must consult `game-mathematician` on anything involving the model's numbers.
+   They must consult `balance-designer` on anything involving the model's numbers.
 
-3. **The mathematics comes BEFORE the code.** If the feature touches the numbers:
-   - `game-mathematician` edits the model's JSON config
-   - run it: `python3 tools/simulate_math.py --model [m1-m6] --config design/balance/[file].json`
-   - only a green run opens the road to implementation
+3. **No gambling, ever.** If the feature is a wager, a currency, a shop, a chance-based reward or a
+   casino game, stop and offer the casual alternative (`.claude/rules/no-gambling.md`).
 
-   | Category | What the mathematician computes |
-   |----------|--------------------------------|
-   | C1 | symbol weights, payouts, RTP, hit rate |
-   | C2 | house edge, the multiplier formula, the cap |
-   | C3 | spin event weights, unlock prices, energy regeneration |
-   | C4 | base rates, soft/hard pity |
-   | C5 | round thresholds, modifier strength, income |
-   | C6 | bucket multipliers, the hit distribution |
+4. **Plan balance before implementation.** If the feature touches the numbers:
+   - `balance-designer` edits the model's JSON config
+   - run it: `python3 tools/simulate_balance.py --model [b1-b6|report] --config design/balance/[file].json`
+   - use a built-in simulator or the existing rules-engine bot where available
+   - for a new/custom mechanic with no simulator yet, record the B1–B6 windows, JSON data and
+     headless-bot plan before coding; implement that bot with the rules engine, then require a
+     real PASS before integration/release. Never fabricate a passing report.
 
-4. For the implementation call `mechanics-programmer` (core logic) and `juice-artist` (VFX
-   animation) in the right order. Always pass them the links to the GDD and to the model config.
-   Remind them: `Random.secure()`, stateless outcomes, and not one model number as a Dart literal.
+   | Category | What the balance designer tunes |
+   |----------|---------------------------------|
+   | G1 | kinds, move budgets, targets, blockers per level |
+   | G2 | layout size, kinds, par, the generator policy |
+   | G3 | board size, spawn table, goal tier |
+   | G4 | shot budgets, layouts, target counts |
+   | G5 | tempo ramp, reaction windows, grace period |
+   | G6 | level sizes, constraints, par |
 
-5. Where needed, bring in `sound-designer` for the audio events
-   (bet, spin, stop, near-miss, cash-out, reveal, wins by tier).
+5. For the implementation call `mechanics-programmer` (the rules engine) and `juice-artist` (VFX
+   animation) in the right order. Always pass them the links to the GDD and to the balance config.
+   Remind them: one seeded `GameRng`, logic before animation, and not one balance number as a Dart
+   literal.
 
-6. If the feature adds a random award in exchange for currency, bring in `ui-programmer`
-   to update the odds disclosure screen (`.claude/rules/responsible-gaming.md` §2.4).
+6. Where needed, bring in `sound-designer` for the audio events
+   (the move, the match/cascade, combos, clears, failure).
 
-   Every UI pass must follow `.claude/docs/mobile-first-contract.md`: a portrait phone game, touch
+7. Every UI pass must follow `.claude/docs/mobile-first-contract.md`: a portrait phone game, touch
    only, verified at the four phones, with no desktop/tablet/landscape layout or device frame.
 
-7. All player-facing copy the feature introduces is written in English (unless the user
+8. All player-facing copy the feature introduces is written in English (unless the user
    explicitly asked for the game in another language).
 
-8. When everything is done, suggest the user verify the result: `/balance-check`, `/ui-audit`.
+9. Verify the completed change with `/balance-check` and `/ui-audit`; a missing bot report is
+   incomplete work, not a PASS.

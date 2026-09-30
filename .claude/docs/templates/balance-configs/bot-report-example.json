@@ -1,0 +1,112 @@
+{
+  "game_name": "Selftest Peg Clear",
+  "model": "b4",
+  "bot": "headless Forge2D at a fixed 1/60 s step; aim chosen from 12 sampled angles with \u00b13\u00b0 noise (player) or the best of 24 (skilled)",
+  "levels": [
+    {
+      "id": 1,
+      "runs": 200,
+      "passes": 194,
+      "skilled_runs": 200,
+      "skilled_passes": 200
+    },
+    {
+      "id": 2,
+      "runs": 200,
+      "passes": 188,
+      "skilled_runs": 200,
+      "skilled_passes": 199
+    },
+    {
+      "id": 3,
+      "runs": 200,
+      "passes": 181,
+      "skilled_runs": 200,
+      "skilled_passes": 197
+    },
+    {
+      "id": 4,
+      "runs": 200,
+      "passes": 166,
+      "skilled_runs": 200,
+      "skilled_passes": 193
+    },
+    {
+      "id": 5,
+      "runs": 200,
+      "passes": 150,
+      "skilled_runs": 200,
+      "skilled_passes": 186
+    },
+    {
+      "id": 6,
+      "runs": 200,
+      "passes": 158,
+      "skilled_runs": 200,
+      "skilled_passes": 190
+    },
+    {
+      "id": 7,
+      "runs": 200,
+      "passes": 139,
+      "skilled_runs": 200,
+      "skilled_passes": 180
+    },
+    {
+      "id": 8,
+      "runs": 200,
+      "passes": 128,
+      "skilled_runs": 200,
+      "skilled_passes": 172
+    },
+    {
+      "id": 9,
+      "runs": 200,
+      "passes": 146,
+      "skilled_runs": 200,
+      "skilled_passes": 184
+    },
+    {
+      "id": 10,
+      "runs": 200,
+      "passes": 121,
+      "skilled_runs": 200,
+      "skilled_passes": 170
+    },
+    {
+      "id": 11,
+      "runs": 200,
+      "passes": 109,
+      "skilled_runs": 200,
+      "skilled_passes": 158
+    },
+    {
+      "id": 12,
+      "runs": 200,
+      "passes": 118,
+      "skilled_runs": 200,
+      "skilled_passes": 166
+    },
+    {
+      "id": 13,
+      "runs": 200,
+      "passes": 98,
+      "skilled_runs": 200,
+      "skilled_passes": 150
+    },
+    {
+      "id": 14,
+      "runs": 200,
+      "passes": 90,
+      "skilled_runs": 200,
+      "skilled_passes": 141
+    },
+    {
+      "id": 15,
+      "runs": 200,
+      "passes": 82,
+      "skilled_runs": 200,
+      "skilled_passes": 134
+    }
+  ]
+}

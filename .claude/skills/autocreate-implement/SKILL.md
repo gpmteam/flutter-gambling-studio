@@ -1,6 +1,6 @@
 ---
 name: autocreate-implement
-description: "Session 2 of the /autocreate pipeline (Phases 4 → 10): implementation. Five agents in sequence write the code plus the meta systems, wire up content, integrate, build to 0 errors, run a feel pass, tests, a UI audit (compliance), curve-based balancing and crash prevention. The heavy phases are DELEGATED to fresh sub-agents without a full-history fork, so the orchestrator does not exhaust its context or TPM. At the end it spawns Session 3 (autocreate-finalize). Started automatically by Session 1 through the Agent tool, or manually in a new conversation."
+description: "Session 2 of the /autocreate pipeline (Phases 4 → 10): implementation. Five agents in sequence write the code plus the meta systems, wire up content, integrate, build to 0 errors, run a feel pass, tests, a UI audit (including the no-gambling gate), curve-based balancing and crash prevention. The heavy phases are DELEGATED to fresh sub-agents without a full-history fork, so the orchestrator does not exhaust its context or TPM. At the end it spawns Session 3 (autocreate-finalize). Started automatically by Session 1 through the Agent tool, or manually in a new conversation."
 argument-hint: "[--resume]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Agent, Skill
@@ -45,7 +45,9 @@ Session 1 (autocreate)  →[handoff-1]→  Session 2 (THIS skill)  →[autocreat
 **Forbidden:**
 - ❌ Rewriting Session 1's concept/assets/audio/data (you may only extend `GameConfig` with
   values from `assets/data/*.json`)
-- ❌ Changing balance or content data other than through game-mathematician in Phase 9
+- ❌ Changing balance or level data other than through balance-designer in Phase 9
+- ❌ Adding any wager, currency, shop, chance-based reward, casino control, gambling copy or age
+  gate (`.claude/rules/no-gambling.md`)
 - ❌ Calling `flutter build apk/appbundle/web`, `adb` or `emulator` — that is Session 3 / release-eng
 - ❌ Reporting "done" while `dart analyze` has errors or `flutter test` is red
 - ❌ Finishing without spawning Session 3 (Phase 10.7)
@@ -61,13 +63,13 @@ Session 2 orchestrator mostly coordinates and runs commands, while the sub-agent
 | Phase | What the orchestrator does | Who it delegates to (Agent tool, clean context + handoff) |
 |-------|----------------------------|----------------------------------------------------------|
 | 4. Implementation | builds the `lib/contracts.md` contract, runs the 5 agents strictly one at a time | **A** mechanics → **E** meta-systems → **D** sound → **B** ui → **C** juice |
-| 4.5. Content wiring | — | gluing data↔code: **B** (level/mode select) + **E** (progression/economy) |
+| 4.5. Content wiring | — | gluing data↔code: **B** (level map/mode select) + **E** (progression/achievements/album) |
 | 5. Integration | — | **lead-programmer**: reads every file, fixes cross-agent mismatches, places the service/audio/VFX calls |
 | 6. Build & Fix | runs `dart analyze`, collects the error list | if there are many errors, **mechanics-programmer**/**ui-programmer** fix their own; the orchestrator only re-runs analyze |
 | 6.5. Feel Pass | — | **juice-artist** (living gameplay, filling in the hooks) |
 | 7. Tests | runs `flutter test`, collects the failures | **qa-tester** writes/fixes the tests |
 | 8. UI Audit | — | `/ui-audit` (the skill already uses agents) OR **ui-programmer** across the 10 categories |
-| 9. Balance | runs the sim script | **game-mathematician** when it falls outside the window (edits the JSON) |
+| 9. Balance | runs `tools/simulate_balance.py` (and, for mechanics without a built-in simulator, `test/balance/bot_sim_test.dart` → `--model report`) | **balance-designer** when it falls outside the window (edits the JSON) |
 | 10. Crash Prevention | a final `dart analyze` + `flutter test` | targeted fixes go to the relevant agent |
 
 > **The orchestrator's rule:** do not open `lib/` files en masse for reading. Read only the
@@ -171,14 +173,15 @@ below is the Session 2 quality-gate definition:
 | 6.5. Feel Pass | the field is alive (F1–F5), analyze + test clean | 2 |
 | 7. Tests | `flutter test` all green (including test/services/) | 5 |
 | 8. UI Audit | 100+ checks, including the blocking portrait-phone gate at the four phones (no desktop/tablet/landscape layout) | 3 |
-| 9. Balance | RTP/difficulty in range across the WHOLE curve | 3 |
-| 10. Crash Prevention | 20/20 + (gambling) disclaimer; analyze + test clean | 3 |
+| 9. Balance | the B1–B6 model PASSES across the WHOLE curve (`design/balance/simulation-report.md`) | 3 |
+| 10. Crash Prevention | 20/20 + no dead ends + the no-gambling greps clean; analyze + test clean | 3 |
 
 **THE ABSOLUTE MINIMUM before Phase 10.7:** `dart analyze lib/` 0 errors, `flutter test` green,
 15+ screens, working navigation, the core mechanic + content (N levels/modes) + the meta systems
-in place, (gambling) the compliance flags wired up, and every player-facing string in English
-(unless the user explicitly asked for another language). The live field, essential HUD, stake/risk
-controls and primary action must be visible together without page scrolling; a thumbnail field or
+in place, the no-gambling gate clean (no wager, currency, chance-based reward, casino control,
+gambling copy or age gate), and every player-facing string in English (unless the user explicitly
+asked for another language). The live field, essential HUD (score, goal, moves/time) and primary
+action must be visible together without page scrolling; a thumbnail field or
 nested game window blocks the handoff even when analyzer and tests are green. Every screen is one
 portrait composition that holds at 360×640, 360×800, 390×844 and 430×932; the app is
 portrait-locked, touch-only, and shows the phone column on a wide host.
@@ -189,7 +192,7 @@ portrait-locked, touch-only, and shows the phone column on a wide host.
 
 Write `production/session-state/autocreate-handoff.md` with the game/package identity,
 current architecture and entrypoints, modes/content paths, completed phase evidence, analyzer
-and test results, integration/feel/UI/compliance/curve/crash reports, viewport measurements,
+and test results, integration/feel/UI/no-gambling/curve/crash reports, viewport measurements,
 asset format and known limits. Include exact runtime launch and navigation details.
 
 **Spawn a clean-context Session 3 agent** with the following instruction:

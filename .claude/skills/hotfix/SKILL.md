@@ -15,10 +15,10 @@ Invocation: the user runs `/hotfix [a short description of the critical problem]
 An emergency fix for a critical problem in the mini-game. It bypasses the normal development
 process while keeping a full audit trail. Use it for:
 - Critical RNG bugs (an incorrect distribution)
-- The RTP falling outside 90–98%
-- State leakage (an incorrect balance)
-- A crash during a spin
-- A critical UI bug (spinning is impossible)
+- An impossible level or broken difficulty curve
+- State leakage (incorrect score, moves or saved progress)
+- A crash during move resolution
+- A critical UI bug (input cannot make a move)
 
 ## When NOT to use it
 
@@ -31,8 +31,8 @@ process while keeping a full audit trail. Use it for:
 ### Step 1: assessing severity
 
 The `lead-programmer` agent assesses:
-- Does it touch the RNG or the balance? → CRITICAL
-- Can the player lose coins? → CRITICAL
+- Does it corrupt the rules, RNG replay or progression? → CRITICAL
+- Can the player lose saved progress? → CRITICAL
 - Purely a visual bug? → NOT A HOTFIX
 
 ### Step 2: diagnosis
@@ -48,10 +48,10 @@ grep -rn "TODO\|FIXME\|HACK" lib/ --include="*.dart"
 flutter test --name "broken_mechanic"
 ```
 
-The `mechanics-programmer` agent analyses the gambling-specific files:
-- `lib/systems/weighted_rng.dart` — checking the RNG
-- `lib/systems/payline_evaluator.dart` — checking the logic
-- `lib/game/slot_config.dart` — checking the config
+The `mechanics-programmer` agent analyses the casual rules and state files:
+- `lib/systems/game_rng.dart` — checking the RNG
+- `lib/systems/board_engine.dart (or the category's rules engine)` — checking the logic
+- `lib/game/game_config.dart` — checking the config
 - `lib/models/game_state.dart` — checking the state machine
 
 ### Step 3: creating the hotfix branch
@@ -73,13 +73,13 @@ git checkout -b hotfix/$DATE-short-description
 # Mandatory after the fix
 flutter test
 dart analyze lib/
-python3 tools/simulate_math.py --model [m1-m6] --config design/balance/[file].json --trials 100000
+python3 tools/simulate_balance.py --model [b1-b6|report] --config design/balance/[file].json
 ```
 
 The verification checklist:
 - [ ] The fix does not break existing tests
-- [ ] The RTP is still within 95–97% (or it was outside and is now back in range)
-- [ ] No new `math.Random()` was introduced
+- [ ] The category's balance curve is inside its B1–B6 windows (rerun if affected)
+- [ ] Gameplay still uses one seeded GameRng; no wager, currency or random reward was introduced
 - [ ] No state leakage appeared
 
 ### Step 6: the audit trail
@@ -103,14 +103,14 @@ Create `production/session-logs/hotfix-YYYY-MM-DD.md`:
 ## Verification
 - flutter test: [PASS/FAIL]
 - dart analyze: [0 issues / N issues]
-- Math simulation (100K): [XX.X%]
+- Balance simulation: [PASS/CONCERNS/FAIL, report path]
 
 ## Approved
 - Technically: [lead-programmer / technical-director]
-- Mathematically: [game-mathematician — if the RTP was affected]
+- Balance: [balance-designer — if difficulty or scoring changed]
 ```
 
-### Step 7: merging
+### Step 7: recording the fix
 
 ```bash
 git add [only the changed files]
@@ -118,12 +118,12 @@ git commit -m "hotfix: [a short description of the problem]
 
 Problem: [what was wrong]
 Fix: [what changed]
-Verification: tests GREEN, RTP XX.X%"
+Verification: tests GREEN, balance verified, no-gambling gate clean"
 ```
 
 ## Arguments
 
 - `[description]` — a short description of the problem (required)
 - `--rng` — focus on the RNG/probabilities
-- `--balance` — focus on the player's balance
+- `--balance` — focus on scoring and the difficulty curve
 - `--crash` — focus on the crash/error

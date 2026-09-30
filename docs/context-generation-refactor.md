@@ -1,4 +1,9 @@
-# Context-based generation refactor
+# Context-based generation refactor (historical)
+
+This report predates the casual-game migration. Its gambling taxonomy, template measurements
+and old topology defaults describe that earlier implementation, not current guidance. Use
+`.claude/docs/game-categories.md`, `.claude/docs/balance-models.md` and
+`.claude/rules/no-gambling.md` for all new work.
 
 The framework now derives visual leads and store composition from the game rather than requiring
 a character on every first slide and gameplay in every middle slide.

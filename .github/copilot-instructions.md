@@ -1,4 +1,4 @@
-# GitHub Copilot Instructions — Flutter Gambling Studio
+# GitHub Copilot Instructions — Flutter Casual Game Studio
 
 Respond in English. Everything you produce is English: code (Dart/Flutter), design docs and
 reports. The GAME itself also ships in English — every player-facing string, plus store
@@ -6,61 +6,65 @@ metadata. The only exception is an explicit user request for another language: t
 player-facing copy uses that language and everything else stays English. Never switch the
 game's language on your own initiative or because of the language the user types in.
 
-This is a **gambling-only** mini-game studio using Flutter 3.27+ and Flame 1.18+.
-Puzzles, runners, shooters and clickers are out of scope.
+This is a **casual** mini-game studio using Flutter 3.27+ and Flame 1.18+ (the repository keeps
+its historical name, flutter-gambling-studio). Games may LOOK like premium casino key art or
+reproduce a reference exactly; their GAMEPLAY is always a casual skill mechanic scored in points.
 
 Every game is a portrait phone game played by touch. Build no tablet, desktop or landscape
 layout; a wide host shows the phone screens in the phone column, never a device frame. Follow
 `.claude/docs/mobile-first-contract.md`.
 
-Six gambling categories (no other genres):
-  C1 Social Casino        — slots, video poker, blackjack, roulette, bingo      → model M1 (RTP 95-97%)
-  C2 Casino Originals     — crash, mines, dice, hi-lo, tower, keno, scratch     → model M2 (RTP 96-99%)
-  C3 Spin-to-Progress     — build-and-raid, board-dice, prize wheel, album      → model M3 (economy)
-  C4 Gacha & Loot-Box     — banner pulls, card packs, case openers, gashapon    → model M4 (rates + pity)
-  C5 Casino Roguelike     — poker deckbuilder, reel roguelike, dice-builder     → model M5 (run win-rate)
-  C6 Coin Pusher & Plinko — coin dozer, plinko, pachinko                        → model M6 (physics RTP)
+Six game categories (`.claude/docs/game-categories.md`):
+  G1 Match & Cascade     — swap match-3, link chain, tap blast, rotate match     → model B1 (board simulation)
+  G2 Tile & Sort         — triple tile tray, pair tiles, sort puzzle, patience   → model B2 (solvable deals)
+  G3 Merge & Place       — slide merge, drop merge, block place, merge grid      → model B3 (run length)
+  G4 Aim & Physics       — bubble shooter, peg clear, brick breaker, knockdown   → model B4 (shot simulation)
+  G5 Arcade Reflex       — lane runner, stacker, catcher, slicer, flyer, throw   → model B5 (reflex ramp)
+  G6 Logic & Progression — connect paths, pipes, unblock, memory, logic grid     → model B6 (solver curve)
+
+## No gambling (hard gate — `.claude/rules/no-gambling.md`)
+
+- No bets, stakes, wagers, bet sizes, cash-out, "double or nothing"
+- No money of any kind: no coins/chips/gems/credits as a currency, no balance, no shop, no prices
+- No chance-based rewards: no reels that spin for an outcome, roulette, prize wheels, daily spins,
+  loot boxes, gacha, card packs, scratch cards, lotteries, plinko-for-prizes, pachinko, coin pushers
+- No casino games (poker, blackjack, roulette, baccarat), even for points
+- Points, stars, levels, streaks and progress-based unlocks only; no gambling words in UI or store copy
+- A gambling ask is translated to a casual mechanic ("Translating a gambling ask" in game-categories.md)
 
 ## Critical Rules (all six categories — unconditional)
 
-- RNG: ONLY `Random.secure()` — never `math.Random()` or `Random()`.
-  Sole exception: seeded run RNG in C5 casino roguelikes, and only with an ADR.
-- Stateless Outcomes: the round result is computed BEFORE the animation starts
-- No hardcoded probabilities: no `if (rng < 0.1) win!` — weights come from the JSON math config
+- Logic before animation: the pure rules engine resolves each move before the animation plays it back
+- One seeded `GameRng` for all gameplay randomness (fills, deals, spawns, level generation) so
+  levels, bots and tests reproduce; cosmetic randomness uses a separate `VfxRng`
 - GameState must be a sealed class, not boolean flags
-- All game constants in `game_config.dart`; math-model numbers in `design/balance/*.json`
-  (loaded, never duplicated as Dart literals)
-- Main action button locked during the round — debounce 300ms
+- All game constants in `game_config.dart`; balance numbers (levels, budgets, tempo ramps) in
+  `design/balance/*.json` (loaded, never duplicated as Dart literals)
+- Input locked while a move resolves — debounce 300ms on the primary action
+- No dead ends: a board with no move reshuffles, every deal/level is solvable, failure offers retry
 - No `await` in `update()` or `render()` — synchronous only
 - No object allocation in hot path (`update`/`render`) — pre-initialize Vector2, Paint, Rect
-- Max 3 concurrent audio channels (BGM + Action + Effect)
-- HasCollisionDetection goes on World, not FlameGame
-- Use new CameraComponent API (Flame 1.18)
-- Verify the model: `python3 tools/simulate_math.py --model [m1-m6] --config design/balance/<file>.json`
+- Max 3 concurrent audio channels (BGM + Action + Effect); SFX only unless music is requested
+- HasCollisionDetection goes on World, not FlameGame; use the new CameraComponent API (Flame 1.18)
+- Verify balance: `python3 tools/simulate_balance.py --model [b1-b6|report] --config design/balance/<file>.json`
 
-## Compliance (release blocker)
-
-Virtual chips only — no real money in or out. Age gate on first launch, disclaimer on splash
-and in the rules, responsible-play block in settings, odds disclosure for C4 and paid spins in C3.
-No real-currency symbols next to a virtual balance. See `.claude/rules/responsible-gaming.md`.
-
-## UI Rules (Anti-Slop)
+## UI Rules (Anti-Slop — style comes from the game's Design DNA, not a house style)
 
 - Portrait phones only: 360×640, 360×800, 390×844, and 430×932; no width breakpoints
-- No bare `ThemeData.dark()` — custom themes only
-- No `CircularProgressIndicator` — themed loaders only
-- No default `MaterialPageRoute` — custom transitions
-- Minimum 2 custom fonts per game
-- Every interactive element needs tactile feedback (scale/glow/sound)
+- Custom semantic theme from the Design Signature — never bare `ThemeData.dark()`/`light()`
+- Themed loading/committed states instead of a bare `CircularProgressIndicator`
+- Screen composition follows the recorded per-screen recipes (`.claude/docs/layout-archetypes.md`)
+- Every interactive element needs immediate tactile feedback (scale/glow/sound)
 - All animation durations centralized in `lib/theme/animations.dart`
+- Do NOT apply neon/dark/glassmorphism/Orbitron/skewed buttons to every game — style is always from DNA
 
-## Full Documentation
+## Visual references
 
 Follow `.claude/docs/visual-context.md` and `.claude/docs/game-concept-examples.md`: inspect
-matching previews, generate original coherent assets, default classic slots to 3×3, and use
-config-supported x5/x10 coins where appropriate. Character-led games open with their character;
-object/mechanic-led games need no mascot. Store gameplay may span any panels. Preserve runtime
-backgrounds and topology. Joker is mischievous and slightly vicious, playful rather than horror
-or an elegant host.
+matching previews and reproduce their look exactly; build the casual mechanic the family lists
+(Zeus keeps its own 7×6 link grid). Character-led games open with their character;
+object/mechanic-led games need no mascot. x2/x5/x10 combo badges only for real points combos.
+Joker is mischievous and slightly vicious, playful rather than horror or an elegant host.
 
-See `AGENTS.md`, `CLAUDE.md`, `.claude/docs/gambling-categories.md`, `.claude/docs/math-models.md` and `.claude/rules/` for complete rules.
+See `AGENTS.md`, `CLAUDE.md`, `.claude/docs/game-categories.md`, `.claude/docs/balance-models.md`
+and `.claude/rules/` for complete rules.

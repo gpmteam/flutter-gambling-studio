@@ -10,18 +10,18 @@ AudioService from a graceful-no-op stub into an actually-audible game.
 Outputs:
   assets/audio/sfx/sfx_button.wav        — UI tap
   assets/audio/sfx/sfx_navigate.wav      — screen transition swoosh
-  assets/audio/sfx/sfx_action.wav        — primary action (spin/tap/launch)
-  assets/audio/sfx/sfx_coin.wav          — coin / score tick
-  assets/audio/sfx/sfx_error.wav         — invalid / insufficient funds
-  assets/audio/sfx/sfx_win_small.wav     — small win
-  assets/audio/sfx/sfx_win_big.wav       — big win
-  assets/audio/sfx/sfx_win_mega.wav      — mega win
+  assets/audio/sfx/sfx_action.wav        — primary action (tap/shoot/drop/launch)
+  assets/audio/sfx/sfx_score.wav         — match / score tick (pitch rises along a cascade)
+  assets/audio/sfx/sfx_error.wav         — illegal move / out of moves / run over
+  assets/audio/sfx/sfx_win_small.wav     — small success (a good match, a merge)
+  assets/audio/sfx/sfx_win_big.wav       — big success (a combo, a special, a clear)
+  assets/audio/sfx/sfx_win_mega.wav      — exceptional (3 stars, a new best)
 
 Opt-in only, via --with-bgm:
   assets/audio/bgm/bgm_main.wav          — looping background music bed
 
 BGM is off by default. Short effects are what additive synthesis is good at:
-a coin tick or a reel stop is a 200 ms envelope problem and lands well. A
+a match pop or a score tick is a 200 ms envelope problem and lands well. A
 background loop is a composition problem, and the arpeggio-over-four-chords
 bed this file can render reads as filler next to the rest of the game — so a
 game ships with rich SFX and silence unless someone explicitly asks for music.
@@ -61,7 +61,7 @@ MOODS = {
 }
 
 EVENTS = [
-    "sfx_button", "sfx_navigate", "sfx_action", "sfx_coin", "sfx_error",
+    "sfx_button", "sfx_navigate", "sfx_action", "sfx_score", "sfx_error",
     "sfx_win_small", "sfx_win_big", "sfx_win_mega",
 ]
 
@@ -167,7 +167,7 @@ def render_event(name, m, rng):
         return tone(midi_to_freq(root + 24), 0.07, "sine", 0.5,
                     a=0.005, d=0.03, s=0.3, r=0.5, rng=rng)
 
-    if name == "sfx_coin":
+    if name == "sfx_score":
         a = tone(midi_to_freq(root + 19), 0.05, "square", 0.4, a=0.002, d=0.02, s=0.4, r=0.4, rng=rng)
         b = tone(midi_to_freq(root + 26), 0.10, "square", 0.4, a=0.002, d=0.05, s=0.3, r=0.6, rng=rng)
         return concat(a, b)
@@ -272,7 +272,8 @@ def infer_mood_from_concept(path="design/gdd/game-concept.md"):
         "calm": ["calm", "zen", "cozy", "cosy", "relax", "serene", "meditat", "gentle"],
         "epic": ["epic", "space", "cosmic", "hero", "boss", "battle", "legend", "myth"],
         "playful": ["playful", "cute", "candy", "cheerful", "childish", "toy", "bouncy"],
-        "tense": ["casino", "bet", "wager", "risk", "crash", "mines", "gambl", "stake"],
+        # Not gambling words: every concept's Classification block now says "no wagers".
+        "tense": ["tense", "pressure", "reflex", "hazard", "countdown", "race against"],
     }
     score = {k: 0 for k in keys}
     for mood, words in keys.items():

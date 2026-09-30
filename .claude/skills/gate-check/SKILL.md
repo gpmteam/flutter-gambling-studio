@@ -31,22 +31,24 @@ Checks that the concept is ready to move into design:
 **Required artifacts:**
 - [ ] `design/gdd/game-concept.md` exists
 - [ ] An elevator pitch (1-2 sentences)
-- [ ] The **Classification** block is filled in: category C1–C6, archetype A–AF, math model
-      M1–M6, target metric, the path to the config, the compliance profile
+- [ ] The **Classification** block is filled in: category G1–G6, archetype A–AB, balance model
+      B1–B6, target curve, the path to the config, scoring, reference gameplay, no-gambling check
 - [ ] The unique mechanic (the "juice") is described
-- [ ] The archetype is chosen (A–AF / Unique)
+- [ ] The archetype is chosen (A–AB / Unique)
+- [ ] **No gambling** (`.claude/rules/no-gambling.md`): no wager, currency, shop, chance-based
+      reward, casino game or age gate anywhere in the concept; a gambling ask is translated and the
+      translation is recorded
 - [ ] Asset/World Design DNA and the Game UI Read/Design Signature are described (world/cast,
       mechanic, audience, information, field/controls/HUD, palette/type/material/motion, all
       justified rather than defaulted)
 - [ ] Layout & Composition Direction records per-screen recipes plus a Similarity Check against
       recent/nearest games (or the exact mapped-reference contract)
 - [ ] Visual context records `lead_kind`, `menu_role: dominant | supporting | absent`, matching
-      preview references/adaptations, exact topology, and supported multiplier markers per
+      preview references/adaptations, exact topology, and supported combo markers per
       `.claude/docs/visual-context.md`
-- [ ] The math model's target metric is stated and sits inside the window for that model
-      (M1 RTP 95–97% + volatility + ≥3 symbols | M2 house edge + cap | M3 regeneration + source/sink |
-      M4 rates + hard pity | M5 win-rate + thresholds | M6 bucket multipliers)
-- [ ] The compliance profile is chosen and justified (full, or relaxed C5)
+- [ ] The target curve is stated and sits inside the model's windows (B1 onboarding/ramp/walls |
+      B2 solvable + par | B3 session + goal tier | B4 level curve | B5 first run + early deaths |
+      B6 solvable + par)
 - [ ] The game's language is recorded (English by default)
 - [ ] The product target is recorded as a portrait phone game (Android/iOS, touch only), following
       `.claude/docs/mobile-first-contract.md`
@@ -54,35 +56,37 @@ Checks that the concept is ready to move into design:
 **The gate:**
 - PASS: every item is done
 - CONCERNS: 1–2 items are missing but not critical
-- FAIL: the concept is undocumented, the RTP is undefined, or it lacks the portrait-phone target
+- FAIL: the concept is undocumented, contains a gambling mechanic, has no balance model, or lacks
+  the portrait-phone target
 
 ### gate-check design → code
 Checks that the design is ready to hand to the programmer:
 
 **Required artifacts:**
 - [ ] A GDD document with its 8 sections (see rules/design-docs.md)
-- [ ] `design/balance/rtp-config.json` exists and is valid
-- [ ] The payout table is complete (every symbol × every combination)
-- [ ] The paylines are defined and numbered
-- [ ] Wild/Scatter behaviour is documented (if there is any)
-- [ ] The free spins conditions are described (if there are any)
+- [ ] The balance config (`design/balance/level-config.json` or `endless-config.json`) exists and is valid
+- [ ] The rules are complete: the move, resolution, goals, specials/blockers, the fail condition
+- [ ] No dead ends are designed in: reshuffle, solvable generation, retry
+- [ ] Scoring and star thresholds are defined in the config
 - [ ] The GDD status: `Status: Approved`
-- [ ] `game-mathematician` has signed off on the mathematics
-- [ ] `design/balance/rtp-config.json` → `simulation.last_run_rtp` is within 95–97%
+- [ ] `balance-designer` has signed off: `simulate_balance.py` PASS (or the bot plan is recorded
+      for a mechanic without a built-in simulator)
+- [ ] No currency, shop, random reward or gambling screen in the screen map or data
 - [ ] `design/art-direction.md` proves the portrait composition at 360×640, 360×800, 390×844 and
       430×932 and plans no tablet, desktop or landscape layout
 
 ### gate-check code → qa
 Checks that the code is ready for QA:
 
-**Critical gambling requirements:**
-- [ ] `lib/systems/weighted_rng.dart` uses `Random.secure()`
-- [ ] No `math.Random()` in production code
-- [ ] No hardcoded probabilities
+**Critical integrity requirements:**
+- [ ] All gameplay randomness goes through the seeded `lib/systems/game_rng.dart`
+- [ ] No `Random()` in game logic outside `game_rng.dart` / `vfx_rng.dart`
+- [ ] No hardcoded budgets, spawn weights or targets
 - [ ] `GameState` is a sealed class (not boolean flags)
-- [ ] The spin result is computed before the animation
-- [ ] Double-clicking Spin is blocked
-- [ ] `lib/game/slot_config.dart` contains every tunable value
+- [ ] Every move is resolved by the rules engine before the animation
+- [ ] Double input is blocked while a move resolves
+- [ ] `lib/game/game_config.dart` contains every tunable value
+- [ ] The no-gambling greps (no-gambling.md §6) are clean; no age gate or gambling disclaimer
 
 **Flame 1.18.x architecture:**
 - [ ] `HasCollisionDetection` on the `World` (not on `FlameGame`)
@@ -99,26 +103,27 @@ Checks that the code is ready for QA:
 ### gate-check qa → release
 Checks readiness for release:
 
-**RTP and mathematics:**
-- [ ] `/balance-check` has been run with 1M+ spins
-- [ ] The simulated RTP is within 95.0–97.0%
-- [ ] The hit rate is within 20–40%
-- [ ] No infinite win loop (>1000 free spins in a row is impossible)
+**Balance:**
+- [ ] `/balance-check` has been run over the whole curve and returns PASS
+- [ ] `simulation.last_run_date` is newer than the last config change
+- [ ] Every level/deal is solvable; a dead board reshuffles
 
 **Test coverage:**
-- [ ] `weighted_rng` — a distribution test exists
-- [ ] `payline_evaluator` — every combination is tested
-- [ ] Edge case: balance = 0 → the spin is blocked
-- [ ] Edge case: a double click does not start 2 spins
-- [ ] 100 spins with no state leakage
+- [ ] The same seed reproduces a level exactly
+- [ ] The rules engine — every rule and special is tested
+- [ ] Edge case: a double tap does not submit two moves
+- [ ] Edge case: pausing mid-move loses nothing
+- [ ] 100 moves with no state leakage
 
 **UX and visuals:**
 - [ ] The UI and gameplay pass 360×640, 360×800, 390×844 and 430×932
 - [ ] A 1440×900 wide host shows the unchanged phone screen in the phone column
-- [ ] The win overlay displays correctly
-- [ ] Reel animations are under 3 seconds
+- [ ] Level complete / failed overlays display correctly
+- [ ] A single move's playback stays under 2–3 seconds
 - [ ] Particles never exceed 200 at once
-- [ ] No artefacts after free spins
+
+**Store:**
+- [ ] Casual category, "simulated gambling: no", an age rating from the content (normally Everyone)
 
 **Build:**
 - [ ] `flutter build apk --release` — succeeds
@@ -131,21 +136,21 @@ Checks readiness for release:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ✅ Done (N/M):
-   ✅ rtp-config.json exists and is valid
-   ✅ Random.secure() is used
+   ✅ level-config.json exists and is valid
+   ✅ All randomness goes through the seeded GameRng
 
 ❌ Blockers (N):
    ❌ The GDD is missing its "Edge Cases" section
-   ❌ Simulated RTP = 94.2% (below 95%)
+   ❌ Level 14 pass rate = 11% (a wall, below 15%)
 
 ⚠️  Observations (N):
-   ⚠️  No test for the double click
+   ⚠️  No test for the double tap
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Verdict: FAIL ← NEEDS WORK ← PASS
          ^^^
-Reason: the simulated RTP is outside the permitted range.
-Next step: call game-mathematician to adjust the weights.
+Reason: level 14 is a wall for the player bot.
+Next step: call balance-designer to adjust the move budget or target.
 ```
 
 ## Arguments

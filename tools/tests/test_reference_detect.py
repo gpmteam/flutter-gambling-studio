@@ -35,7 +35,8 @@ class NamedFamilyTests(unittest.TestCase):
                 result = detect(prompt, new_game=True)
                 self.assertEqual(family_ids(result), ["joker-jewels"])
                 self.assertEqual(result["binding"], "exact")
-                self.assertEqual(result["families"][0]["topology"], "5x3")
+                self.assertEqual(result["families"][0]["default_mechanic"], "swap match-3")
+                self.assertEqual(result["families"][0]["reference_gameplay"], "casino")
 
     def test_russian_and_possessive_names_resolve(self) -> None:
         cases = {
@@ -59,6 +60,34 @@ class NamedFamilyTests(unittest.TestCase):
         self.assertFalse(result["reference"])
         self.assertEqual(result["families"], [])
 
+    def test_casino_references_keep_the_look_and_get_a_casual_mechanic(self) -> None:
+        for prompt, family_id, mechanic in (("Joker", "joker", "tap blast"),
+                                            ("Book of Ra", "book-of-ra", "triple tile"),
+                                            ("Shining Crown", "shining-crown", "slide merge"),
+                                            ("Plinko", "plinko", "peg clear")):
+            with self.subTest(prompt=prompt):
+                result = detect(prompt, new_game=True)
+                self.assertEqual(family_ids(result), [family_id])
+                self.assertEqual(result["families"][0]["reference_gameplay"], "casino")
+                self.assertEqual(result["mechanic"], mechanic)
+                self.assertEqual(result["topology_source"], "family")
+
+    def test_zeus_reuses_its_own_casual_grid(self) -> None:
+        result = detect("Zeus game", new_game=True)
+        family = result["families"][0]
+        self.assertEqual(family["reference_gameplay"], "casual")
+        self.assertEqual(family["topology"], "7x6")
+        self.assertEqual(result["mechanic"], "link chain")
+
+    def test_family_builds_are_casual_mechanics_documented_in_the_examples_doc(self) -> None:
+        doc = (REPO / ".claude/docs/game-concept-examples.md").read_text(encoding="utf-8")
+        for family in reference_detect.FAMILIES:
+            with self.subTest(family=family.id):
+                self.assertIn(family.default_mechanic, reference_detect.CASUAL_BY_NAME)
+                self.assertIn(f"**{family.classification}**", doc)
+                self.assertTrue(reference_detect.CASUAL_BY_NAME[family.default_mechanic]
+                                .startswith(family.classification.rsplit(" / ", 1)[0]))
+
     def test_every_mapped_file_exists_and_is_listed_in_the_examples_doc(self) -> None:
         doc = (REPO / ".claude/docs/game-concept-examples.md").read_text(encoding="utf-8")
         for family in reference_detect.FAMILIES:
@@ -71,27 +100,60 @@ class NamedFamilyTests(unittest.TestCase):
 
 
 class MechanicOverrideTests(unittest.TestCase):
-    def test_a_named_family_with_another_mechanic_keeps_identity_but_not_topology(self) -> None:
+    def test_a_gambling_mechanic_is_translated_and_the_family_keeps_identity(self) -> None:
         result = detect("Zeus Lightning Dice: a three-dice betting game played at Zeus's temple.")
         self.assertEqual(family_ids(result), ["zeus"])
-        self.assertEqual(result["mechanic_override"], "dice")
-        self.assertEqual(result["topology_source"], "user mechanic")
-        self.assertIn("identity", reference_detect.to_markdown(result))
+        self.assertEqual(result["mechanic_override"], "slide merge")
+        self.assertEqual(result["topology_source"], "translated")
+        self.assertIn("dice", result["gambling_asks"])
+        md = reference_detect.to_markdown(result)
+        self.assertIn("identity", md)
+        self.assertIn("never built", md)
 
-    def test_hi_lo_joker_host_is_a_joker_reference_with_the_users_mechanic(self) -> None:
+    def test_hi_lo_joker_host_becomes_card_patience(self) -> None:
         result = detect("Joker's High Card: a fast high-or-low card game hosted by a mischievous joker.")
         self.assertEqual(family_ids(result), ["joker"])
-        self.assertEqual(result["mechanic_override"], "hi-lo")
+        self.assertEqual(result["mechanic_override"], "card patience")
 
-    def test_naming_the_familys_own_mechanic_keeps_the_family_topology(self) -> None:
-        result = detect("Joker slot with a prize wheel bonus")
-        self.assertIsNone(result["mechanic_override"])
-        self.assertEqual(result["topology_source"], "family")
+    def test_naming_the_familys_own_casino_mechanic_keeps_the_family_build(self) -> None:
+        for prompt, mechanic in (("Joker slot with a prize wheel bonus", "tap blast"),
+                                 ("Zeus slot", "link chain"),
+                                 ("Сделай слот Джокер", "tap blast")):
+            with self.subTest(prompt=prompt):
+                result = detect(prompt)
+                self.assertIsNone(result["mechanic_override"])
+                self.assertEqual(result["mechanic"], mechanic)
+                self.assertEqual(result["topology_source"], "family")
 
-    def test_a_user_grid_overrides_the_family_grid(self) -> None:
+    def test_a_casual_mechanic_overrides_the_family_build(self) -> None:
+        result = detect("Joker bubble shooter")
+        self.assertEqual(result["mechanic_override"], "bubble shooter")
+        self.assertEqual(result["topology_source"], "user mechanic")
+        self.assertEqual(result["mechanic_archetype"], "G4 / M")
+
+    def test_a_user_grid_is_recorded(self) -> None:
         result = detect("Joker slot 5x3")
         self.assertEqual(result["grid"], "5x3")
         self.assertEqual(result["topology_source"], "user grid")
+
+    def test_a_pure_gambling_request_is_translated_without_a_reference(self) -> None:
+        result = detect("make a roulette game with a pharaoh", new_game=True)
+        self.assertFalse(result["reference"])
+        self.assertEqual(result["mechanic"], "target throw")
+        self.assertEqual(result["topology_source"], "translated")
+        self.assertIn("Gambling asks", reference_detect.to_markdown(result))
+
+    def test_a_bug_report_about_a_crash_is_not_a_crash_game(self) -> None:
+        result = detect("the game crashes on start, fix the crash")
+        self.assertEqual(result["gambling_asks"], [])
+        self.assertIsNone(result["mechanic"])
+
+    def test_collection_requests_have_a_playable_casual_core_and_balance_category(self) -> None:
+        for prompt in ("create a gacha game", "loot box game", "card packs", "capsule game"):
+            with self.subTest(prompt=prompt):
+                result = detect(prompt, new_game=True)
+                self.assertEqual(result["mechanic"], "memory match")
+                self.assertEqual(result["mechanic_archetype"], "G6 / AA")
 
 
 class AttachmentTests(unittest.TestCase):
@@ -107,7 +169,7 @@ class AttachmentTests(unittest.TestCase):
         self._tmp.cleanup()
 
     def test_attachments_always_bind_on_a_new_game(self) -> None:
-        result = detect("make me a fruit slot", root=self.root,
+        result = detect("make me a fruit match-3", root=self.root,
                         attachments_dir="design/references/user", new_game=True)
         self.assertTrue(result["reference"])
         self.assertEqual(result["binding"], "exact")
@@ -115,7 +177,7 @@ class AttachmentTests(unittest.TestCase):
                          ["design/references/user/a1b2c3d4-1.png"])
 
     def test_a_follow_up_screenshot_binds_only_when_the_message_asks_to_match_it(self) -> None:
-        bug = detect("the spin button overlaps the balance, fix it", root=self.root,
+        bug = detect("the play button overlaps the score, fix it", root=self.root,
                      attachments_dir="design/references/user")
         self.assertFalse(bug["reference"])
         match = detect("make the character exactly like the reference image", root=self.root,
@@ -127,7 +189,7 @@ class AttachmentTests(unittest.TestCase):
 
     def test_legacy_root_attachments_are_found(self) -> None:
         (self.root / "user_reference.jpg").write_bytes(b"\xff\xd8\xff" + b"0" * 32)
-        result = detect("slot", root=self.root, new_game=True)
+        result = detect("match-3", root=self.root, new_game=True)
         self.assertIn("user_reference.jpg", [a["path"] for a in result["attachments"]])
 
 
@@ -138,10 +200,10 @@ class PhrasingTests(unittest.TestCase):
         self.assertEqual(result["binding"], "description")
 
     def test_ordinary_words_are_not_reproduction_asks(self) -> None:
-        for prompt in ("a pirate slot where the board looks like a treasure chest",
-                       "keep the compliance copy short",
-                       "I'd like a candy crash game",
-                       "такой же баланс как раньше, кнопка повторить ставку"):
+        for prompt in ("a pirate match-3 where the board looks like a treasure chest",
+                       "keep the level copy short",
+                       "I'd like a candy blast game",
+                       "такой же баланс как раньше, кнопка повторить уровень"):
             with self.subTest(prompt=prompt):
                 self.assertFalse(detect(prompt, new_game=True)["reference"])
 

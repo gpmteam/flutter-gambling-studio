@@ -1,6 +1,6 @@
 ---
 name: lead-programmer
-description: "Lead programmer of the gambling studio. Designs the architecture for games in all six categories, reviews code, defines patterns. Use for architectural decisions, code review and technical strategy."
+description: "Lead programmer of the casual game studio. Designs the architecture for games in all six categories, reviews code, defines patterns. Use for architectural decisions, code review and technical strategy."
 tools: Read, Glob, Grep, Write, Edit, Bash
 model: sonnet
 maxTurns: 25
@@ -60,47 +60,46 @@ Flutter Widget Tree
 
 ### Examples by category
 
-**C1 — Social Casino (slot)**:
+**G1 — Match & Cascade**:
 ```
-World ├── ReelComponent × N → SymbolComponent
-      └── PaylineOverlayComponent
-Systems: WeightedRNG (Random.secure()), PaylineEvaluator, SpinResolver
-```
-
-**C2 — Casino Originals (crash / mines)**:
-```
-World ├── MultiplierCurveComponent | MinefieldComponent → CellComponent × N
-      └── RoundHistoryStrip
-Systems: RoundResolver (seed+nonce), MultiplierCurve, CashoutController
+World ├── BoardComponent → TileComponent × N
+      └── ComboFeedbackComponent
+Systems: GameRng(seed), BoardEngine (pure: match, gravity, refill, cascades, specials, reshuffle), Scoring
 ```
 
-**C3 — Spin-to-Progress**:
+**G2 — Tile & Sort**:
 ```
-World ├── SpinWheelComponent
-      └── VillageComponent → BuildingComponent × N
-Systems: SpinEventTable, EnergyService, RaidResolver
-```
-
-**C4 — Gacha**:
-```
-World ├── BannerComponent
-      └── PullRevealComponent → ItemCardComponent × 10
-Systems: BannerResolver, PityCounter (persistent), DuplicateConverter
+World ├── TilePileComponent → TileComponent × N
+      └── TrayComponent
+Systems: DealGenerator (seeded, solver-verified), DealSolver, TrayRules, UndoStack
 ```
 
-**C5 — Casino Roguelike**:
+**G3 — Merge & Place**:
 ```
-World ├── HandComponent → CardComponent × N
-      └── ModifierRowComponent
-Systems: RunRng(seed) [ADR], HandEvaluator, ModifierRegistry, ShopController
+World ├── MergeBoardComponent → PieceComponent × N
+      └── NextPiecePreview
+Systems: MergeEngine, SpawnTable (GameRng), RunOverDetector
 ```
 
-**Physics**:
+**G4 — Aim & Physics** (Forge2D, fixed 1/60 s step):
 ```
 World (extends Forge2DWorld) ├── BallComponent
-                              ├── BumperComponent × N
-                              └── FlipperComponent × 2
-Systems: PhysicsWorld, ScoreZoneHandler
+                              ├── PegComponent × N
+                              └── CatchBucketComponent
+Systems: PhysicsWorld, AimGuide, TargetTracker
+```
+
+**G5 — Arcade Reflex**:
+```
+World ├── PlayerComponent
+      └── HazardComponent × N (pooled)
+Systems: TempoRamp (config), HazardSpawner (GameRng), CollisionJudge
+```
+
+**G6 — Logic & Progression**:
+```
+World └── LogicBoardComponent → CellComponent × N
+Systems: LevelGenerator (seeded), LevelSolver (par), HintService
 ```
 
 ### Delegation

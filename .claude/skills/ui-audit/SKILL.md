@@ -27,7 +27,7 @@ visual problems.
    anti-repeat gate, craft floor, audit guard)
 2. Read `.claude/rules/ui-code.md`
 2a. Read `design/gdd/game-concept.md` → **Game UI Read and Design Signature**
-2b. Read `design/art-direction.md` → state composition map, F/C/H/M/O/R recipes, Similarity
+2b. Read `design/art-direction.md` → state composition map, F/C/H/M/O/P recipes, Similarity
     Check, and viewport proofs
 2c. Read `.claude/docs/quality-bar.md` → professional level thresholds
     (§1 first 30 sec: TTP ≤ 3 taps; §2 response ≤ 100 ms; §3 scaled feedback;
@@ -98,7 +98,7 @@ visual problems.
 | C3 | **Game overlay does not close** | Flame `overlays.add('win')` without corresponding `overlays.remove('win')` by timer or tap | Overlay hangs forever, blocks the game | Add auto-dismiss Timer + tap-to-dismiss |
 | C4 | **Settings are not saved** | Settings screen without `SharedPreferences` calls | Settings are reset on restart | Add SharedPreferences load/save |
 | C5 | **Settings not applied** | Sound toggle is not checked before playback | The sound plays even if it is turned off | Add check `isSoundEnabled` before `FlameAudio.play` |
-| C6 | **Daily Bonus gives endlessly** | No last received date check | The player can receive the bonus unlimitedly | Add `SharedPreferences` with date + check |
+| C6 | **Daily challenge claims repeat** | No saved challenge date/completion guard | A solved challenge can be claimed repeatedly | Persist the date and once-only deterministic star/album unlock |
 | C7 | **Leaderboard not updating** | No record of result after game | Leaderboard is always empty | Add score entry for Game Over / new high score |
 | C8 | **Profile does not save** | Nickname/avatar is not recorded in SharedPreferences | Data is lost on restart | Add persistence |
 | C9 | **Splash does not transition** | Splash screen without `Timer` or `Future.delayed` for auto-navigation | Application gets stuck on splash | Add `Future.delayed(Duration(seconds: 2), () => Navigator.pushReplacementNamed(context, '/menu'))` |
@@ -108,16 +108,16 @@ visual problems.
 
 | # | Check | How to find | Symptom | Autofix |
 |---|---------|-----------|---------|----------|
-| D1 | **Double click on action button** | Spin/Play button without `isSpinning`/`isPlaying` check | Two spins/actions at the same time, the balance is debited twice | Add `if (isPlaying) return;` + debounce 300ms |
-| D2 | **Bet changes during action** | Bet+/Bet- buttons without disabled state at `isSpinning` | The bet changes between debiting and accruing winnings | Add `IgnorePointer(ignoring: isSpinning)` or disabled state |
+| D1 | **Overlapping input** | Move/shoot controls accept input while Resolving | Score or move budget commits twice | Guard the action in the rules state and debounce discrete buttons |
+| D2 | **Level or mode changes during resolution** | Setup controls remain active during a move | Rules/config change halfway through resolution | Disable setup controls until Ready |
 | D3 | **Button without feedback** | `GestureDetector(onTap:)` without animation when pressed | The user does not understand whether he clicked | Add `AnimatedScale` (0.95 when pressed) or `InkWell` with splash |
 | D4 | **Tap target < 48px** | Buttons/icons with `width` or `height` < 48 | Difficult to click on mobile | Wrap in `SizedBox(width: 48, height: 48)` or add padding |
 | D5 | **Invisible tap blocker** | `Opacity(opacity: 0)` or `Container(color: Colors.transparent)` with `GestureDetector` over content | The user clicks - nothing happens, although the button is visible | Remove invisible blocker or add `IgnorePointer` |
 | D6 | **Scroll inside scroll** | `ListView` inside `ListView` without `shrinkWrap: true` + `NeverScrollableScrollPhysics` | Gesture conflict, unable to scroll | Add `shrinkWrap: true, physics: NeverScrollableScrollPhysics()` to internal |
 | D7 | **No handling of empty state** | `ListView.builder(itemCount: items.length)` without check `items.isEmpty` | Blank screen with no explanation | Add `if (items.isEmpty) return EmptyStateWidget(...)` |
 | D8 | **GestureDetector intercepts scrolling** | `GestureDetector` with `onVerticalDragUpdate` inside `ListView` | Scroll doesn't work | Use `onTap` or `Listener` instead of drag gestures |
-| D9 | **Action button doesn't show disabled** | The "SPIN" / "PLAY" button is visually the same in enabled and disabled | User clicks - nothing happens - frustration | Add visual difference: dull color, lower opacity, different icon |
-| D10 | **No Insufficient Funds Processing** | With `balance < bet` there is no check before action | The balance goes into minus OR nothing happens when you press | Add check + show InsufficientFundsDialog |
+| D9 | **Disabled action is unclear** | PLAY / SHOOT / NEXT looks identical when disabled | Taps seem ignored | Distinguish disabled and pressed states |
+| D10 | **No terminal-state recovery** | No handling for zero moves/shots/time or a full tray/board | The player is stuck or can continue after failure | Stop inputs and show Retry / Menu / Map |
 
 ### Category E: DESIGN INTENT (Medium - contextual design)
 
@@ -145,7 +145,7 @@ visual problems.
 | E10 | **Fonts match the mood** | Does the font suit the game world? (retro slot machine = pixelated, elegant casino = serif, cozy bingo = rounded) | Replace with a suitable one |
 | E11 | **Control roles are distinct** | Primary, secondary, dangerous, disabled, and contextual actions communicate their roles | Align with the signature without forcing one shape on every control |
 | E12 | **Coherent, not cloned** | Semantic roles persist across screens while screen jobs may use different recipes | Repair unexplained drift or inappropriate structural repetition |
-| E13 | **Menu recipe and memorable idea** | Menu implements its M/O/R recipe and is not merely the studio's recurring shell | Recompose to the recorded job; do not automatically add a centerpiece/layers |
+| E13 | **Menu recipe and memorable idea** | Menu implements its M/O/P recipe and is not merely the studio's recurring shell | Recompose to the recorded job; do not automatically add a centerpiece/layers |
 | E14 | **State-aware game UI** | Field meets contract; C/H recipes and attention order hold in setup, anticipation, and result | Fix the failing state instead of forcing every HUD to the edges |
 
 ### Category F: MISSING SCREENS (Medium)
@@ -156,13 +156,13 @@ visual problems.
 | F2 | Main Menu | `glob lib/screens/main_menu*` |
 | F3 | Game Screen | `glob lib/screens/game_screen*` |
 | F4 | HUD Widget | `glob lib/screens/hud*` |
-| F5 | Paytable / Rules | `glob lib/screens/paytable*` |
+| F5 | Level map / Mode select | `glob lib/screens/*level*` / `*mode*` |
 | F6 | Settings | `glob lib/screens/settings*` |
 | F7 | Help | `glob lib/screens/help*` |
-| F8 | Win Overlay | `glob lib/screens/win_overlay*` |
-| F9 | Insufficient Funds | `grep 'insufficient\|InsufficientFunds'` in screens |
+| F8 | Level complete / New best | Inspect result overlays and Next / Retry |
+| F9 | Level failed / Run over | Inspect exhausted moves/time/shots and Retry / Menu |
 | F10 | Game Theme | `glob lib/theme/game_theme*` |
-| F11 | Daily Bonus | `glob lib/screens/daily_bonus*` |
+| F11 | Daily challenge | `glob lib/screens/daily_challenge*` |
 | F12 | Leaderboard | `glob lib/screens/leaderboard*` |
 | F13 | Profile | `glob lib/screens/profile*` |
 
@@ -172,7 +172,7 @@ visual problems.
 |---|---------|--------------|----------|
 | G1 | Semantic type roles are implemented | Inspect display/readout/action/body/legal roles and readability | Add or consolidate roles; one family may be correct |
 | G2 | Action button: idle + press + disabled visually distinguishable | Read button code | Add feedback from the Design Signature |
-| G3 | Meaningful value changes communicate magnitude | Observe balance/win/risk/progression changes | Animate only changes that matter; stable utility values may update directly |
+| G3 | Meaningful value changes communicate magnitude | Observe score/goal/combo/progression changes | Animate only changes that matter; stable utility values may update directly |
 | G4 | Interactive elements acknowledge input | Inspect code and runtime for immediate, role-appropriate pressed/committed feedback | Add the feedback behavior recorded by the signature; scaling is only one option |
 | G5 | Result tiers are distinguishable | Compare routine/notable/major outcomes against the state map | Differentiate locally or globally as documented; a win overlay is optional |
 | G6 | Text to background contrast >= 4.5:1 | Check colors in theme | Adjust |
@@ -197,7 +197,7 @@ visual problems.
 | H6 | **Intentional alignment and balance** | Shared edges or object-relative placement look chosen and safe-area aware | Fix near-misses while preserving documented asymmetry |
 | H7 | **Restraint effects** | There is no “soup” of weak shadows/gradients; the effects are meaningful | Remove unnecessary effects |
 | H8 | **Unified iconography** | Icons in the same style and stroke thickness | Bring to one style |
-| H9 | **Recipe and anti-repeat matching** | Screens follow recorded F/C/H/M/O/R recipes and the Similarity Check is honest | Recompose the mismatched screen or update the rationale with evidence |
+| H9 | **Recipe and anti-repeat matching** | Screens follow recorded F/C/H/M/O/P recipes and the Similarity Check is honest | Recompose the mismatched screen or update the rationale with evidence |
 
 ### Category I: LIVE GAMEPLAY FEEDBACK (Medium - state change inside the field, not menu decoration)
 
@@ -218,35 +218,31 @@ visual problems.
 > ⚠️ If autofix requires significant work (to revive the entire gameplay) - delegate it to an agent
 > **juice-artist** via Agent tool (Gameplay Feel Pass role), as in Phase 6.5 `/autocreate`.
 
-### Category J: PRODUCTION COMPLETENESS & COMPLIANCE (Medium - “full game”, not demo)
+### Category J: PRODUCTION COMPLETENESS & NO-GAMBLING GATE
 
-> The difference between the full game and the mini-demo: the amount of content, the meta-loop and the compliance layer.
-> We check the presence of subsystems and integration points, and not just one game loop. Category - from
-> `design/gdd/game-concept.md` (Production Plan section). If the game is intentionally one-level
-> (e.g. pure endless without meta) - mark N/A with justification, do not force content for the sake of content.
+Read the Production Plan and G1–G6/B1–B6 Classification. Endless games use milestones and modes;
+do not invent levels for them. J10–J16 are release blockers for every category.
 
 | # | Check | How to find | Autofix |
-|---|---------|-----------|----------|
-| J1 | **Content = data, not one point** | There is a category content config and >1 entries (`bet-tiers.json` C1/C2, `stage-config.json` C3, `banners.json` C4, `run-config.json` C5, `board-config.json` C6) | Generate content config (Phase 3.7 autocreate) |
-| J2 | **Level/Mode Select linked to data** | the screen reads the real list of levels/modes, not hardcode 3 buttons | Link to ProgressionService/config |
-| J3 | **Modes implemented** | enum modes + branching in Game (Classic + ≥1 more) | Add mode parameter to GameScreen |
-| J4 | **SaveService single** | no scattering of straight lines `SharedPreferences.getInstance()` across the screens | Consolidate to SaveService |
-| J5 | **Economy connected** | EconomyService + Shop read/spend currency; victories are awarded | Connect your store to Economy |
-| J6 | **Progression preserved** | open levels/stars/best scores written and read | Add recordResult/unlock |
-| J7 | **Achievements working** | list + event check + reward | Subscribe to events |
-| J8 | **Analytics calls arranged** | `grep -rn "analytics\.\(log\|logEvent\)" lib/` non-empty (screen_view + level_* + game_action) | Add calls (no-op service) |
-| J9 | **No external SDKs by default** | `firebase_`/`google_mobile_ads`/`in_app_purchase` NOT in pubspec | Replace with abstraction + no-op |
-| J11 | **Disclaimer** | “Playing with virtual chips...Success does not mean success in gambling for real money” on splash + in the rules | Add a line to `ComplianceCopy` and print |
-| J12 | **Responsible-play** | Block in settings: session reminder, “take a break”, help contacts | Add block to settings |
-| J13 | **Odds disclosure** | The Odds screen is available BEFORE spending currency (required for C4 and C3 paid spins) | Add screen, read numbers from model config |
-| J14 | **No real currency on balance** | `grep -rnE '\$\{?balance\|USD\|€\|₽' lib/` empty (except IAP screen) | Remove real currency symbols |
-| J15 | **No promises to win** | `grep -rniE 'real money\|real money\|win money\|payout\|earn' lib/ store/` empty | Rewrite texts |
-| J16 | **Shown = config** | The numbers in the paytable/odds screen match the JSON config of the mathematical model | Link UI to config, do not duplicate |
+|---|-------|-------------|---------|
+| J1 | **Content is data** | Levels/worlds/goals or endless stages/milestones live in JSON | Wire the concept's content config |
+| J2 | **Level/Mode Select linked to data** | Real unlocked levels, modes and best scores | Read ProgressionService/config |
+| J3 | **Modes implemented** | Every promised mode starts its own rules/config | Wire mode selection |
+| J4 | **Single SaveService** | Services share persistence rather than creating per-screen stores | Consolidate persistence |
+| J5 | **Progress rewards deterministic** | Stars, achievements and album pages follow explicit goals | Replace chance rewards with milestones |
+| J6 | **Progression preserved** | Stars/unlocks/best scores survive restart | Save each committed result once |
+| J7 | **Achievements work** | Real rule events trigger and persist once-only unlocks | Subscribe to game events |
+| J8 | **Analytics abstractions connected** | screen_view, level_*, game_action calls reach a no-op service | Add missing calls |
+| J9 | **No external SDKs by default** | No unrequested ads/IAP/analytics packages | Use abstractions/no-op services |
+| J10 | **No wagers** | No stake or points spent for a chance outcome | Remove the system; translate the mechanic |
+| J11 | **No currency or shop** | No wallet, balance, currency prices, virtual money or spending | Use points as scores, stars and unlocks |
+| J12 | **No chance-based rewards** | No reels, prize wheels, loot boxes, gacha or random daily rewards | Use a skill challenge with a fixed unlock |
+| J13 | **No casino gameplay or controls** | No poker/blackjack/roulette, SPIN/BET/CASH OUT, odds/paytables | Implement the concept's casual mechanic |
+| J14 | **No gambling claims** | Review strings/store copy with no-gambling.md §6 | Describe play and scores accurately |
+| J15 | **No gambling age gate/disclaimer** | Inspect splash/settings/how-to-play/metadata | Remove old gambling surfaces; rate actual content |
+| J16 | **Reference gameplay decision holds** | Reference assets match; casino gameplay is translated and casual gameplay reused | Restore the detector's casual contract |
 
-> J10–J12 — **compliance release blockers** (without them the store will reject). Mandatory for everyone
-> categories; weakening is only possible for C5 without purchases - see `.claude/rules/responsible-gaming.md`.
-> J1–J9 - about “completeness”: if they are not there, the game is functional, but a mini-demo remains. Mark as
-> Medium and repair where the Production Plan of the concept provides for it.
+J1–J9 follow the Production Plan. J10–J16 never receive a category exception.
 
 ---
 
@@ -332,7 +328,7 @@ Ensure that each button has feedback, double-click protection, and a disabled st
 
 **Stage 5 - Anti-Slop (E1-E14):**
 Fix unsupported defaults and contradictions with the recorded Design Signature. Make the menu's
-M/O/R recipe legible (E13) and make the HUD's H recipe and state behavior legible (E14). A custom
+M/O/P recipe legible (E13) and make the HUD's H recipe and state behavior legible (E14). A custom
 widget is not automatically better than a standard control, and a centerpiece is not mandatory.
 
 **Step 6 - Missing Screens (F1-F13):**
@@ -438,11 +434,10 @@ inside a PASS report.
    [✅|❌] I1-I7: [idle, entrance, impact, state-transition, hook calls, allocations, timings]
    Total: [X]/7
 
-🏗 J: Production completeness & compliance (Medium):
-   [✅|❌] J1-J9: [content-data, level/mode select, modes, SaveService, economy, progression,
-          achievements, analytics calls, no external SDK]
-   [✅|❌] J10-J12 (gambling): [disclaimer, responsible-play] - release blockers
-   Total: [X]/16 (J10-J16 = compliance blockers; N/A only for C5 without purchases)
+🏗 J: Production completeness & no-gambling gate:
+   [✅|❌] J1-J9: [content, modes, save, stars, progression, achievements, integrations]
+   [✅|❌] J10-J16: [no wagers/currency/random rewards/casino UI/claims/age gate; reference translation]
+   Total: [X]/16 (J10-J16 block release for every G1-G6 game)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📊 OVERALL RESULT: [PASS ✅ | RUNTIME PENDING ⏳ | NEEDS FIX ⚠️ | BLOCKED ❌]

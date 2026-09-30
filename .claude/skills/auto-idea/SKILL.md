@@ -1,171 +1,160 @@
 ---
 name: auto-idea
-description: "Autonomously generates a ready-made concept for a gambling game (without asking the user). Selects from 32 A-AF archetypes in six categories (social casino, casino originals, spin-to-progress, gacha, casino roguelike, coin pusher/plinko) or comes up with a unique gambling mechanic. Builds a mechanic-derived Design Signature, per-screen layout recipes, and a nearest-neighbor Similarity Check so games do not become reskinned copies. Includes Classification (category + mathematical model + compliance), full MVP screen map, UX flow and craft-level tokens."
-argument-hint: "[--list] | [--archetype A-AF] | [--category C1-C6]"
+description: "Autonomously generates a ready-made concept for a casual game (without asking the user). Selects from 28 A-AB archetypes in six categories (match & cascade, tile & sort, merge & place, aim & physics, arcade reflex, logic & progression) or invents a unique casual mechanic. Casino-grade or reference-matched looks; never gambling gameplay. Builds a mechanic-derived Design Signature, per-screen layout recipes, and a nearest-neighbor Similarity Check so games do not become reskinned copies. Includes Classification (category + balance model + no-gambling check), full MVP screen map, UX flow and craft-level tokens."
+argument-hint: "[--list] | [--archetype A-AB] | [--category G1-G6]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write
 ---
 
-# Auto-Idea - Automatic Gambling Game Idea Generator
+# Auto-Idea - Automatic Casual Game Idea Generator
 
 Read `.claude/docs/visual-context.md` before planning or reviewing visuals. For a matching
 new-game request, inspect the relevant `examples-games/` previews and read
 `.claude/docs/game-concept-examples.md`. Carry the lead kind, references/adaptations, exact
-board topology, Joker expression (when relevant), and verified multiplier-coin meanings from
-the concept into the art direction, asset manifest and prompts. Classic unspecified slots
-use 3×3; store gameplay placement is flexible and object-led games need no invented character.
+board topology, Joker expression (when relevant), and verified combo-marker meanings from
+the concept into the art direction, asset manifest and prompts. An unspecified match game uses a
+7×8 board; store gameplay placement is flexible and object-led games need no invented character.
 The named requests Book of Ra, Joker, Joker Jewels, Shining Crown, Zeus Game, and Plinko must use
-the exact preview mapping in that document; Joker Jewels resolves to every file in
-`examples-games/joker-jewels/` and to a 5×3 board, not to the plain Joker row's 3×3. Recreate what
-the preview shows — theme, character, symbol cast, palette, board and composition are matched, not
-reinterpreted, and Variety Dimensions are not scrolled. Follow the source-quality and branding
-limits in `game-concept-examples.md`. Never add a character to Shining Crown
-or Plinko.
+the exact preview mapping in that document, including the casual mechanic each family is built
+as; Joker Jewels resolves to every file in `examples-games/joker-jewels/` and to the swap match-3
+board, not to the plain Joker row. Recreate what the preview shows — theme, character, symbol
+cast, palette, frame and composition are matched, not reinterpreted, and Variety Dimensions are
+not scrolled. Follow the source-quality and branding limits in `game-concept-examples.md`. Never
+add a character to Shining Crown or Plinko.
 
 Don't ask the user questions! Create `design/gdd/game-concept.md` completely autonomously.
 
-> **GAMBLING ONLY.** The studio does not make puzzles, runners, shooters or clickers. Any idea must
-> fall into one of six categories and have a declared mathematical model.
-> Canonical reference: `.claude/docs/gambling-categories.md`.
+> **CASUAL GAMES, NEVER GAMBLING.** The studio makes casual skill games scored in points. Their
+> look may be casino-grade key art; their gameplay may never be a wager, a currency or a
+> chance-based reward (`.claude/rules/no-gambling.md`). Any idea must fall into one of six
+> categories and declare a balance model. Canonical reference: `.claude/docs/game-categories.md`.
+> If the brief names a gambling mechanic, build its casual translation ("Translating a gambling
+> ask") in the requested theme and say so in the concept.
 >
 > **ANTI-SLOP**: Read `.claude/rules/anti-slop-design.md` (principle + Craft Fundamentals)
 > `.claude/docs/mobile-first-contract.md`, and `.claude/docs/layout-archetypes.md` before generation.
 > The concept MUST include a mechanic-derived Design Signature, state composition map, per-screen
 > layout recipes, and Similarity Check. For a mapped named request the signature and composition
-> are the reference's, recorded
-> from it rather than invented — matching it is the goal, not a slop risk. “Gambling” ≠ “dark neon and gold”: bingo can be warm and papery,
-> gashapon can be pastel, while a roguelike can use strict typography. Vary both style and composition.
+> are the reference's, recorded from it rather than invented — matching it is the goal, not a slop
+> risk. "Casino-grade look" ≠ "dark neon and gold" every time: a gem match-3 can be warm and bright,
+> a sort puzzle pastel, a logic game strictly typographic. Vary both style and composition.
 > Every concept is a portrait phone game played by touch (`.claude/docs/mobile-first-contract.md`):
 > design each screen for a phone held upright, and plan no tablet, desktop or landscape layout.
 
-## Catalog of Archetypes (A–AF)
+## Catalog of Archetypes (A–AB)
 
-### 🎰 C1 – Social Casino (A–H) · M1 model · RTP 95–97%
+### 🧩 G1 – Match & Cascade (A–D) · B1 model · board simulation
 
-**A – Classic 3x3 slot “Neon Spin”**
-> 3 reels, fixed lines. Low volatility, frequent wins. Feature: controlled Near Miss (slowing down the 3rd reel) - honest, reflecting the real outcome.
+**A – Swap Match-3 "Jewel Parade"**
+> Swap neighbours to line up 3+; 4, 5, L and T shapes make specials; cascades refill the board. Feature: special + special combos that sweep rows, columns and colours.
 
-**B – 5x3 video slot with Free Spins “Fruit Storm”**
-> 5 reels, 10–25 lines, bonus scatter trigger. Cascading wins (Avalanche): symbols explode, the top ones fall down with a growing multiplier.
+**B – Link Chain "Storm Link"**
+> Drag a path through 3+ adjacent same symbols; longer chains spawn bolts that clear a column. Feature: chain length raises a visible points multiplier.
 
-**C – Scatter-pays / cluster slot “Sugar Explosion”**
-> Slot without lines: pays for the NUMBER of symbols (8+ identical anywhere). Tumble cascade, bomb multipliers. Feature: increasing tumble multiplier.
+**C – Tap Blast "Pop Carnival"**
+> Tap a connected group of 2+ same symbols to pop it; 5+ leaves a rocket. Feature: planning big groups is the skill.
 
-**D — Hold & Spin (Link & Win) “Golden Connection”**
-> Respins with sticky coin symbols, 3 jackpot tiers. Each new coin resets the re-spin counter to 3. Feature: “one more coin” tension.
+**D – Rotate Match "Gear Garden"**
+> Rotate a 2×2 cluster to form matches; rotations chain into cascades. Feature: rotation puzzles several steps deep.
 
-**E — Video poker “Poker Express”**
-> Deal 5 cards, Hold, second draw. RTP is calculated taking into account the optimal strategy. Feature: Double-up - doubling on guessing the suit.
+### 🗂 G2 – Tile & Sort (E–H) · B2 model · solvable deals
 
-**F — Blackjack “Table 21”**
-> Hit/Stand/Double/Split against the dealer. Feature: a readable dealer's hand and an unobtrusive hint of the basic strategy for a beginner.
+**E – Triple Tile Tray "Relic Tray"**
+> Tap free tiles off a layered pile into a 7-slot tray; three alike clear. Feature: tray pressure — the eighth unmatched tile ends the attempt.
 
-**G – Cyber ​​Spin Roulette**
-> European roulette (one zero), inside and outside bets. Feature: physically reliable ball bounce across the cells.
+**F – Pair Tiles "Temple Pairs"**
+> Remove free matching pairs from a layered layout. Feature: clearing reveals the next layer of the design.
 
-**H – Social Bingo “Bingo Blitz”**
-> 75-ball rooms, auto-dub, patterns. Feature: power-ups (extra ball, instant dub) and collectible cards, XP room progress.
+**G – Sort Puzzle "Potion Shelf"**
+> Pour pieces between containers until each holds one kind. Feature: stacked pours carry every matching top piece.
 
-### ⚡ C2 — Casino Originals / Instant-Win (I–P) · M2 model · RTP 96–99%
+**H – Card Patience "Crown Peaks"**
+> TriPeaks: play a card one rank higher or lower; clear the peaks. Feature: streak points — a solo patience puzzle, never a casino table game.
 
-**I — Crash “Space Takeoff”**
-> The multiplier grows along a curve while the object is flying; cash-out until the crash. Flame Particles form a dynamic tail. Feature: visualized physical acceleration + history of recent rounds.
+### 🔷 G3 – Merge & Place (I–L) · B3 model · run length
 
-**J - Mines “Minefield”**
-> The player opens cells, the multiplier grows geometrically with each safe one. Feature: tense hover sound effects, silence before opening.
+**I – Slide Merge "Crown Ladder"**
+> Swipe the grid; equal tiles merge up the game's object chain to the hero object. Feature: the top tier is the game's crown.
 
-**K — Dice roll-under “Quantum Dice”**
-> The player sets a threshold; throw below threshold = win. Honest 2D physics of rotation and rebound from the sides (Forge2D). Feature: the threshold slider quickly changes the multiplier.
+**J – Drop Merge "Fruit Tower"**
+> Drop objects into a container; equal objects merge on contact. Feature: wobbly physical stacks and chain merges.
 
-**L - Hi-Lo “Higher-Lower”**
-> Guess whether the next card is higher or lower. Streak multipliers, cash-out at any time. Feature: card flip with a risk meter that grows with streak.
+**K – Block Place "Brick Garden"**
+> Place the offered pieces on a grid; full rows/columns clear. Feature: multi-line clears grant a combo multiplier on points.
 
-**M - Tower Climb “Dragon Tower”**
-> Climbing by floors, choosing 1 of N cells per floor. Multiplier growth versus immediate reset. Feature: each floor is a “take or higher” decision.
+**L – Merge Grid "Treasure Workshop"**
+> Drag equal items together to evolve them toward level goals. Feature: the board fills over time; ordering keeps space.
 
-**N – Keno “Numbers Lottery”**
-> The player selects numbers on the grid, then the draw selects the winning ones. Feature: bouncing draw balls with clear match highlighting.
+### 🎯 G4 – Aim & Physics (M–Q) · B4 model · shot simulation
 
-**O – Deluxe Gold Scratch Cards**
-> The player “erases” 9 fields with his finger. 3 identical symbols = win. Feature: erasable foil particles, tactility of erasing.
+**M – Bubble Shooter "Cloud Pop"**
+> Aim and shoot to form groups of 3+; unsupported clusters drop. Feature: bank shots with a visible guide.
 
-**P – Bonus Pick “Fortune Chests”**
-> Select from N hidden objects, each revealing a multiplier or a collect result. Feature: a delayed dramatic reveal that increases tension.
+**N – Peg Clear "Prism Pegs"**
+> Aim a ball through a peg field to clear all target pegs with limited balls. Feature: a moving catch bucket returns a ball.
 
-### 🏰 C3 - Spin-to-Progress Hybrids (Q–U) · M3 model · economy
+**O – Brick Breaker "Palace Bricks"**
+> Paddle and ball; bricks drop power-ups. Feature: multi-ball and themed bricks.
 
-**Q — Build-and-Raid slot “Kingdom of Coins”**
-> Spin gives coins / shield / attack / raid; coins build a village. Feature: raid on an opponent's base with excavation of 1 of 4 points.
+**P – Knockdown "Tower Toppler"**
+> Sling projectiles to topple structures. Feature: chain collapses from one well-placed shot.
 
-**R — Board-move dice “Roll of Fate”**
-> Rolling a dice moves a piece across the board, tile = event. Feature: season board - a full circle opens a new thematic board.
+**Q – Draw & Guide "Honey Path"**
+> Draw lines or cut ropes to guide a falling object to its goal. Feature: minimal-ink star goals.
 
-**S — Prize-wheel energy hub “Wheel of Fortune”**
-> The wheel gives out energy/boosters/currency; Wait timers are hidden behind the wheel animation. Feature: jackpot sector with a progress bar growing between the spins.
+### ⚡ G5 – Arcade Reflex (R–W) · B5 model · reflex ramp
 
-**T — Sticker album “Collector's Album”**
-> Spin gives out packs of stickers; the album is collected into sets. Feature: duplicates → exchange currency, completion of set = large reward.
+**R – Lane Runner "Chicken Dash"**
+> Hop across lanes of hazards; points by distance and pickups. Feature: themed lanes that change with distance.
 
-**U — Raid & Shield ladder “Shield and Sword”**
-> Spin gives attacks and shields; PvP light against rival bots. Feature: revenge - a list of those who attacked you, with a response window.
+**S – Stacker "Sky Stack"**
+> Tap to drop a moving slab; overhang is trimmed. Feature: perfect drops restore width and build a streak.
 
-### 🎁 C4 – Gacha & Loot-Box (V–Y) · model M4 · rates + pity
+**T – Catcher "Star Catch"**
+> Move to catch good falling items, dodge bad ones. Feature: catch combos and rare golden items.
 
-**V — Banner pull “Summon Legends”**
-> x1/x10 pulls by banner, rarity, hard + soft pity. Feature: visible pity counter and guarantor on the 10th pull - honesty as part of the UX.
+**U – Slicer "Lantern Slice"**
+> Swipe to slice thrown objects; avoid hazards. Feature: multi-slice combos.
 
-**W — Mystery card packs “Deck of Champions”**
-> Opening card packs, assembling the composition/deck. Feature: duplicates increase the level of the card, rather than turning into garbage.
+**V – One-Tap Flyer "Thunder Glide"**
+> Tap to rise through gaps; distance is the score. Feature: a themed flyer and parallax world.
 
-**X — Case opener “Case Roulette”**
-> The horizontal spinner spins objects and stops when they fall out. Feature: slowdown with near-miss on a rare item (fair - the item has already been determined).
+**W – Target Throw "Wheel Strike"**
+> Throw darts at a rotating target without hitting earlier ones. Feature: boss targets with changing rotation.
 
-**Y – Gashapon “Capsule Machine”**
-> Physical metaphor: turn the handle, the capsule rolls out along the chute, and opens. Feature: two-stage opening - capsule, then contents.
+### 🧠 G6 – Logic & Progression (X–AB) · B6 model · solver curve
 
-### 🃏 C5 — Casino Roguelike & Strategy (Z–AC) · M5 model · run win-rate 25–40%
+**X – Connect Paths "Rune Paths"**
+> Connect matching pairs with non-crossing paths that fill the board. Feature: bridges and themed pairs.
 
-**Z — Poker deckbuilder “Joker”**
-> Poker hands score against progressive round goals. Feature: joker modifiers that change the very rules of hand counting.
+**Y – Rotate Pipes "Lightning Circuit"**
+> Rotate tiles to complete a circuit. Feature: energy flows through the finished path.
 
-**AA — Slot-reel roguelike “Own Drum”**
-> The player himself assembles a reel of symbols; spin = income, you need to pay “rent”. Feature: symbol synergies - proximity changes the payout.
+**Z – Unblock "Vault Slide"**
+> Slide blocks to free the key piece. Feature: par-move stars.
 
-**AB — Dice-builder “Dice Forge”**
-> Dice are a combat resource; their faces improve between rounds. Feature: reforging replaces one face with a new effect.
+**AA – Memory Match "Mask Memory"**
+> Flip cards to find pairs within a move budget. Feature: consecutive-pair combos.
 
-**AC — Push-your-luck bag “Alchemist’s Bag”**
-> You pull chips from the bag until you “go over” the threshold. Feature: the bust threshold is visible, but the composition of the bag changes every round.
-
-### ⚙️ C6 — Coin Pusher & Plinko (AD–AF) · M6 model · empirical RTP
-
-**AD – Coin Pusher “Golden Bulldozer”**
-> 2D physics of pushing coins (rigid bodies), coins interact geometrically. Feature: the accumulation of a “canopy” at the edge is a visual promise of an avalanche.
-
-**AE – Plinko “Neon Cascade”**
-> Drop balls through pegs (Forge2D) into baskets with multipliers. Feature: choice of risk profile - number of rows and layout of baskets.
-
-**AF – Pachinko “Silver Rain”**
-> Vertical field, balls go into traps, hitting the gate starts the jackpot round. Feature: the jackpot gate opens a separate slot round.
+**AB – Logic Grid "Oracle Grid"**
+> Deduce hidden cells from numeric clues, no guessing. Feature: every level solvable by logic alone.
 
 ## Procedural Unique Generation (Unique Mode)
 
 If the `--archetype` flag is not passed or the user has explicitly requested a "unique idea", you
-**MUST** invent new mechanics that do not coincide with A-AF - but it **must stay
-gambling mechanics** and fall into one of six categories.
+**MAY** invent a new casual mechanic that does not coincide with A–AB — it must stay a skill
+mechanic scored in points and fall into one of six categories.
 
 The best unique ideas live at the intersection of two categories:
-- “Plinko, where baskets are poker hands” (C6 × C5)
-- “Crash with pity counter: the longer you are unlucky, the higher the guaranteed minimum” (C2 × C4)
-- “Coin pusher, where the knocked down coins are pulls from the banner” (C6 × C4)
-- "A slot whose reels the player rearranges between village sessions" (C1 × C3 × C5)
-- “Scratch map with layer destruction physics” (C2 × C6)
+- "A link chain whose cleared symbols drop into a merge ladder" (G1 × G3)
+- "A stacker whose slabs must be sorted by colour" (G5 × G2)
+- "A peg-clear shot whose targets form a logic picture" (G4 × G6)
+- "A tile tray where each triple rotates a pipe on a circuit board" (G2 × G6)
 
-It is prohibited to invent a puzzle, runner, shooter, Tetris clone, clicker, or match-3—even with
-a wager layered on top. A wager attached to a non-gambling mechanic does not make it gambling;
-the core must be a wager on a random outcome.
+It is prohibited to invent anything whose core is a wager, a currency or a chance-based reward —
+even with points instead of money. A wager on points is still a wager.
 
-**The category and mathematical model are recorded in the “Classification” block BEFORE the other sections.**
+**The category and balance model are recorded in the "Classification" block BEFORE the other sections.**
 
 ## Variety Dimensions - why the same archetype ≠ the same game
 
@@ -176,69 +165,71 @@ the core must be a wager on a random outcome.
 > concepts the studio invents on its own.
 
 The archetype sets the MECHANICS. To make two games of the same archetype look and feel different,
-**scroll these axes and select values ​​that are different from the last game**. Record your choice in the concept.
+**scroll these axes and select values that are different from the last game**. Record your choice in the concept.
 
 | Axis | Examples of meanings (choose varied) |
 |-----|------------------------------------------|
-| **Setting/world** | underwater, space, ancient Egypt, cyberpunk Tokyo, enchanted forest, candy land, noir city, wild west, zen garden, steampunk, myths, coffee shop |
-| **Mood/mood** | intense, cozy, epic, ironic, mystical, upbeat, meditative |
-| **Palette family** | warm earthy, cool neon, pastel, monochrome+1 accent, jewel tones, burnt retro |
+| **Setting/world** | underwater, space, ancient Egypt, Olympus, carnival, enchanted forest, candy land, royal treasury, wild west, zen garden, steampunk, myths, coffee shop |
+| **Mood/mood** | energetic, cozy, epic, ironic, mystical, upbeat, meditative |
+| **Palette family** | warm earthy, jewel tones, pastel, monochrome+1 accent, royal gold and purple, burnt retro |
 | **Brightness** | light / dark / twilight - NOT always dark |
-| **Interaction/composition signature** | field framing, controls, HUD behavior, menu, overlays, reflow |
-| **Art finish and depth** | crisp 2D illustration, hand-drawn, cut paper, shallow layers, or modeled 2.5D; use the mapped reference's actual finish when present |
-| **Audience/tone** | hardcore casual, children's, premium elegant, retro nostalgia |
+| **Interaction/composition signature** | field framing, controls, HUD behavior, menu, overlays, phone-height adaptation |
+| **Art finish and depth** | slot-style key-art 2.5D (the studio signature), crisp 2D illustration, hand-drawn, cut paper, shallow layers; use the mapped reference's actual finish when present |
+| **Audience/tone** | relaxed casual, competitive score-chaser, children's, premium elegant, retro nostalgia |
 
-> Goal: even two "A" slots should look like DIFFERENT games - one warm Egyptian light,
-> another cold cosmic dark one, with different interaction and composition signatures. Setting,
-> information behavior, controls, palette, and layout
-> together they give a huge range of dissimilar results.
+> Goal: even two "A" match-3 games should look like DIFFERENT games - one warm Egyptian light,
+> another cool Olympus sky, with different interaction and composition signatures.
 >
-> **Separately against “casino-slop”**: neon + black + gold IS a default, not a style.
-> If the game comes out dark neon gold for no reason in Setting, scroll the axis again.
+> **Against "casino-slop"**: neon + black + gold IS a default, not a style. Casino-grade *assets*
+> (jewels, gold trim, glossy symbols) are the studio look; a dark-neon *interface* on every game is not.
 
 ## Work algorithm
 
 1. Read the flag:
-   - `--list` — display a table of archetypes A–AF, grouped into categories C1–C6.
-   - `--category C1..C6` - choose an archetype randomly INSIDE this category.
-   - `--archetype A..AF` - take a specific one.
-2. Otherwise, choose an archetype pseudo-randomly, **without repeating the previous one**:
+   - `--list` — display a table of archetypes A–AB, grouped into categories G1–G6.
+   - `--category G1..G6` - choose an archetype randomly INSIDE this category.
+   - `--archetype A..AB` - take a specific one.
+2. Otherwise, if the request maps to a reference family or names a mechanic (casual or a
+   gambling ask to translate), use that mechanic (`tools/reference_detect.py` → `mechanic`).
+3. Otherwise, choose an archetype pseudo-randomly, **without repeating the previous one**:
    ```python
    import time
-   ARCHETYPES = ["A","B","C","D","E","F","G","H",      # C1
-                 "I","J","K","L","M","N","O","P",      # C2
-                 "Q","R","S","T","U",                  # C3
-                 "V","W","X","Y",                      # C4
-                 "Z","AA","AB","AC",                   # C5
-                 "AD","AE","AF"]                       # C6
+   ARCHETYPES = ["A","B","C","D",                 # G1
+                 "E","F","G","H",                 # G2
+                 "I","J","K","L",                 # G3
+                 "M","N","O","P","Q",             # G4
+                 "R","S","T","U","V","W",         # G5
+                 "X","Y","Z","AA","AB"]           # G6
    archetype = ARCHETYPES[int(time.time()) % len(ARCHETYPES)]
    ```
-3. **Define the category and mathematical model** of the archetype by
-   `.claude/docs/gambling-categories.md`. This is the first thing that will be included in the concept.
-4. **Build and compare the Design Signature**: setting / mood / field framing / control topology /
+4. **Define the category and balance model** of the archetype by
+   `.claude/docs/game-categories.md`. This is the first thing that will be included in the concept.
+5. **Build and compare the Design Signature**: setting / mood / field framing / control topology /
    HUD behavior / information density / menu / overlays / palette / brightness / motion / art style.
    Compare it with recent or nearest games and change at least four material axes when the mechanic
    and reference do not justify repetition.
    **Skip this step entirely for a mapped named request** — take the setting, mood, palette,
    brightness, layout and art treatment from the reference instead, and record where each came
    from.
-5. Create a detailed GDD in `design/gdd/game-concept.md`.
+6. Create a detailed GDD in `design/gdd/game-concept.md`.
 
 ## Required sections of GDD
 
 ### Section 0: Classification (FIRST, mandatory)
 
 > Without this block `/gate-check concept` returns FAIL, and downstream `/autocreate` phases
-> cannot select the correct math implementation. Fill it out literally in machine-readable form.
+> cannot select the correct balance model. Fill it out literally in machine-readable form.
 
 ```markdown
 ## Classification
-- **Category**: [C1 | C2 | C3 | C4 | C5 | C6] - [category name]
-- **Archetype**: [A–AF | UNIQUE] - [name]
-- **Mathematical model**: [M1 | M2 | M3 | M4 | M5 | M6] - [name]
-- **Target Metric**: ["RTP 96.0% ±1%" | "hard pity 70, SSR 1.2%" | “run win-rate 32%” | …]
-- **Model config**: design/balance/[file].json
-- **Compliance profile**: [full | reduced C5 - justification]
+- **Category**: [G1 | G2 | G3 | G4 | G5 | G6] - [category name]
+- **Archetype**: [A–AB | UNIQUE] - [name]
+- **Balance model**: [B1 | B2 | B3 | B4 | B5 | B6] - [name]
+- **Balance config**: design/balance/[level-config | endless-config].json
+- **Target curve**: ["L1–3 ≥ 85% pass, final world 30–45%" | "median first run 60–90 s" | …]
+- **Scoring**: points only — [how points are earned; what stars/milestones unlock]
+- **Reference gameplay**: [n/a | reused | casino game → translated to <archetype>]
+- **No-gambling check**: no wagers, no currency, no chance-based rewards, no age gate
 - **Product target**: portrait phone game (Android/iOS, portrait-locked, touch only); Web is the preview host
 ```
 
@@ -253,117 +244,102 @@ The archetype sets the MECHANICS. To make two games of the same archetype look a
 > See `.claude/docs/quality-bar.md`.
 
 - **2–3 named real category hits**:
-  - C1 → Slotomania, Heart of Vegas, Zynga Poker, Bingo Blitz
-  - C2 → crash/mines/dice-originals, Hi-Lo
-  - C3 → Monopoly GO!, Coin Master, Dice Dreams
-  - C4 → Genshin Impact, Honkai: Star Rail, RAID: Shadow Legends
-  - C5 → Balatro, Luck be a Landlord, Dicey Dungeons
-  - C6 → Coin Dozer, Plinko, pachinko machines
-- For each: what do we borrow **IN FEELING** (timing of stopping the reels, weight of the cascade,
-  nerve before cash-out, rhythm of pull opening, responsiveness) - not in the content and not in the visuals
-- **Hook**: one line - how OUR game differs from the references
+  - G1 → Candy Crush Saga, Bejeweled, Two Dots, Toon Blast
+  - G2 → Tile Master, Zen Match, Microsoft Mahjong, Water Sort Puzzle, Solitaire TriPeaks
+  - G3 → 2048, Suika Game, Block Blast, Merge Mansion (board only)
+  - G4 → Bubble Witch Saga, Peggle, Arkanoid, Angry Birds, Cut the Rope
+  - G5 → Crossy Road, Stack, Fruit Ninja, Flappy Bird, Knife Hit
+  - G6 → Flow Free, Infinity Loop, Unblock Me, Minesweeper-style logic
+- For each: what do we borrow **IN FEELING** (the weight of a cascade, the snap of a merge, the
+  arc of a shot, the rhythm of a run, the click of a solved circuit) — not the content and not the
+  visuals
+- **Hook**: one line — how OUR game differs from the references
 
-### Section 2: Math/Balance Profile
+### Section 2: Balance Profile
 
-Filled in according to the model from Section 0. Thresholds - `.claude/docs/math-models.md`.
+Filled in according to the model from Section 0. Thresholds — `.claude/docs/balance-models.md`.
 
-**M1 (C1) — Paytable RTP:**
-- Suggested RTP (95–97%) and volatility
-- Symbol table with weights, payout table
-- Hit rate (20–35%), winning formula
-- Bet-tiers and the share of RTP attributable to the bonus
+**B1 (G1) — Board simulation:**
+- Board size and symbol kinds per world, the move rule and minimum group
+- Level goals (score / collect / blockers) and move budgets; where each new element arrives
+- Target pass-rate band per world (onboarding ≥ 80%, final world 30–45%), breathers after spikes
+- Specials and the combo formula; the dead-board reshuffle
 
-**M2 (C2) — Instant-Win RTP:**
-- House edge (1–4%) and resulting RTP (96–99%)
-- Multiplier formula in steps, maximum multiplier (cap is required)
-- Round determinism scheme: `serverSeed + clientSeed + nonce`
-- Cash-out rule: payout at step k strictly = bet × multiplier(k)
+**B2 (G2) — Solvable deals:**
+- Layout size, piece kinds, layers/containers per level; the generator policy (verify/reverse)
+- The par curve (first level ≤ 10 moves, ≤ 2× per step); undo and earned hints
 
-**M3 (C3) — Economy:**
-- Energy cap, regeneration per hour, spin cost
-- Spin event table with weights (sum = 100%)
-- Unlock price ladder, price step ≤ 1.6×
-- Source/sink 0.90–1.15, pace 2–5 sessions per unlock, session 3–7 minutes
+**B3 (G3) — Run length:**
+- Board size, the tier chain (topped by the hero object), the spawn table
+- Target median session (2–12 min), the goal tier and milestone tiers
 
-**M4 (C4) — Gacha:**
-- Rarity table with base rates (SSR 0.5–2%), amount = 1.0
-- Hard pity (50–90), soft pity (start and step)
-- E[pulls to rarest] and 90th percentile
-- Duplicate value for EACH rarity
+**B4 (G4) — Shot simulation:**
+- Level layouts, target counts, shot budgets, the catch bucket, the body cap
+- Target pass-rate band per world; the headless bot in `test/balance/bot_sim_test.dart`
 
-**M5 (C5) — Run Win-Rate:**
-- Round thresholds (step ≤ 2×), target run win-rate 25–40%
-- Run economics: income per round versus store prices
-- List of modifiers (≥3) with strength - neither dominant nor dead
-- Seed determinism scheme + note about ADR on `Random(seed)`
+**B5 (G5) — Reflex ramp:**
+- Tempo start and cap (interval, reaction window), time to cap, grace period, lives
+- Target median first run (30–180 s), ≤ 10% early deaths
 
-**M6 (C6) — Physics RTP:**
-- Field geometry, basket multipliers, target RTP 95–97%
-- Fixed timestep and deterministic start seed
-- Expected distribution by baskets (without “dead”)
-- For coin pusher - how the steady state is measured
+**B6 (G6) — Solver curve:**
+- Level size and constraints per world, the generator + solver, par, hint rules
 
 ### Section 2.5: Production Plan (which makes the game FULL and not a mini-demo)
 
 > **This is the key section for the "full game".** One game loop = mini demo. The full game is
-> loop + content (many levels/modes) + meta-loop (progression/economy/achievements) +
-> monetization/telemetry points + compliance layer. Describe them SPECIFICALLY - downstream
-> phases `/autocreate` (3.5 audio, 4 meta-systems agent, 4.5 content) build exactly this.
+> loop + content (many levels/modes) + meta-loop (progression/achievements/collection) +
+> monetization/telemetry points + the no-gambling gate. Describe them SPECIFICALLY — downstream
+> phases of `/autocreate` (3.5 audio, 4 meta-systems agent, 4.5 content) build exactly this.
 
 ```markdown
 ## Production Plan
 
 ### Content Plan (volume of content - NOT one level)
-- **Content model**: [levels | endless-stages | bet-tiers+bonus | waves] - what suits the mechanics
-- **Number**: [for example, 24 levels in 3 worlds | 8 progressive stages | 5 bet-tiers + 2 bonus games]
-- **Parameters per content unit** (which changes from level to level): [speed/density/target/weights]
-- **Progression curve**: [how rates/targets/prices grow; link to category content config]
-- **Condition for passing / stars**: [how success is counted, 1–3 stars according to thresholds]
+- **Content model**: [levels in worlds | endless with milestones | daily seeded levels] - what suits the mechanic
+- **Number**: [for example, 36 levels in 3 worlds | endless + 10 milestone tiers]
+- **Parameters per content unit** (what changes from level to level): [kinds/budget/goal/blockers/tempo]
+- **Progression curve**: [how the budgets, goals and elements ramp; link to the balance config]
+- **Stars**: [how success is counted, 1–3 stars by score or moves-left thresholds]
 
 ### Game Modes (2-3 modes - replayability)
-- **Mode 1 (main)**: [Classic / Campaign - completing content in order]
-- **Mode 2**: [High-Roller (high stakes) / Turbo / Survival series / Daily Run - suitable category]
-- **Mode 3 (optional)**: [Daily Challenge - deterministic seed by date, separate leaderboard]
+- **Mode 1 (main)**: [Levels — the map in order]
+- **Mode 2**: [Daily challenge — one seeded level per day, a streak and a badge]
+- **Mode 3 (optional)**: [Endless / Zen / Time attack — best score]
 
-### Progression Model (meta-loop retention)
-- **What unlocks**: [levels/worlds/skins/themes/modes as you progress]
-- **Player level / XP**: [yes/no; if so, what is XP for and what does it give]
-- **Stored progress**: [stars, best scores, open levels, statistics]
+### Progression Model (meta-loop retention — no currency)
+- **What unlocks**: [worlds at star thresholds, themes/backgrounds/card backs at milestones]
+- **Player level / XP**: [yes/no; XP from points, never spent]
+- **Stored progress**: [stars, best scores, unlocked levels, statistics, streaks]
 
-### Economy Model (virtual - for retention)
-- **Currency**: [name, e.g. “coins”/“crystals”] - what is awarded for
-- **Where is it spent**: [store: skins/themes/boosters/level sets/remove-ads]
-- **Starting balance and prices**: [numbers → will go to GameConfig / economy-config.json]
-- ⚠️ The currency is strictly VIRTUAL: does not buy the outcome, is not converted into money, is not withdrawn.
-  Real currency symbols next to the game balance are prohibited (responsible-gaming.md §1).
+### Boosters (optional)
+- **Kinds**: [hammer, shuffle, +moves …] — granted in known counts by level rewards,
+  achievements and milestones; never bought with a currency
 
-### Achievements & Daily (retention hooks)
-- **Achievements**: [5–12 pieces: id + condition + reward]
-- **Daily Bonus**: [streak mechanics that gives]
-- **Missions (optional)**: [daily/weekly goals]
+### Achievements, Collection & Daily (retention hooks)
+- **Achievements**: [5–12: id + condition + known reward]
+- **Collection album**: [pages of the game's objects, each filled by a named milestone]
+- **Daily challenge**: [the seeded level, the streak, the badge]
 
 ### Monetization Placements (integration points - implemented as abstractions/no-op)
-- **Rewarded**: [continue after losing | double your reward | bonus spin] - where exactly
-- **Interstitial**: [between sessions, frequency cap N]
-- **IAP catalog**: [coin sets, remove-ads, premium skins - product id list]
+- **Rewarded**: [+5 moves after running out | continue a run] - where exactly
+- **Interstitial**: [between levels, frequency cap N]
+- **IAP catalog**: [remove-ads, fixed theme packs — never currency, never random content]
 - **Banner**: [yes/no; default off]
 
 ### Telemetry Events (taxonomy - implemented via AnalyticsService no-op)
-- Key events: app_open, session_start/end, screen_view, level_start/complete/fail,
-  game_action, purchase, ad_shown/reward, achievement_unlocked, daily_bonus_claimed
-- **Remote-config keys** (live-tuning): [advertising frequency, prices, RTP/pity profile, energy regen]
+- Key events: app_open, session_start/end, screen_view, level_start/complete/fail, move,
+  booster_used, ad_shown/reward, achievement_unlocked, daily_challenge_cleared
+- **Remote-config keys** (live-tuning): [ad frequency, difficulty offsets inside the verified windows]
 
-### Compliance (MANDATORY - see `.claude/rules/responsible-gaming.md`)
-- **Disclaimer**: “Gaming with virtual chips. Real money is not accepted or paid.
-  Success in this game does not mean success in gambling for real money." - splash + rules
-- **Responsible-play**: block in settings (session reminder, “take a break”, help contacts)
-- **Odds disclosure**: [required for C4 and paid spins C3 | covered by paytable for C1/C2/C6]
-- **Weakened Profile**: [none | yes - only C5 without IAP and without currency bets, justification]
+### No-gambling check (MANDATORY - `.claude/rules/no-gambling.md`)
+- No wagers, no currency/balance/shop/prices, no chance-based rewards, no casino controls or copy
+- No age gate and no gambling disclaimer — the rating follows from the content (normally Everyone)
+- [If the brief named a gambling mechanic: the casual translation and why it keeps the feel]
 ```
 
 > Keep the volume realistic for auto-generation: content is DATA (JSON + parameters in
-> GameConfig), rather than N handwritten screens. 8 bet-tiers + 3 banners = one GameScreen + config
-> with records. This is the “full game” at the low cost of context.
+> GameConfig), rather than N handwritten screens. 36 levels = one GameScreen + a level list.
+> This is the "full game" at the low cost of context.
 
 ### Section 3: Asset/World Design DNA, Game UI Read, and Design Signature (MANDATORY)
 
@@ -374,7 +350,7 @@ visual tokens.
 ```markdown
 ## Game UI Read
 - Player and session: [audience, posture, duration, one/two-handed]
-- Core decision: [the repeated gambling decision]
+- Core decision: [the repeated move the player makes]
 - Emotional arc: [setup -> commitment -> anticipation -> result -> recovery/progression]
 - Information pressure: [instant vs contextual information]
 - World and tone: [specific world]
@@ -414,13 +390,13 @@ Apply `.claude/docs/mobile-first-contract.md` and `.claude/docs/gameplay-screen-
 
 ```markdown
 ## State Composition Map
-### Setup / wager
+### Read / setup
 - Job and attention order: [...]
 - Persistent vs contextual information: [...]
-- Recipe: [F# + C# + H# + O# + R#]
-### Commitment / anticipation
+- Recipe: [F# + C# + H# + O# + P#]
+### Move / resolution
 [same fields]
-### Result / celebration or loss
+### Result / celebration or failure
 [same fields]
 ### Recovery / progression
 [same fields]
@@ -429,8 +405,8 @@ Apply `.claude/docs/mobile-first-contract.md` and `.claude/docs/gameplay-screen-
 - Main Menu: [M# + O# + P#; why; `menu_role: dominant | supporting | absent` for the recorded
   `lead_kind`]
 - Live Game: [state recipes; primary field alignment and any documented offset reason]
-- Rules/Odds: [recipe; disclosure and scan strategy]
-- Collection/Profile/Progression: [recipe appropriate to category]
+- How to play: [recipe; teaching and scan strategy]
+- Level map/Collection/Profile: [recipe appropriate to category]
 - Phone proof: [360x640, 360x800, 390x844, 430x932; P strategy for short and tall phones]
 
 ## Similarity Check
@@ -445,8 +421,9 @@ changing only art and palette does not pass the Similarity Check.
 
 ### Section 4: MVP Screen Map
 
-**NECESSARILY. Minimum 10 screens with description and UX flow. Give each screen a job and an
-appropriate recipe; reuse structure only where consistency helps the player.**
+**NECESSARILY. Minimum 12 screens with description and UX flow. Give each screen a job and an
+appropriate recipe; reuse structure only where consistency helps the player. No gambling
+surfaces: no shop, no balance, no paytable/odds, no daily spin, no age gate.**
 
 ```markdown
 ## Screen Map
@@ -455,81 +432,68 @@ appropriate recipe; reuse structure only where consistency helps the player.**
 - What it shows: [animated game logo/symbol]
 - Duration: 1.5-2 sec
 - Go to: Main Menu
-- Entrance animation: [specific effect]
 
 ### Screen 2: Main Menu
-- Elements: title (with glow), PLAY button (pulsating), settings, help
+- Elements: title, PLAY / Continue level N, level map, settings, how to play
 - Background: [description of atmospheric background]
-- Entry animation: staggered appearance of elements
-- Transitions: → Game Screen, → Settings, → Help
+- Transitions: → Level Map, → Game Screen, → Settings, → Help
 
-### Screen 3: Game Screen + HUD
-- Playing field: [reels/table/mine grid/multiplier curve/banner/board/pegs field]
-- HUD elements: account/balance (animated counter), controls, action button
-- Viewport composition: [dominant integrated field; compact control attachment; no nested window,
-  large competing info card, or page-scrolling core loop]
-- Overlays: Win/Score (3 levels), Game Over, level passed
-
-### Screen 4: Paytable
-- Content: rules, payouts or combinations
-- Navigation: swipe or tabs
-- Go back: → Game Screen
-
-### Screen 5: Settings
-- Elements: BGM volume, SFX volume, vibration, fast mode/skip animation,
-  **Responsible Play block** (session reminder, break, help contacts)
-- Toggle style: [description of custom toggles]
-
-### Screen 6: Help / How to play
-- Format: step-by-step guide with illustrations
-
-### Screen 7: Win/Score Overlays (3 levels)
-- Small (basic): toast from below, animated counter, auto-dismiss 2s
-- Big (medium): half-screen, confetti particles, 3s
-- Mega (maximum): full screen, explosion, camera shake
-
-### Screen 8: Game Over / Insufficient Funds
-- Stylized modal (NOT AlertDialog)
-- Repeat / reduce bet / continue
-
-### Screen 9: Bonus/Special Mode (if available)
-- Bonus category mode: free spins / hold&spin / jackpot gate / bonus pick
-
-### Screen 10: Daily Bonus
-- Player retention mechanics
-- Go back: → Main Menu
-
-### Screen 11: Leaderboard / Stats
-- Top results, player progress
-
-### Screen 12: Player Profile
-- Avatar, nickname, statistics
-
-### Screen 13: Level / Mode Select (if content = levels/modes)
-- Level grid/map with status (locked/open/stars) or mode selection
+### Screen 3: Level Map / Mode Select
+- Worlds and levels (locked / open / stars) or modes (Levels, Daily, Endless) with best scores
 - Go to: → Game Screen (selected level/mode)
 
-### Screen 14: Shop (Economy)
-- List of items purchased for currency (skins/themes/boosters/sets/remove-ads), currency balance at the top
-- Conditions: available / not enough currency / purchased
+### Screen 4: Game Screen + HUD
+- Playing field: [match board / tile pile + tray / merge grid / peg field / lanes / logic grid]
+- HUD elements: score, the level goal and its progress, moves/shots/time left, pause
+- Viewport composition: [dominant integrated field; compact control attachment; no nested window,
+  large competing info card, or page-scrolling core loop]
+- Overlays: combo callouts (3 tiers), level complete, level failed
 
-### Screen 15: Achievements
-- List of achievements with progress (unlocked/in progress), awards
+### Screen 5: Pause
+- Resume, Restart, How to play, Settings, Menu
+
+### Screen 6: Level Complete
+- Stars fill (1–3), score, new best, the host reacts; Next / Retry / Map
+
+### Screen 7: Level Failed / Run Over
+- Stylized overlay (NOT AlertDialog): what happened, how close the goal was
+- Retry / optional rewarded "+5 moves" / Map
+
+### Screen 8: How to Play
+- Step-by-step guide with the game's real pieces
+
+### Screen 9: Settings
+- Music, SFX, vibration, reduce motion, reset progress, version
+
+### Screen 10: Achievements
+- Unlocked / in progress, with the known reward of each
+
+### Screen 11: Collection Album
+- Pages of the game's objects, each filled by a named milestone
+
+### Screen 12: Stats / Profile
+- Avatar, nickname, levels cleared, total stars, best score, longest chain, daily streak
+
+### Screen 13: Daily Challenge
+- Today's seeded level, the streak, the badge
+
+### Screen 14: Combo / Event Overlays (3 tiers)
+- Routine: local pop + score tick
+- Notable: "CHAIN x6!" callout with a combo badge
+- Major: level clear / new best takeover
 ```
 
 **UX Flow (navigation):**
 ```
-Splash → Menu → Game ←→ Paytable/Rules
-                 ↓  ←→ Settings
-                 ↓  ←→ Help
-                 ↓
-          Win Overlay → Game (auto)
-          Bonus Mode → Game (auto)
-          Game Over → Menu / Retry
+Splash → Menu → Level Map → Game ←→ Pause (→ How to play / Settings)
+                               ↓
+                 Level Complete → Next level / Map
+                 Level Failed   → Retry / Map
 
-          Menu ←→ Daily Bonus
-          Menu ←→ Leaderboard
-          Menu ←→ Player Profile
+          Menu ←→ Daily Challenge
+          Menu ←→ Achievements / Collection
+          Menu ←→ Stats / Profile
+          Menu ←→ Settings
 ```
 
 ### Section 5: Asset Manifest (FULL, format-aware)
@@ -551,7 +515,8 @@ manifesto literally.
   (default pure magenta #FF00FF; pure green #00FF00 if the palette contains magenta/pink/purple),
   then cut with `tools/cutout.py`; backgrounds = full scene, no alpha removal
 - Negative prompt: [exclude styles and artifacts that conflict with this game's reference or DNA],
-  no unintended logo or text, no sprite sheet, no generic casino/neon unless explicitly intended
+  no unintended logo or text, no sprite sheet, no casino UI (reels, bet panels, coin payouts),
+  no generic neon unless explicitly intended
 
 ### Sprites (assets/images/sprites/)
 - sprite_[name].png — [subject identity from the game world; material/texture; role in gameplay; readable at 64px]
@@ -571,12 +536,12 @@ manifesto literally.
 - background_game.png — 9:16 background of the game screen; quiet center area, does not argue with the field
 
 ### Audio (assets/audio/) — sound effects only, no background music
-- assets/audio/sfx/sfx_action.wav - main action (spin/tap/move)
-- assets/audio/sfx/sfx_coin.wav — currency accrual / counter
-- assets/audio/sfx/sfx_error.wav - failure / error / insufficient resources
-- assets/audio/sfx/sfx_win_small.wav - small win / success
-- assets/audio/sfx/sfx_win_big.wav - big win / success
-- assets/audio/sfx/sfx_win_mega.wav - mega win / exceptional success
+- assets/audio/sfx/sfx_action.wav - main action (tap/swap/shoot/drop)
+- assets/audio/sfx/sfx_score.wav — match / score tick
+- assets/audio/sfx/sfx_error.wav - illegal move / out of moves / run over
+- assets/audio/sfx/sfx_win_small.wav - small success (a match, a merge)
+- assets/audio/sfx/sfx_win_big.wav - big success (a combo, a special, a clear)
+- assets/audio/sfx/sfx_win_mega.wav - exceptional (3 stars, a new best)
 - assets/audio/sfx/sfx_button.wav — pressing the UI button
 - assets/audio/sfx/sfx_navigate.wav — transition between screens
 ```
@@ -588,95 +553,93 @@ manifesto literally.
 ### Game Core
 - [GameName]Game extends FlameGame - entry point, controls ValueNotifiers
 - [GameName]World extends World with HasCollisionDetection - game world
-- GameConfig - ALL numerical constants (bet rates, speeds, multipliers, timings)
-- GameState (sealed) — Idle, Playing, Animating, Win, GameOver, Paused
+- GameConfig - ALL numerical constants (board size, budgets, scoring, timings)
+- GameState (sealed) — Ready, Resolving, Paused, LevelCleared, LevelFailed
 
 ### Systems
-- [GameLogic] - basic mechanics (WeightedRNG/MatchDetector/SpawnManager)
-- [Evaluator] - pure function for calculating the result
+- GameRng - the one seeded source of gameplay randomness
+- [Rules]Engine - the pure rules engine (resolves a move BEFORE the animation)
+- Scoring - a pure function for points, combos and stars
 
 ### Components
-- [MainComponent] - main game object
-- [ElementComponent] - game elements
-- WinAnimationComponent - VFX wins
-- AmbientParticles - background particles
+- [MainComponent] - the board / field / player
+- [ElementComponent] - tiles, pieces, balls, hazards
+- ComboFeedbackComponent - VFX scaled to what the player earned
+- AmbientParticles - optional background atmosphere
 
 ### UI
 - GameApp (MaterialApp) → named routes
-- SplashScreen → MainMenu → GameScreen (GameWidget + HUD overlay)
-- HudWidget - ValueListenableBuilder for balance/account/status
-- WinOverlay - 3 levels
+- SplashScreen → MainMenu → LevelMap → GameScreen (GameWidget + HUD overlay)
+- HudWidget - ValueListenableBuilder for score/goal/moves/state
+- LevelComplete / LevelFailed overlays
 - All other screens (12+)
 
 ## ValueNotifier Contracts (between Flame Game and Flutter UI)
 | Notifier | Type | Writes | Reads |
 |----------|------|--------|-------|
-| balance | ValueNotifier<int> | Game | HUD, Bet selector, InsufficientFunds |
-| bet | ValueNotifier<int> | HUD (Bet+/-) | Game (on action) |
-| isPlaying | ValueNotifier<bool> | Game | HUD (button lock) |
+| score | ValueNotifier<int> | Game | HUD, LevelComplete |
+| movesLeft | ValueNotifier<int> | Game | HUD, LevelFailed |
+| goalProgress | ValueNotifier<GoalProgress> | Game | HUD |
+| isResolving | ValueNotifier<bool> | Game | HUD (input lock) |
 | currentState | ValueNotifier<GameState> | Game | HUD, Overlays |
-| score | ValueNotifier<int> | Game | HUD, Leaderboard |
-| lastWin | ValueNotifier<int> | Game | WinOverlay |
+| combo | ValueNotifier<int> | Game | ComboOverlay |
 
 ## Complete Game Loop
-1. User taps Action button → check isPlaying (false) + check balance >= bet
-2. Set isPlaying = true, deduct bet from balance
-3. Compute outcome (BEFORE animation)
-4. Play action animation (reels spin / tiles move / etc.)
-5. Animation complete → evaluate result
-6. If win: update balance, show WinOverlay (level based on multiplier), play sound
-7. If loss: brief feedback
-8. Set isPlaying = false → return to Idle state
-9. Update leaderboard if score > highScore
+1. The player makes a move (swap / link / tap / pick / slide / shoot / tap-to-time)
+2. Check isResolving (false) and that the move is legal; lock input
+3. The rules engine resolves the move completely (BEFORE any animation)
+4. Play back the resolved steps (clear → gravity → refill → cascade, merge, flight, …)
+5. Update score, goal progress and moves left; show combo feedback scaled to the gain
+6. Goal met → LevelComplete with stars; budget exhausted → LevelFailed with Retry
+7. No legal move → reshuffle automatically (never a dead end)
+8. Unlock input → return to Ready
+9. Save stars/best score; check achievements and album milestones
 
 ## Edge Cases (FULL list)
-- Balance = 0 → show InsufficientFunds dialog
-- Balance < minBet → show InsufficientFunds
-- Double-click Action → second click ignored (isPlaying check)
-- App pause during animation → complete animation, return to Idle
-- Back button on GameScreen → confirm exit dialog
+- Double tap on the field/button → second input ignored (isResolving check)
+- No legal move on the board → automatic reshuffle
+- Goal met mid-cascade → the cascade finishes, then LevelComplete
+- App pause during resolution → the resolved move finishes on resume
+- Back button on GameScreen → pause overlay
 - Settings changed mid-game → apply immediately (audio volume)
-- Daily Bonus already claimed today → show "come back tomorrow"
-- First launch → show tutorial/help overlay
+- Daily challenge already cleared today → show the streak and "come back tomorrow"
+- First launch → level 1 teaches the move with a guided first swap/tap
 ```
 
 ### Section 7: Juiciness Requirements - COMPLETE
 
 ```markdown
 ## Anticipation
-- [Description of the effect of waiting before the result]
-- [Slow down/delay/sound fade in]
+- [The beat before a special fires / the last link of a chain / the final target]
 
-## Near Miss / Almost Win (if applicable)
-- [Description of visual effect when almost winning]
+## Honest feedback
+- Feedback shows exactly what the move did; no fake "almost" moments, no casino reveal theatre
 
-## Win Celebration (3 levels)
-- Small (1-5x): [description - toast + confetti + ding]
-- Big (5-20x): [description - half-screen + burst particles + fanfare]
-- Mega (20x+): [description - fullscreen + explosion + camera shake + epic music]
+## Celebration (3 tiers, points-based)
+- Routine (a match, a merge): [local pop + score tick]
+- Notable (a special, a 3+ cascade, a long chain): [callout + combo badge + burst]
+- Major (level clear, 3 stars, new best): [result takeover + stars filling + flourish]
 
 ## Idle Animations (when the player does not interact)
-- Main element: [wiggle/flare/ripple]
-- Background: [moving particles / ambient glow]
-- Action button: [pulsating glow]
+- Main element: [a hint shimmer on a legal move after a pause, or deliberately still]
+- Background: [ambient drift if the DNA supports it]
 
 ## Micro-Interactions
 - Each button: scale 0.95 when pressed → 1.0 when released + shadow change
-- Numbers: AnimatedCounter when changing (easeOutCubic)
-- Navigation: thematic transition (not fade/slide)
+- Numbers: animate only meaningful gains
+- Navigation: a transition that communicates continuity, or a direct cut
 - Switches: custom toggle with animation
 
 ## Sound Design Map
 | Event | Sound | Character |
 |---------|------|----------|
-| Action start | sfx_action.wav | Growing |
-| Action complete | (silence 200ms) | Pause for anticipation |
-| Small win | sfx_win_small.wav | Melodious ding |
-| Big win | sfx_win_big.wav | Fanfare |
-| Mega win | sfx_win_mega.wav | Epic orchestra |
+| Move start | sfx_action.wav | Short, crisp |
+| Match / cascade step | sfx_score.wav | Pitch rises with the step |
+| Special / combo | sfx_win_big.wav | Bright flourish |
+| Level cleared | sfx_win_mega.wav | Celebration |
 | Button tap | sfx_button.wav | Short click |
 | Navigation | sfx_navigate.wav | Swoosh |
-| Error/Fail | sfx_error.wav | Soft buzz |
+| Illegal move / fail | sfx_error.wav | Soft buzz |
 ```
 
 ### Section 8: Anti-Slop Checklist + Production Readiness
@@ -684,7 +647,7 @@ manifesto literally.
 ## Anti-Slop (intent + craft, NOT imposed style)
 - [ ] Game UI Read and complete Design Signature are recorded with reasons
 - [ ] State Composition Map covers setup, anticipation, result, and recovery/progression
-- [ ] Per-screen layout recipes are selected from independent F/C/H/M/O/R axes
+- [ ] Per-screen layout recipes are selected from independent F/C/H/M/O/P axes
 - [ ] Similarity Check names real neighbors and records at least four material differences,
       unless a mapped reference or mechanic justifies repetition
 - [ ] Semantic type, spacing, color, shape, material, and motion roles are defined without a
@@ -708,7 +671,8 @@ manifesto literally.
 - [ ] Data Flow defined (ValueNotifier contracts)
 - [ ] Asset Manifest full (Codex PNG + Audio WAV; SVG fallback only)
 - [ ] Sound Design Map defined
-- [ ] SharedPreferences for: Settings, Profile, Leaderboard, Daily Bonus
+- [ ] SharedPreferences for: Settings, Profile, Progression (stars/best), Daily Challenge
+- [ ] No-gambling check clean: no wager, currency, shop, chance-based reward, casino UI or age gate
 ```
 
 ## Conclusion
@@ -720,15 +684,15 @@ Print the message:
 AUTO-IDEA COMPLETE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Game: [Name]
-Category: [C1-C6] - [title]
-Archetype: [A-AF | UNIQUE] - [name]
-Mathematical model: [M1-M6] - target metric [...]
+Category: [G1-G6] - [title]
+Archetype: [A-AB | UNIQUE] - [name]
+Balance model: [B1-B6] - target curve [...]
+Reference gameplay: [n/a | reused | casino game translated to <archetype>]
 Setting / Mood: [world] / [mood]
-Layout: [key per-screen F/C/H/M/O/R recipes]
-Balance: [RTP XX% / Difficulty curve / Points system]
-Content: [N levels/stages] | Modes: [Classic + Endless/Time-Attack/Daily]
-Meta: [currency + store + progression + achievements]
-Compliance: [full: disclaimer + responsible-play | reduced C5]
+Layout: [key per-screen F/C/H/M/O/P recipes]
+Content: [N levels in M worlds | endless + milestones] | Modes: [Levels + Daily + Endless/Zen]
+Meta: [stars + unlocks + achievements + collection album + daily challenge] (no currency)
+No gambling: [clean]
 MVP screens: [N] screens
 Design Signature: [key interaction, composition and visual decisions]
 

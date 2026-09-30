@@ -14,7 +14,7 @@
 Hard contracts are not optional:
 
 - the user's brief and supplied reference;
-- gambling classification, math truth, and responsible-play requirements;
+- the game classification, balance truth, and the no-gambling gate (`.claude/rules/no-gambling.md`);
 - `.claude/docs/mobile-first-contract.md` and `.claude/docs/gameplay-screen-contract.md`;
 - readable text, safe areas, touch targets, assistive focus, reduced motion, and
   non-color-only state communication;
@@ -41,7 +41,7 @@ Before choosing tokens or arranging widgets, write a concise read in `design/art
 - Information pressure: [what must be known instantly; what can wait]
 - World and tone: [specific fiction and attitude, not a generic adjective list]
 - Reference contract: [exact reference to match, or patterns borrowed from named examples]
-- Constraints: [category, accessibility, portrait phone + touch only, compliance]
+- Constraints: [category, accessibility, portrait phone + touch only, no gambling]
 - Memorable interface idea: [one interaction or spatial idea the player will remember]
 ```
 
@@ -76,12 +76,12 @@ not a menu of defaults.
 | Sound/haptics | dry clicks, soft tactile, mechanical, musical, percussive, restrained |
 
 A signature is the combination and its rationale. “Purple, rounded, playful” is not a signature.
-“The wager dial is physically attached to the submarine console; pressure information emerges
-around the porthole only during the climb” is.
+“The aim guide is physically attached to the submarine's torpedo tube; depth information emerges
+around the porthole only while a shot travels” is.
 
-Use semantic tokens, but do not freeze their count across games. A candy gacha may need a broad
-controlled palette; a precision crash game may need one signal color. A dense roguelike may need
-more type roles than a one-button original. Cohesion comes from role discipline, not arbitrary
+Use semantic tokens, but do not freeze their count across games. A candy match-3 may need a broad
+controlled palette; a precision stacker may need one signal color. A dense logic game may need
+more type roles than a one-tap flyer. Cohesion comes from role discipline, not arbitrary
 limits such as exactly five colors, one accent, or four-to-six font sizes.
 
 ## 4. Compose around gameplay states
@@ -103,31 +103,31 @@ For every key screen/state, record:
 - Transition reason: [feedback, hierarchy, continuity, or anticipation]
 ```
 
-Map at least setup/wager, commitment, anticipation, resolution, celebration/loss, and recovery.
-The focal order may change between states. A win may temporarily replace the action as the first
-read; a risk choice may deliberately share attention between probability and reward. “One focal
+Map at least setup/read, commitment (the move), anticipation, resolution, celebration/failure, and recovery.
+The focal order may change between states. A big combo may temporarily replace the action as the first
+read; a tense last move may deliberately share attention between the board and the moves left. “One focal
 point” is useful diagnosis, not a rule that erases meaningful tension.
 
-Use progressive disclosure. The live round shows what is needed now; rules, history, probability
-detail, collections, and configuration remain reachable without competing with the mechanic.
+Use progressive disclosure. The live level shows what is needed now; how-to-play, level goals,
+collections, and configuration remain reachable without competing with the mechanic.
 HUD elements should be event-driven and may be persistent, contextual, or embedded according to
 the game. Do not poll state each frame merely to keep the HUD current.
 
 ### Category prompts
 
-- **C1 social casino:** establish the reel/table/board as the spectacle. Controls may be embedded
-  in a machine, attached to a table edge, distributed like chips, or gathered in a dock. Do not
-  assume “top HUD + bottom panel.”
-- **C2 casino originals:** make the recurring risk decision the protagonist. Put probability,
-  trajectory, or selectable risk next to the action it affects; hide secondary history until asked.
-- **C3 spin-to-progress:** show the relationship between the current spin and the world/progression
-  it changes. Avoid presenting the spin as a generic widget above an unrelated progress card.
-- **C4 gacha:** separate summon theatre, collection management, banner/rate inspection, and result
-  handling. They need related art direction but not the same card grid.
-- **C5 casino roguelike:** support fast comparison of risk, build state, and consequence. Dense is
-  valid when hierarchy and touch navigation remain excellent.
-- **C6 coin pusher/plinko:** preserve a readable physics field and place wager/drop controls where
-  they do not obscure trajectories or buckets. The board, not a decorative dashboard, leads.
+- **G1 match & cascade:** the board is the spectacle and the input surface at once. Goals and
+  moves-left belong where the eye rests between moves; boosters sit in thumb reach without
+  crowding the board. Do not assume “top HUD + bottom panel.”
+- **G2 tile & sort:** make the layout and the tray/containers read as one object. Show what is
+  free to take at a glance; keep undo and hints near the tray rather than in a menu.
+- **G3 merge & place:** show the next piece and the tier ladder near where the piece lands; the
+  space left on the board is the tension, so chrome must not eat it.
+- **G4 aim & physics:** preserve a readable physics field and a clear aim guide; shot count and
+  targets sit where they do not obscure trajectories.
+- **G5 arcade reflex:** the play space and the upcoming threat own the screen; the HUD is a
+  glance (score, best), and the first tap starts the run.
+- **G6 logic:** support fast scanning of constraints; dense is valid when hierarchy and touch
+  precision remain excellent.
 
 ## 5. Use a compositional grammar, not a complete template
 
@@ -195,8 +195,8 @@ Randomness may break a tie between equally appropriate directions; it may not re
 
 Every interactive control needs idle, pressed, disabled, focus (for assistive technology), and
 loading/committed behavior. Touch feedback begins immediately. Dangerous or irreversible actions
-need separation and confirmation appropriate to their risk. Empty, error, locked, insufficient-
-funds, interrupted, and offline states must tell the player what happened and what to do next.
+need separation and confirmation appropriate to their risk. Empty, error, locked, out-of-moves,
+interrupted, and offline states must tell the player what happened and what to do next.
 
 ### Motion, haptics, and celebration
 
@@ -224,7 +224,7 @@ window or a landscape screen is the wrong design, however distinctive.
   panel or landscape variant; wide hosts get the phone column from the contract.
 - The live loop stays in one screen as required by `gameplay-screen-contract.md`.
 - Touch is the only input. Every state a player needs — pressed, disabled, selected, locked,
-  insufficient funds — is visible without hover; no information lives only in a tooltip. Give
+  out of moves — is visible without hover; no information lives only in a tooltip. Give
   every screen a reliable back path (system back and an on-screen control) and visible focus for
   assistive technologies.
 
@@ -259,7 +259,7 @@ An anti-slop review must answer with evidence, not taste:
 - [ ] Text scale, reduced motion, safe areas, focus traversal, back behavior, and input prompts pass.
 - [ ] Motion and effects communicate something and remain proportional to event importance.
 - [ ] Generated assets follow the concept/reference and studio rendering baseline.
-- [ ] Compliance surfaces are reachable and legible without being visually mistaken for rewards.
+- [ ] No gambling controls or copy exist (no SPIN/BET/MAX BET/CASH OUT, no paytable, no currency).
 
 The audit must not “fix” a game by adding a fashionable treatment. It should first correct broken
 hierarchy, state communication, composition, responsiveness, or mismatch with the recorded

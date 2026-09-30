@@ -18,8 +18,8 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 
 # Check for active game project
 GAME_DIR=""
-if [ -f "lib/game/slot_machine_game.dart" ]; then
-  GAME_DIR="lib/game/slot_machine_game.dart"
+if [ -f "lib/game/game.dart" ]; then
+  GAME_DIR="lib/game/game.dart"
   GAME_NAME=$(basename $(pwd))
   echo "🎮 Project: $GAME_NAME"
 fi
@@ -66,14 +66,12 @@ if [ "$GDD_COUNT" -gt "0" ]; then
   done
 fi
 
-# Check RTP config
-if [ -f "design/balance/rtp-config.json" ]; then
-  RTP=$(grep -o '"target_rtp":[^,}]*' design/balance/rtp-config.json 2>/dev/null | head -1)
-  if [ -n "$RTP" ]; then
-    echo ""
-    echo "💰 RTP config: $RTP"
+# Show the category's balance contract, without gambling-era return-to-player fields.
+for cfg in design/balance/level-config.json design/balance/endless-config.json design/balance/bot-report.json; do
+  if [ -f "$cfg" ]; then
+    python3 -B -c 'import json,sys; d=json.load(open(sys.argv[1])); print("Balance:", sys.argv[1], "model="+str(d.get("model", "undeclared")), "verdict="+str(d.get("simulation", {}).get("last_verdict", "not run")))' "$cfg"
   fi
-fi
+done
 
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

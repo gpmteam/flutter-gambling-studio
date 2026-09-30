@@ -19,21 +19,21 @@ const findByLabel = vm.runInNewContext(`(${source.slice(start, end)})`);
 test('menu matcher skips merged instructions and the How to Play link', () => {
   const play = sourcePattern('PRIMARY_PLAY_LABEL');
   const nodes = [
-    {label: 'A jewel carnival of chance PLAY CLASSIC SPIN How to Play'},
+    {label: 'A jewel carnival PLAY CLASSIC How to Play'},
     {label: 'How to Play'},
-    {label: 'PLAY CLASSIC SPIN'},
+    {label: 'PLAY CLASSIC'},
   ];
-  assert.equal(findByLabel(nodes, play).label, 'PLAY CLASSIC SPIN');
+  assert.equal(findByLabel(nodes, play).label, 'PLAY CLASSIC');
 });
 
-test('game action matcher selects the spin control and not a merged route label', () => {
+test('game action matcher selects the shoot control and not a merged route label', () => {
   const action = sourcePattern('PRIMARY_ACTION_LABEL');
   const nodes = [
-    {label: 'Back Joker Jewels BALANCE 1000 Paytable and odds'},
+    {label: 'Back Joker Jewels SCORE 1000 How to play'},
     {label: 'Spotlight · 25'},
-    {label: 'SPIN • 25'},
+    {label: 'SHOOT • 5'},
   ];
-  assert.equal(findByLabel(nodes, action).label, 'SPIN • 25');
+  assert.equal(findByLabel(nodes, action).label, 'SHOOT • 5');
 });
 
 test('help text alone is not treated as a play action', () => {

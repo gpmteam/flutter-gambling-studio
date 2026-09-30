@@ -43,10 +43,10 @@ state change genuinely needs it. The codes make plans concise; they are not pref
 
 | Code | Direction | Good fit | Watch for |
 |---|---|---|---|
-| F1 | Full-bleed stage | physics, crash, scenic originals | HUD contrast over moving art |
-| F2 | Bounded game object | reels, boards, tables, scratch cards | object must dominate, not become a card in a card |
-| F3 | Tabletop / angled plane | cards, dice, coin objects | perspective must preserve readable targets |
-| F4 | Split relationship | spin plus progress/world, risk plus reward | neither side may become a thumbnail |
+| F1 | Full-bleed stage | physics, runners, flyers, scenic arcade | HUD contrast over moving art |
+| F2 | Bounded game object | match boards, tile piles, merge grids | object must dominate, not become a card in a card |
+| F3 | Tabletop / angled plane | patience cards, tile layouts, peg fields | perspective must preserve readable targets |
+| F4 | Split relationship | board plus tray, board plus goal/world | neither side may become a thumbnail |
 | F5 | Layered diorama | collection/progression with spatial depth | keep critical interaction on a stable plane |
 | F6 | Instrument / cabinet | mechanical or diegetic controls | avoid ornamental chrome stealing field space |
 
@@ -92,9 +92,9 @@ state change genuinely needs it. The codes make plans concise; they are not pref
 | O1 | Local callout | Feedback stays near the object or control that caused it. |
 | O2 | Edge sheet | Secondary detail enters from the nearest safe edge. |
 | O3 | Center dialog | Short blocking decisions only; restore focus on close. |
-| O4 | Object-led reveal | A chest, card, capsule, door, meter, or board element carries the reveal. |
+| O4 | Object-led reveal | A door, card, star meter, album page, or board element carries the reveal. |
 | O5 | Full-state takeover | Major result/bonus changes the whole scene, proportionate to importance. |
-| O6 | Dedicated screen | Long rules, odds, settings, collection, and history get readable space. |
+| O6 | Dedicated screen | Long how-to-play, settings, collection, and stats get readable space. |
 
 ### P — phone-height adaptation
 
@@ -105,7 +105,7 @@ height does. Choose how the one composition absorbs that — never by switching 
 |---|---|---|
 | P1 | Grow the field | Extra height enlarges the mechanic; a short phone shrinks it to its 55% floor, never below. |
 | P2 | Reveal the scene | Extra height shows more of the background art above the field — the campaign character's head and shoulders, the world's sky. The field and controls keep their size. |
-| P3 | Compress secondary | On a short phone, secondary readouts collapse to compact chips and history/details move into a sheet; the core loop never scrolls. |
+| P3 | Compress secondary | On a short phone, secondary readouts collapse to compact badges and details move into a sheet; the core loop never scrolls. |
 | P4 | Breathing room | Extra height goes to spacing between the HUD, field and command deck, keeping thumb reach for the primary action. |
 
 ## Building recipes
@@ -123,7 +123,7 @@ jobs are genuinely similar.
 - Short phone (360×640): [what compresses] · Tall phone (430×932): [what the extra height shows]
 
 ### Live setup — F2 + C1 + H4 + O1 + P1
-- Attention order: [field -> wager control -> action]
+- Attention order: [field -> goal/moves -> action]
 - Persistent/contextual information: [...]
 - Primary field alignment: [centered | intentionally offset because ...]
 
@@ -132,10 +132,10 @@ jobs are genuinely similar.
 - What stays spatially stable: [...]
 
 ### Result — F2 + C6 + H5 + O4 + P1
-- Win/loss attention shift: [...]
+- Clear/fail attention shift: [...]
 - Return-to-play path: [...]
 
-### Rules/odds — M7 + O6 + P3
+### How to play — M7 + O6 + P3
 - Scan and disclosure strategy: [...]
 
 ### Phone proof
@@ -177,7 +177,8 @@ based roll is not a design method.
 When `.claude/docs/game-concept-examples.md` maps the request to a local preview, read the preview's
 actual framing, controls, HUD, menu, overlays, and responsive implications. Record those as recipes
 without forcing them into a different combination for variety. The reference contract outranks the
-anti-repeat gate; exact pixels, title/logo, and paytable numbers remain excluded as documented.
+anti-repeat gate; exact pixels, title/logo, and the casino interface remain excluded as documented,
+and the mechanic is the family's casual build, not the preview's casino gameplay.
 
 ## Deprecated L1-L6 behavior
 

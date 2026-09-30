@@ -9,7 +9,7 @@ allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Agent
 # Emulator Test - Runtime verification (Chrome/Web-first)
 
 **Problem**: `dart analyze` + `flutter test` **do not see** runtime problems that appear
-only at startup: empty game screen (black rectangle instead of reels), RenderFlex
+only at startup: empty game screen (black rectangle instead of board), RenderFlex
 overflow (yellow-black stripes), Flutter "red screen of death" (raw exception),
 layout curve at a specific resolution, `setState() called after dispose`, missing asset, etc.
 
@@ -251,8 +251,8 @@ viewport sizes use subdirectories named after the viewport, with the same quick-
 (`{ steps, semanticLabels, consoleErrors, shots }`).
 
 **Navigation:** the script first tries to find the action button by `aria-label`
-(Flutter semantics - studio requires `Semantics(label: …)` on the main button: `play/spin/
-play/start/spin`), and only if there is no mark - taps the thumb zone (center of the lower 60%). This covers
+(Flutter semantics - studio requires `Semantics(label: …)` on the main button: `play/start/shoot/
+retry/next`), and only if there is no mark - taps the thumb zone (center of the lower 60%). This covers
 all per-screen layout recipes without guessing window coordinates.
 
 **Parsing Chrome errors**: grep on `manifest.json` (`consoleErrors`) and `webconsole.log`
@@ -379,7 +379,7 @@ sleep 3 && shoot 02-menu
 nav_tap 540 2000
 sleep 2 && shoot 03-game-idle
 
-#4. After the main action (spin/play/tap)
+#4. After the main action (move/shoot/tap)
 nav_tap 540 2000
 sleep 3 && shoot 04-game-action
 sleep 3 && shoot 05-game-after-action
@@ -432,7 +432,7 @@ And visually check using the checklist:
 | V1 | **Flutter red screen of death** | Red background with exception and stacktrace text | CRITICAL | parsing logcat → mechanics-programmer or ui-programmer |
 | V2 | **Completely black screen** | Entirely black or dark, no content | CRITICAL | ui-programmer(check onLoad, Scaffold, main.dart) |
 | V3 | **Completely white screen** | All white, no content | CRITICAL | ui-programmer (usually Navigator stuck or missing route) |
-| V4 | **Blank game screen** | There is a HUD, but the game area (reels/grid/field) is empty | CRITICAL | mechanics-programmer (components not added to World) |
+| V4 | **Blank game screen** | There is a HUD, but the game area (board/grid/field) is empty | CRITICAL | mechanics-programmer (components not added to World) |
 | V5 | **RenderFlex overflow** | Yellow and black diagonal stripes on edges | HIGH | ui-programmer (Expanded/Flexible, Text overflow) |
 | V6 | **Missing asset placeholder** | Gray rectangle with cross or empty SVG slot | HIGH | ui-programmer or generate-asset |
 | V7 | **Overlapping UI** | Text/buttons overlap each other | HIGH | ui-programmer (layout constraints) |
@@ -447,9 +447,9 @@ And visually check using the checklist:
 | V16 | **Poorly adjusted controls** | Buttons are cramped, uneven, clipped, undersized, ambiguously disabled, or visually disconnected from gameplay | HIGH | ui-programmer (control deck and state pass) |
 | V17 | **Not a portrait phone game** | The hierarchy breaks on a phone in the matrix; a desktop, tablet or landscape layout/breakpoint exists; a wide host stretches the game or shows a device frame instead of the phone column; hover/keyboard-only interaction; a missing portrait lock | HIGH | ui-programmer + release-engineering (enforce the mobile-only contract) |
 | V18 | **Stretched or squashed asset** | An asset is drawn at a different aspect ratio than its source file: the character is widened or elongated, a round coin is an oval, an icon is a lozenge, text baked into a sprite is distorted | HIGH | ui-programmer (or juice-artist for a Flame component size) |
-| V19 | **Menu composition contradicts direction** | The runtime menu does not realize its M/O/R recipe, attention order, or `menu_role`; dominant/supporting content is accidentally hidden or an absent storefront lead is forced back in | HIGH | ui-programmer (menu composition) |
+| V19 | **Menu composition contradicts direction** | The runtime menu does not realize its M/O/P recipe, attention order, or `menu_role`; dominant/supporting content is accidentally hidden or an absent storefront lead is forced back in | HIGH | ui-programmer (menu composition) |
 | V20 | **Gameplay field off-center** | The live play field is shoved toward one edge — an `Align`/`Padding`/`Positioned` offset with no reason — instead of sitting on the viewport's horizontal center by default | HIGH | ui-programmer (remove the unexplained offset, or record the state recipe/mechanic reason) |
-| V21 | **Reference mismatch** | A reference game (`design/reference-contract.md`: a named `examples-games/` family or the user's attached images) has a different character, symbol/sprite cast, reel strips or board, background, palette, art finish or main composition than its sources | HIGH | art-director for assets; ui-programmer for composition |
+| V21 | **Reference mismatch** | A reference game (`design/reference-contract.md`: a named `examples-games/` family or the user's attached images) has a different character, symbol/sprite cast, board materials, background, palette, art finish or main composition than its sources | HIGH | art-director for assets; ui-programmer for composition |
 | V22 | **Campaign background missing or broken** | `production/store-art/campaign.md` exists but a screen still shows the replaced background, the menu cuts or covers the character, or the campaign picture is stretched/letterboxed (see `autocreate-finalize` 10.5.2g) | HIGH | ui-programmer (wiring) |
 
 **V18 — asset distortion.** Run `python3 tools/check_asset_stretch.py --report
@@ -465,13 +465,13 @@ proportions. Resizing is not distortion — only a changed width-to-height ratio
 the other; re-exporting the asset to fit a wrong box is not a fix.
 
 **V19 — the menu composition.** `quality-bar.md` §1 requires the menu to realize the memorable
-idea and M/O/R recipe recorded in `design/art-direction.md`. Run
+idea and M/O/P recipe recorded in `design/art-direction.md`. Run
 `python3 tools/check_menu_lead.py --report <SHOT_DIR>/menu-lead.md` for the static half — it reads
 `lead_kind`, `menu_role: dominant | supporting | absent`, and the lead asset from the design docs;
 for dominant/supporting character roles it checks that the menu source draws the asset. Then judge
 `02-menu.png` at 390×844 and 360×640:
 
-- the recorded M/O/R recipe and attention order are recognizable;
+- the recorded M/O/P recipe and attention order are recognizable;
 - dominant/supporting content is visible and intentionally cropped, not accidentally hidden by
   controls or the viewport edge;
 - the runtime prominence matches `menu_role`; an absent lead remains absent;
@@ -516,10 +516,10 @@ portrait phones — 360×640, 360×800, 390×844 and 430×932 — plus the one w
   properly sized primary action; no nested window and no core-loop scrolling
 - Observed: [what is actually visible]
 - Issues:
-  - V4 - The reel area is empty (black rectangle 800x600 in the center)
+  - V4 - The board area is empty (black rectangle 800x600 in the center)
   - V8 — Balance text is cut off: “100...” instead of “1000”
 - Severity: CRITICAL
-- Suspected cause: ReelComponent not added to world.onLoad() or SymbolComponent
+- Suspected cause: BoardComponent not added to world.onLoad() or SymbolComponent
   doesn't load SVG assets
 - File to investigate: lib/game/[name]_world.dart
 ```
@@ -616,7 +616,7 @@ Sort by severity: CRITICAL → HIGH → MEDIUM.
    - V10/V11 (design): apply palette from Design DNA, replace Material defaults
    - V18 (asset distortion): fix the draw site, never the source asset — switch `BoxFit.fill`
      to `contain`/`cover`, match the box to the source ratio, or derive one side from the other
-   - V19 (menu composition): restore the documented M/O/R recipe, attention order, and
+   - V19 (menu composition): restore the documented M/O/P recipe, attention order, and
      `menu_role` — never invent a character or force an absent storefront lead into the menu
    - V20 (gameplay field off-center): remove the unexplained `Padding`/`Align`/`Positioned`
      offset so the field's horizontal center returns to the viewport's — or, if the state recipe
@@ -689,7 +689,7 @@ Create `production/runtime-screenshots/<timestamp>/REPORT.md`:
 
 ### Initial run (iteration 1)
 - CRITICAL (2):
-  - V4 on 03-game-idle.png — reels area is black rectangle. Root cause: ReelComponent not
+  - V4 on 03-game-idle.png — board area is black rectangle. Root cause: BoardComponent not
     added in SlotMachineWorld.onLoad(). Fixed by mechanics-programmer: lib/game/slot_world.dart
   - V2 on 01-splash.png — all-black splash. Root cause: splash_screen.dart did not wrap
     content in Scaffold. Fixed by ui-programmer.

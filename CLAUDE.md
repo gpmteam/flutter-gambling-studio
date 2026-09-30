@@ -1,54 +1,60 @@
-# Flutter Gambling Studio
+# Flutter Casual Game Studio
 
-> A specialised studio for building **gambling mini-games** on Flutter + Flame
-> through coordinated Claude Code agents.
+> A specialised studio for building **casual mobile mini-games** on Flutter + Flame through
+> coordinated Claude Code agents. (The repository keeps its historical name,
+> `flutter-gambling-studio`; the studio no longer builds gambling games.)
 >
 > For OpenAI Codex, use `AGENTS.md` and `.codex/` as a compatibility layer over these same rules.
 
 ## What the studio specialises in
 
-**The studio builds gambling games only.** This is not a general-purpose mini-game studio:
-puzzles, runners, shooters, tetris clones and clickers are out of scope. Every concept must
-fall into one of the six gambling categories below and must have a **declared mathematical
-model** that can be verified by a simulation run.
+**Casino-grade looks, casual gameplay.** Games may look like premium casino key art — jewel-toned
+symbols, gold trim, jokers, crowns, sevens, deities — or reproduce a reference exactly. Their
+gameplay is always a **casual skill mechanic scored in points**: match and cascade, tile and sort,
+merge and place, aim and physics, arcade reflex, logic. Every concept falls into one of the six
+categories below and declares a **balance model** verified by a simulation run.
 
-**Always virtual.** No game accepts or pays out real money. Virtual currency never converts
-back. This is not a "safety feature" — it is the frame the whole studio exists inside. See
-`.claude/rules/responsible-gaming.md`.
+**Never gambling.** No bets, stakes or wagers; no money of any kind — real or virtual, no coins,
+chips, gems or credits as a currency; no chance-based rewards (slots that spin for an outcome,
+roulette, wheels, loot boxes, gacha, scratch cards, plinko-for-prizes); no casino games, even for
+points. Points, stars, levels and unlocks by progress only. This is a hard gate on every concept,
+code review and release: `.claude/rules/no-gambling.md`.
 
 ## Visual standard for assets
 
 Choose the visual finish from the game's brief and references. Both polished 2D illustration and
-modeled 2.5D art are valid. Keep the complete asset set coherent in silhouette, linework, depth,
-materials, palette, detail and lighting; do not add glossy volume to a flat illustrated reference.
+modeled 2.5D art are valid, and a slot-style key-art finish is the studio's signature look for
+original games. Keep the complete asset set coherent in silhouette, linework, depth, materials,
+palette, detail and lighting; do not add glossy volume to a flat illustrated reference.
 
 The theme, characters, objects, materials, shapes, details and colours come from the concept and
 Design DNA of the specific game. Inspect matching `examples-games/` images by default. When a
-reference matches the request, recreate its character, symbol cast, background, palette, board,
-composition and rendering style. Use the actual images as generation references and compare the
-runtime result beside them (`.claude/docs/game-concept-examples.md` → "How close to the reference
-— match it"). Read
-`.claude/docs/visual-context.md` and `.claude/docs/game-concept-examples.md` for lead kinds,
-flexible store composition, 3×3 classic-slot defaults, Joker tone, supported runtime x5/x10
-coins and the five required store-only multiplier balls.
-The reference's visual language is authoritative; reject unrequested style substitutions.
+reference matches the request, recreate its character, symbol cast, frame, background, palette,
+composition and rendering style — and build the casual mechanic listed for it, not the casino
+gameplay the image shows. Use the actual images as generation references and compare the runtime
+result beside them (`.claude/docs/game-concept-examples.md` → "How close to the reference — match
+it"). Read `.claude/docs/visual-context.md` and `.claude/docs/game-concept-examples.md` for lead
+kinds, flexible store composition, board topology, Joker tone, combo markers and the five required
+store-only combo balls. The reference's visual language is authoritative; reject unrequested style
+substitutions.
 
 **Reference requests are detected, not guessed.** `/autocreate` Phase 0 runs
 `tools/reference_detect.py` on the user's request: a named `examples-games/` family (English or
 Russian spelling), images the user attached (`design/references/user/`), or an explicit "same as /
-copy / по референсу" ask. Its result lives in `design/reference-contract.md` and binds every later
-phase: the game — character, sprites and symbols, reel strips and board, background, palette,
-finish — must read as the same game as its sources. The detector's findings may be added to,
-never dropped.
+copy / по референсу" ask. It also resolves the mechanic: the family's casual build, a casual
+mechanic the user named, or the casual translation of a gambling ask. Its result lives in
+`design/reference-contract.md` and binds every later phase: the game's art — character, sprites
+and symbols, frame, background, palette, finish — must read as the same world as its sources. The
+detector's findings may be added to, never dropped.
 
 ## Technology stack
 
 - **Engine**: Flutter 3.27+ / Flame 1.18+
 - **Language**: Dart 3.6+ (null-safe, sealed classes, pattern matching)
-- **Specialisation**: portrait phone gambling mini-games, touch only
+- **Specialisation**: portrait phone casual mini-games, touch only
 - **Product platforms**: Android and iOS phones (portrait-locked); Web is the verification and preview host
 - **Rendering**: Flutter Impeller (Android/iOS), CanvasKit/Skia for Web
-- **Mathematics**: `tools/simulate_math.py` — the verifier for all six models
+- **Balance**: `tools/simulate_balance.py` — the verifier for all six balance models
 
 > **You are the creative director and producer.** The agents implement your idea.
 > Run `/start` to begin.
@@ -62,9 +68,8 @@ session state and commit messages — as well as Dart/Flutter code, file paths, 
 and CLI commands, which are English by definition.
 
 **The game itself ships in English too.** Every string the player sees — menus, buttons,
-HUD labels, rules and paytable, win messages, empty states, achievement names,
-the disclaimer and the whole responsible-play block, plus store metadata and screenshot
-captions — is written in English by default.
+HUD labels, how-to-play, level goals, result messages, empty states, achievement names, plus store
+metadata and screenshot captions — is written in English by default.
 
 **The single exception is an explicit user request.** If the user asks for the game in another
 language, produce the player-facing copy in that language and record the choice in
@@ -73,51 +78,51 @@ file and asset names, comments, design documents, reports and session state. Nev
 game's language on your own initiative, and never infer it from the language the user happens
 to be typing in — only an explicit request counts.
 
-## The six gambling categories
+## The six game categories
 
-| ID | Category | Icon | Core | Balance metric | Archetypes |
-|----|----------|------|------|----------------|------------|
-| **C1** | Social Casino | 🎰 | A casino floor simulated with virtual chips | RTP 95–97% | A–H |
-| **C2** | Casino Originals / Instant-Win | ⚡ | Instant round, live multiplier, cash-out | RTP 96–99% | I–P |
-| **C3** | Spin-to-Progress Hybrids | 🏰 | The spin is the energy source for a casual meta game | Source/sink economy | Q–U |
-| **C4** | Gacha & Loot-Box | 🎁 | Pulls from a banner with rarities and pity | Rates + pity | V–Y |
-| **C5** | Casino Roguelike & Strategy | 🃏 | Casino mechanics as a roguelike's combat system | Run win-rate 25–40% | Z–AC |
-| **C6** | Coin Pusher & Plinko | ⚙️ | Physics as the outcome generator | Empirical RTP 95–97% | AD–AF |
+| ID | Category | Icon | Core | Balance model | Archetypes |
+|----|----------|------|------|---------------|------------|
+| **G1** | Match & Cascade | 🧩 | Clear groups of matching symbols; the board refills | **B1** board simulation | A–D |
+| **G2** | Tile & Sort | 🗂 | Clear or sort a dealt layout; every deal is solvable | **B2** solvable deals | E–H |
+| **G3** | Merge & Place | 🔷 | Combine or place pieces to grow tiers and keep space | **B3** run length | I–L |
+| **G4** | Aim & Physics | 🎯 | Aim, shoot, bounce or draw; physics resolves the shot | **B4** shot simulation | M–Q |
+| **G5** | Arcade Reflex | ⚡ | Timing and reflex against a rising tempo | **B5** reflex ramp | R–W |
+| **G6** | Logic & Progression | 🧠 | Logic levels with one clean solution path | **B6** solver curve | X–AB |
 
-A full description of every category, its required systems, its compliance profile and its
-archetypes lives in `.claude/docs/gambling-categories.md`. That is the canonical reference —
-it outranks memory.
+A full description of every category, its required systems, its balance model and its
+archetypes — plus the table that translates a gambling ask into a casual mechanic — lives in
+`.claude/docs/game-categories.md`. That is the canonical reference; it outranks memory.
 
-@.claude/docs/gambling-categories.md
+@.claude/docs/game-categories.md
 
-## Archetypes A–AF (short index)
+## Archetypes A–AB (short index)
 
 | Category | Archetypes |
 |----------|------------|
-| **C1** 🎰 | **A** 3×3 slot · **B** 5×3 video slot + free spins · **C** scatter-pays/cluster · **D** Hold & Spin · **E** video poker · **F** blackjack · **G** roulette · **H** bingo |
-| **C2** ⚡ | **I** crash · **J** mines · **K** dice · **L** hi-lo · **M** tower climb · **N** keno · **O** scratch · **P** bonus pick |
-| **C3** 🏰 | **Q** build-and-raid slot · **R** board-move dice · **S** prize-wheel hub · **T** sticker album · **U** raid & shield |
-| **C4** 🎁 | **V** banner pull · **W** card packs · **X** case opener · **Y** gashapon |
-| **C5** 🃏 | **Z** poker deckbuilder · **AA** slot-reel roguelike · **AB** dice-builder · **AC** push-your-luck |
-| **C6** ⚙️ | **AD** coin pusher · **AE** plinko · **AF** pachinko |
+| **G1** 🧩 | **A** swap match-3 · **B** link chain · **C** tap blast · **D** rotate match |
+| **G2** 🗂 | **E** triple tile tray · **F** pair tiles · **G** sort puzzle · **H** card patience |
+| **G3** 🔷 | **I** slide merge · **J** drop merge · **K** block place · **L** merge grid |
+| **G4** 🎯 | **M** bubble shooter · **N** peg clear · **O** brick breaker · **P** knockdown · **Q** draw & guide |
+| **G5** ⚡ | **R** lane runner · **S** stacker · **T** catcher · **U** slicer · **V** one-tap flyer · **W** target throw |
+| **G6** 🧠 | **X** connect paths · **Y** rotate pipes · **Z** unblock · **AA** memory match · **AB** logic grid |
 
 ## Quick start
 
 ```
 /start             — Orientation: where to begin right now
-/brainstorm        — Interactive gambling game concept generation
+/brainstorm        — Interactive casual game concept generation
 /auto-idea         — Autonomous generation of a finished idea (no questions)
 /autocreate        — Zero-to-Production: a complete working game from one command
-                     (concept + math model + assets + code + tests + audit + balancing)
+                     (concept + balance model + assets + code + tests + audit + balancing)
 ```
 
 ## The full path to a finished game
 
 ```
-Idea → Concept → Math model → Design → Gate → Code → UI audit → Runtime → Gate → QA → Gate → Release
-  │       │          │          │       │      │      │           │        │      │      │       │
-/start /brain-   /balance-  /design-  /gate  /team- /ui-      /emulator- /code- /balance /gate /release-
-       storm     check      system    check  dev    audit     test       review  check   check checklist
+Idea → Concept → Balance → Design → Gate → Code → UI audit → Runtime → Gate → QA → Gate → Release
+  │       │         │         │       │      │       │          │        │      │      │       │
+/start /brain-  /balance-  /design- /gate  /team-  /ui-     /emulator- /code- /balance /gate /release-
+       storm     check     system   check  dev     audit    test       review  check   check checklist
 ```
 
 ## Studio commands (skills)
@@ -127,11 +132,11 @@ Idea → Concept → Math model → Design → Gate → Code → UI audit → Ru
 | Command | Description | When to use |
 |---------|-------------|-------------|
 | `/start` | Onboarding and routing | At the start of every session |
-| `/brainstorm [hint]` | Interactive gambling game concept | No idea yet, or one that needs shaping |
-| `/auto-idea` | Autonomous concept (32 archetypes A–AF across 6 categories + Variety Dimensions) | Fast generation with no questions |
-| `/auto-idea --list` | Show every archetype A–AF by category | Choosing an archetype by hand |
-| `/auto-idea --archetype [A-AF]` | Expand one specific archetype | You already have a preference |
-| `/auto-idea --category [C1-C6]` | A random archetype inside one category | You know the category, not the mechanic |
+| `/brainstorm [hint]` | Interactive casual game concept | No idea yet, or one that needs shaping |
+| `/auto-idea` | Autonomous concept (28 archetypes A–AB across 6 categories + Variety Dimensions) | Fast generation with no questions |
+| `/auto-idea --list` | Show every archetype A–AB by category | Choosing an archetype by hand |
+| `/auto-idea --archetype [A-AB]` | Expand one specific archetype | You already have a preference |
+| `/auto-idea --category [G1-G6]` | A random archetype inside one category | You know the category, not the mechanic |
 | `/autocreate` | Zero-to-Production: a complete working game, no questions | You want a fully working game |
 | `/autocreate --from-concept` | Implement a saved idea | After `/auto-idea` |
 | `/map-systems` | Decompose into technical systems | After the concept |
@@ -148,7 +153,7 @@ Idea → Concept → Math model → Design → Gate → Code → UI audit → Ru
 
 | Command | Description | When |
 |---------|-------------|------|
-| `/gate-check concept` | Is the concept ready (category + math model + compliance)? | After brainstorm |
+| `/gate-check concept` | Is the concept ready (category + balance model + no-gambling check)? | After brainstorm |
 | `/gate-check design` | Is the GDD ready for implementation? | Before the programming team |
 | `/gate-check code` | Is the code ready for QA? | After coding is finished |
 | `/gate-check qa` | Is it ready for release? | After all tests |
@@ -157,15 +162,15 @@ Idea → Concept → Math model → Design → Gate → Code → UI audit → Ru
 
 | Command | Description |
 |---------|-------------|
-| `/code-review` | Full code review (architecture, Flame API, RNG integrity, state, tests) |
-| `/ui-audit` | Automatic UI/UX audit for anti-slop quality + compliance screens + auto-fix |
+| `/code-review` | Full code review (architecture, Flame API, rules-engine purity, seeded RNG, no-gambling, state, tests) |
+| `/ui-audit` | Automatic UI/UX audit for anti-slop quality + no-gambling copy + auto-fix |
 | `/asset-review` | Vision review of the asset set for consistency (style/light/palette/readability, AR1–AR11) + regeneration of rejects (art-director agent) |
 | `/emulator-test` | Runtime verification on Chrome/Web (primary) or ADB/emulator: launch, screenshots, vision analysis, log parsing, automatic bug fixes |
-| `/playtest` | Deep GAMEPLAY verification via CDP: actually plays N rounds, checks that the balance changes, that win/lose paths work, that cash-out is honest, that the board is alive (P1–P10) |
-| `/design-review` | GDD review for completeness and mathematical correctness |
-| `/balance-check` | Math model verification: `tools/simulate_math.py` against the category's model M1–M6 |
-| `/release-checklist` | Final GO/NO-GO checklist before release, including compliance (release-manager agent) |
-| `/release-engineering` | Ship engineering: app icons (adaptive + iOS) + native splash + versioning + **signed AAB** + iOS scaffold + store metadata (with the mandatory compliance fields) + CI |
+| `/playtest` | Deep GAMEPLAY verification via CDP: actually plays N moves/rounds, checks that the score changes, that clear/fail paths work, that the board responds, that progression unlocks (P1–P10) |
+| `/design-review` | GDD review for completeness and balance correctness |
+| `/balance-check` | Balance verification: `tools/simulate_balance.py` against the category's model B1–B6 |
+| `/release-checklist` | Final GO/NO-GO checklist before release, including the no-gambling gate (release-manager agent) |
+| `/release-engineering` | Ship engineering: app icons (adaptive + iOS) + native splash + versioning + **signed AAB** + iOS scaffold + store metadata (casual category, "simulated gambling: no") + CI |
 | `/release-package` | Release packaging: screenshots of every screen + release APK/AAB + `flutter clean` + a `.zip` in `project_zip/` |
 | `/store-screenshots` | Context-based store kit with character/object/mechanic lead, flexible gameplay spans, real captures, feature graphic and ZIP. Built on the campaign art from `/autocreate-finalize` (banner → panorama, icon, feature graphic; the game background behind the phones). Read `.claude/skills/store-screenshots/SKILL.md`. |
 
@@ -182,14 +187,13 @@ branches under the owner's standing push authorization; approval/merge remains h
 | `/tech-debt` | Technical debt scan and register |
 | `/auto-learn` | Evidence-based framework improvements on tested review branches; no auto-merge |
 | `/hotfix [description]` | Emergency fix for critical bugs |
-| `/architecture-decision [decision]` | Create an ADR for a significant decision (including a change of math model) |
+| `/architecture-decision [decision]` | Create an ADR for a significant decision (including a change of balance window) |
 
 ### Teamwork
 
 | Command | What it orchestrates |
 |---------|----------------------|
-| `/team-dev [description]` | game-designer + mechanics-programmer + juice-artist + sound-designer + qa |
-| `/team-gambling [description]` | Alias of `/team-dev` |
+| `/team-dev [description]` | game-designer + balance-designer + mechanics-programmer + juice-artist + sound-designer + qa |
 
 ### Working with an existing project
 
@@ -207,16 +211,16 @@ branches under the owner's standing push authorization; approval/merge remains h
 | `creative-director` | Overall vision, concept, game category, creative decisions |
 | `technical-director` | Architectural decisions, ADRs, resolving technical conflicts |
 
-### Tier 2 — Gambling mechanics specialists
+### Tier 2 — Gameplay specialists
 
 | Agent | Role |
 |-------|------|
-| `game-mathematician` | **Owner of the math model**: RTP, weights, house edge, pity, economy, run win-rate. The only agent who changes the model's numbers |
-| `game-designer` | GDD: round mechanics, bets, bonuses, progression, compliance screens |
-| `mechanics-programmer` | Implementation: WeightedRNG on `Random.secure()`, stateless outcomes, paylines, multipliers, physics |
-| `meta-systems-programmer` | Meta systems: SaveService, Economy, Progression, Achievements + Analytics/Ads/IAP/RemoteConfig abstractions (no-op). Turns one round into a full game |
+| `balance-designer` | **Owner of the balance model**: level curves, move/shot budgets, tempo ramps, scoring and star thresholds, deal generation. The only agent who changes the model's numbers |
+| `game-designer` | GDD: rules, level goals, specials and boosters, progression, scoring, screens |
+| `mechanics-programmer` | Implementation: the pure rules engine, seeded `GameRng`, logic before animation, Forge2D physics |
+| `meta-systems-programmer` | Meta systems: SaveService, Progression, Achievements, Collection + Analytics/Ads/IAP/RemoteConfig abstractions (no-op). Turns one level into a full game |
 | `art-director` | Visual consistency of the asset set: vision review (uniform style/light/palette, readability at 64px, AR1–AR11), regeneration of rejects |
-| `juice-artist` | VFX, particles, anticipation / near-miss / win-celebration animations — what makes a round feel "juicy" |
+| `juice-artist` | VFX, particles, match/combo/clear celebrations — what makes a move feel "juicy" |
 
 ### Tier 3 — Core specialists
 
@@ -224,36 +228,36 @@ branches under the owner's standing push authorization; approval/merge remains h
 |-------|------|
 | `lead-programmer` | Architecture, code review |
 | `performance-analyst` | FPS, memory, Flame optimisation, profiling |
-| `ui-programmer` | Flutter screens, HUD, bet panels, compliance screens |
-| `sound-designer` | Audio: bet, spin, stop, win, near-miss |
-| `qa-tester` | Test cases, edge cases, RNG distribution, state leakage |
-| `release-manager` | Release preparation, compliance audit |
+| `ui-programmer` | Flutter screens, HUD, level map, result screens |
+| `sound-designer` | Audio: tap, match, cascade, combo, clear, fail |
+| `qa-tester` | Test cases, edge cases, rules-engine determinism, state leakage |
+| `release-manager` | Release preparation, no-gambling and store audit |
 | `auto-learner` | Diagnose reusable failures/improvements, validate bounded framework changes, push review branches |
 
 ## Critical rules (game integrity)
 
-> Breaking these rules blocks the release. In a gambling studio they are **unconditional** —
-> there are no "genres they don't apply to".
+> Breaking these rules blocks the release. They are **unconditional** across all six categories.
 
-1. **RNG**: ONLY `Random.secure()` — no `math.Random()`, no `Random()`.
-   The single exception is the seeded run determinism in C5 (model M5), and it must be
-   recorded in an ADR.
-2. **Stateless Outcomes**: the round result is computed BEFORE the animation starts.
-   The animation only plays back an outcome that is already known.
-3. **GameState**: a sealed class — no boolean flags.
-4. **GameConfig**: every game constant lives in the config file (`game_config.dart`),
-   and the math model's numbers live in the model's JSON config.
-5. **No hardcoded probability**: no `if (rng < 0.1) win!`. Weights are read from the config.
+1. **No gambling**: no wagers, no currency, no chance-based rewards, no casino games —
+   `.claude/rules/no-gambling.md`. Points, stars and progress-based unlocks only.
+2. **Logic before animation**: the pure rules engine resolves a move (matches, cascades, merges,
+   collisions, score) before the animation plays it back. The animation never decides anything.
+3. **One seeded `GameRng`**: all gameplay randomness (fills, deals, spawns, level generation) comes
+   from one injectable seeded generator, so levels, bot simulations and tests reproduce. No
+   scattered `Random()` in game logic; purely cosmetic randomness uses a separate `VfxRng`.
+4. **GameState**: a sealed class — no boolean flags.
+5. **GameConfig**: every game constant lives in the config file (`game_config.dart`), and the
+   balance model's numbers live in its JSON config.
 6. **No magic numbers**: no hardcoded gameplay parameters outside the config.
-7. **Double protection**: the main action button is locked during the animation (300 ms debounce).
-8. **The math model is verified**: `tools/simulate_math.py` returns PASS for the category's model.
-   A game without a green run does not ship.
-9. **The compliance layer is in place**: disclaimer, responsible play, odds disclosure
-   where required — see `.claude/rules/responsible-gaming.md`.
+7. **Double protection**: input is locked while a move resolves (300 ms debounce on the primary action).
+8. **The balance model is verified**: `tools/simulate_balance.py` returns PASS for the category's
+   model. A game without a green run does not ship.
+9. **No dead ends**: a board with no legal move reshuffles; a failed level offers an instant retry;
+   every deal and generated level is solvable.
 
-@.claude/docs/math-models.md
+@.claude/docs/balance-models.md
 
-@.claude/rules/responsible-gaming.md
+@.claude/rules/no-gambling.md
 
 ## Collaboration protocol
 
@@ -268,13 +272,13 @@ The pattern: **Question → Options → Decision → Draft → Approval**
 
 > Every visual decision follows from the context of THIS specific game — its theme, mood and
 > mechanics. There is no single template. Neon trapezoids for EVERY game are just as much slop
-> as purple gradients. **"Gambling" does not mean "dark neon and gold"**: a bingo room can be
-> warm and papery, a gashapon pastel and toy-like, a roguelike strict and typographic.
-> The test: if the UI could be moved to another game unchanged, the design failed.
+> as purple gradients. **"Casino-grade look" does not mean "dark neon and gold" every time**: a
+> jewel match-3 can be warm and bright, a sort puzzle pastel and toy-like, a logic game strict and
+> typographic. The test: if the UI could be moved to another game unchanged, the design failed.
 >
 > Distinctiveness rests on a documented **Design Signature** (field framing, controls, HUD
 > behavior, information density, materials, type, color/value, motion, and depth) plus
-> **per-screen composition recipes**. The menu, live round, result, and information screens may
+> **per-screen composition recipes**. The menu, live level, result, and information screens may
 > use different compatible recipes from the layout grammar. Changing only palette and mascot over
 > one recurring shell is not variety. See anti-slop-design.md and layout-archetypes.md.
 
@@ -285,9 +289,9 @@ The pattern: **Question → Options → Decision → Draft → Approval**
 ### Gameplay-screen composition
 
 The live game must own the viewport. The mechanic is a dominant, integrated surface—not a small
-window floating above a generic scrolling card. Core play, essential HUD, stake/risk controls,
-and the primary action remain visible together without page scrolling. The implementation and
-runtime gates use the measurable contract below.
+window floating above a generic scrolling card. Core play, essential HUD (score, moves/time,
+goal), and the primary action or direct-manipulation surface remain visible together without page
+scrolling. The implementation and runtime gates use the measurable contract below.
 
 @.claude/docs/gameplay-screen-contract.md
 
@@ -305,7 +309,7 @@ the same phone screens in the phone column over the game's background, never in 
 > One shared benchmark for "professional level" across every skill in the pipeline. The main
 > test: "would a player give this 4+ stars without knowing an AI made it?" With concrete,
 > checkable thresholds: TTF ≤ 10 s, response ≤ 100 ms, scaled feedback, a living board,
-> 60 fps during win celebration, product completeness.
+> 60 fps during celebrations, product completeness.
 
 @.claude/docs/quality-bar.md
 

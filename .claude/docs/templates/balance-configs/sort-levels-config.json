@@ -1,0 +1,82 @@
+{
+  "game_name": "Selftest Potion Sort",
+  "model": "b2",
+  "rule": "sort",
+  "pour": "all",
+  "generator": "verify",
+  "max_par": 60,
+  "levels": [
+    {
+      "id": 1,
+      "kinds": 2,
+      "capacity": 4,
+      "empty": 1
+    },
+    {
+      "id": 2,
+      "kinds": 3,
+      "capacity": 4,
+      "empty": 2
+    },
+    {
+      "id": 3,
+      "kinds": 3,
+      "capacity": 4,
+      "empty": 1
+    },
+    {
+      "id": 4,
+      "kinds": 4,
+      "capacity": 4,
+      "empty": 2
+    },
+    {
+      "id": 5,
+      "kinds": 4,
+      "capacity": 4,
+      "empty": 2
+    },
+    {
+      "id": 6,
+      "kinds": 5,
+      "capacity": 4,
+      "empty": 2
+    },
+    {
+      "id": 7,
+      "kinds": 5,
+      "capacity": 4,
+      "empty": 2
+    },
+    {
+      "id": 8,
+      "kinds": 6,
+      "capacity": 4,
+      "empty": 2
+    },
+    {
+      "id": 9,
+      "kinds": 6,
+      "capacity": 4,
+      "empty": 2
+    },
+    {
+      "id": 10,
+      "kinds": 7,
+      "capacity": 4,
+      "empty": 2
+    },
+    {
+      "id": 11,
+      "kinds": 7,
+      "capacity": 4,
+      "empty": 2
+    },
+    {
+      "id": 12,
+      "kinds": 8,
+      "capacity": 4,
+      "empty": 2
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 ---
 name: generate-asset
-description: "Generates assets for gambling games (categories C1-C6): SVG by default; PNG only on explicit request. Under Codex, PNG/image generation runs through GPT Images 2.0 with a fallback to GPT Images / the default Codex image generation."
+description: "Generates assets for casual games (categories G1-G6), including casino-grade or reference-matched art: SVG by default; PNG only on explicit request. Under Codex, PNG/image generation runs through GPT Images 2.0 with a fallback to GPT Images / the default Codex image generation."
 allowed-tools: Write, Read, Bash, AskUserQuestion
 argument-hint: "[type (symbol/ui/background)] [name] [--png]"
 user-invocable: true
@@ -11,7 +11,7 @@ user-invocable: true
 Read `.claude/docs/visual-context.md` before planning or reviewing visuals. For a matching
 new-game request, inspect the relevant `examples-games/` previews and read
 `.claude/docs/game-concept-examples.md`. Carry the lead kind, references/adaptations, exact
-board topology, Joker expression (when relevant), and verified multiplier-coin meanings from
+board topology, Joker expression (when relevant), and verified combo-marker meanings from
 the concept into the art direction, asset manifest and prompts. Classic unspecified slots
 use 3×3; store gameplay placement is flexible and object-led games need no invented character.
 
@@ -54,7 +54,7 @@ full-screen scene. Do not spend calls on buttons, panels, typography, settings i
 separators, shadows, glow, VFX or colour variants: those are the `code`, `derive` or
 `reuse` classes and are produced by Flutter/SVG/local processing.
 
-You may not produce variants locally that change a game symbol's meaning, rarity, payout or
+You may not produce variants locally that change a game symbol's meaning, tier, scoring role or
 probabilities. If a variant has to read as a different round outcome, it stays a separate
 `generate`-class asset and goes through the usual Design DNA check.
 
@@ -73,7 +73,7 @@ light areas. For `background` and full-screen scenes, do not remove the backgrou
    shapes, materials, details and colours all derive from the DNA, **not from a casino/neon
    default**; the rendering finish may be polished 2D or 2.5D.
 2. Choose the asset type (the look comes from the Design DNA, not from casino/neon):
-   - `symbol` / `sprite`: a 64x64 or 96x96 game element (a reel symbol, card, chip, ball, mine,
+   - `symbol` / `sprite`: a 64x64 or 96x96 game element (a board tile, card, ball, target, blocker,
      capsule). Match the source's 2D linework or 2.5D modeling, silhouette, shading and colour.
      Keep it crisp on a phone.
    - `ui`: buttons / panels / frames / icons. The shape comes from the DNA's shape language (a
@@ -100,5 +100,5 @@ light areas. For `background` and full-screen scenes, do not remove the backgrou
 > Do not forget `<svg viewBox="0 0 W H" xmlns="http://www.w3.org/2000/svg">`.
 
 > Any text baked into an asset is written in English (unless the user explicitly asked for the
-> game in another language). Render ordinary copy as Flutter widgets. Verified multiplier-coin
+> game in another language). Render ordinary copy as Flutter widgets. Verified combo-marker
 > inscriptions such as x5/x10 are allowed under `.claude/docs/visual-context.md`, including SVG lettering.

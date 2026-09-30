@@ -15,7 +15,7 @@ project to `dart analyze` 0 errors + `flutter test` green. In this session:
 - runtime verification: Chrome/CDP (screenshots + console + auto-fix) plus a soak probe for leaks;
   Android (`--platform android`) is a Gradle compile-only check, with no emulator and no APK
 - **playtest** (Phase 10.6): a real gameplay session — the P1–P10 checks from
-  `.claude/skills/playtest/SKILL.md` (numbers change, win/lose paths, a living board, progression)
+  `.claude/skills/playtest/SKILL.md` (the score changes, clear/fail paths, a responsive board, progression)
 - updating the session state + the final report
 - **release-engineering PREP** (`/release-engineering --prep-only --no-keystore`): icons, native
   splash, versioning, store metadata, CI — **WITHOUT building the AAB/APK and without a keystore**
@@ -85,7 +85,7 @@ flutter test > /tmp/finalize_preflight_test.log 2>&1 || {
 
 Read the handoff file and extract:
 - The game's name → for the archive's name
-- The category (C1–C6) and the math model (M1–M6) → for the final report
+- The category (G1–G6), the balance model (B1–B6) and the reference-gameplay/translation decision → for the final report
 - The path to the main game class → for emulator-test navigation
 
 ---
@@ -355,7 +355,7 @@ the static finding.
 
 ### 10.5.2e — main-menu lead audit (V19) [~20 s]
 
-`quality-bar.md` §1: the menu must implement the memorable idea and M/O/R recipe recorded in
+`quality-bar.md` §1: the menu must implement the memorable idea and M/O/P recipe recorded in
 `design/art-direction.md`. The storefront lead does not automatically become a runtime-menu
 centrepiece: the design docs record `menu_role: dominant | supporting | absent` separately from
 `lead_kind`.
@@ -375,7 +375,7 @@ the concept and re-run with `--lead-kind`, `--menu-role`, and `--lead-asset` as 
 
 Then judge `02-menu.png` at 390×844 and 360×640, which is the half the script cannot do:
 
-- the documented M/O/R recipe is recognizable and its attention order is intentional;
+- the documented M/O/P recipe is recognizable and its attention order is intentional;
 - a dominant or supporting lead is visible on the first viewport and important features are not
   accidentally clipped or buried by controls;
 - a dominant lead actually leads; a supporting lead supports; an absent lead is not reintroduced
@@ -469,14 +469,15 @@ Consolidate the problems, mark their severity (CRITICAL/HIGH/MEDIUM) and assign 
 | "Unable to load asset" | A path mismatch in `lib/assets.dart` | Fix the path, or create the file |
 | Slight field/control constraint miss | An avoidable wrapper, padding, or incorrect flex | Make a targeted constraint edit and re-capture both idle and active states |
 | An asset is stretched or squashed (V18) | `BoxFit.fill`, a Flame `size:` off the source ratio, or a non-uniform `Transform.scale` | Fix the draw site: `BoxFit.contain`/`cover`, a box matching the source ratio, or derive one side from the other — never re-export or regenerate the asset |
-| The documented menu role or composition is not realized (V19) | The runtime menu contradicts its M/O/R recipe, attention order, or `menu_role` | A targeted menu-screen edit that restores the documented relationship — never invent a character or force a storefront lead into an `absent` role |
+| The documented menu role or composition is not realized (V19) | The runtime menu contradicts its M/O/P recipe, attention order, or `menu_role` | A targeted menu-screen edit that restores the documented relationship — never invent a character or force a storefront lead into an `absent` role |
 | The play field sits off-center (V20) | An unexplained `Padding`/`Align`/`Positioned` offset on an ancestor of `Key('gameplaySurface')` | Remove the offset so the field's horizontal center returns to the viewport's, or record and verify the state recipe/mechanic reason in `design/art-direction.md` |
 | A screen still shows the old background, or the campaign picture is stretched/letterboxed (V22) | A missed selector, or a fit/alignment other than `BoxFit.cover` + top | Point the selector at `bg_campaign_menu`/`bg_campaign_game`, set `BoxFit.cover` + `Alignment.topCenter` |
 | A desktop/tablet/landscape layout branch, or a wide host that stretches the game (V17) | A width breakpoint or a missing phone column | Delete the branch so every width renders the phone composition; wrap `MaterialApp.builder` in the phone column from `mobile-first-contract.md` |
 
 **Forbidden "auto-fixes":**
 - Changing `game_config.dart` (the balance is frozen)
-- Changing `rtp-config.json` / `level-config.json`
+- Changing `level-config.json` / `endless-config.json` / `assets/data/levels.json`
+- Adding any wager, currency, chance-based reward, casino control, gambling copy or age gate
 - Rewriting whole screens — targeted edits only
 - Changing the GDD
 
@@ -523,15 +524,15 @@ Cleanup: stop `flutter run` using the PID in `.claude/runtime-logs/*.pid` (the w
 ## Phase 10.6 — playtest (a real gameplay session) [~6 min]
 
 > Phase 10.5 checked that "the screens open and do not crash". This phase checks that "it is
-> actually PLAYABLE": actions produce results, numbers change, wins are celebrated, the board
-> is alive. The benchmark is `.claude/docs/quality-bar.md` (§2–§4, §6, §7).
+> actually PLAYABLE": moves produce results, the score changes, clears are celebrated, the board
+> responds. The benchmark is `.claude/docs/quality-bar.md` (§2–§4, §6, §7).
 
 Run the `.claude/skills/playtest/SKILL.md` runbook (if the web path was SKIPPED in 10.5, or if
 10.5 went down the Android compile-only path, this phase is honestly SKIPPED too — that is not an
 error: playtest needs a genuinely running instance over CDP, and compile-only launches nothing):
 
 - The tour + gameplay load (`web_verify.mjs --soak 60`) → the **P1–P10** checks
-  (vision comparison of frames: the action changes the field, the HUD numbers change, win
+  (vision comparison of frames: the move changes the field, the HUD numbers change, clear/combo
   feedback is visible, and active-state motion communicates the result; a deliberately still idle
   state is valid; manifest: 0 consoleErrors, suspectLeak=false).
 - Verdict: **PLAYABLE / PLAYABLE-WITH-ISSUES / NOT-PLAYABLE / SKIPPED** →
@@ -582,7 +583,7 @@ the archive, run /release-package.]
 - Edge cases: [N] green
 
 ## Balance
-[The math model run's verdict from Session 2: the model, the metric, PASS/CONCERNS/FAIL]
+[The balance run's verdict from Session 2: the model B1–B6, the key metrics, PASS/CONCERNS/FAIL]
 ```
 
 Also mark the handoff file as finished: append a final
@@ -599,7 +600,8 @@ the goal is to leave the project READY for `/release-package` without spending t
 Gradle build:
 - App icons (Android adaptive + iOS + web) and a native splash from the Design DNA.
 - The version/build number and the launcher label.
-- `store/` — the listing stubs, privacy policy, data safety, age rating (gambling — the disclaimer).
+- `store/` — the listing stubs (casual category, "simulated gambling: no"), privacy policy, data
+  safety, and the age rating from the content alone (normally Everyone / PEGI 3; no age gate).
 - `.github/workflows/build.yml` (CI).
 - It does **NOT** generate an upload keystore and does **NOT** build the AAB/APK.
 
@@ -634,25 +636,25 @@ generation, integration and verification have passed. Otherwise use
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📱 Screens (12+):
-   ✅ Splash, Main Menu, Game Screen + HUD
-   ✅ Paytable, Settings, Help, Daily Bonus
-   ✅ Leaderboard, Profile, Win Overlays (3 tiers)
-   ✅ Insufficient Funds, Bonus Mode Overlay
+   ✅ Splash, Main Menu, Level Map / Mode Select, Game Screen + HUD, Pause
+   ✅ Level Complete (stars), Level Failed / Run Over, How to Play, Settings
+   ✅ Achievements, Collection Album, Stats / Profile, Daily Challenge
 
 🎮 Gameplay:
    ✅ Core game loop works end-to-end
-   ✅ [Category]: [RNG / outcome resolver / cash-out / pity / physics] fully functional
-   ✅ Stateless Outcomes, GameState sealed class
-   ✅ All constants in GameConfig, double-click protection
+   ✅ [Category]: [board engine / deal solver / merge engine / physics / tempo ramp / level solver] fully functional
+   ✅ Logic before animation, one seeded GameRng, GameState sealed class
+   ✅ All constants in GameConfig, double-tap protection, no dead ends
+   ✅ No gambling: no wagers, currency, chance-based rewards or age gate
+   [If the request named a gambling mechanic: "Built as <casual mechanic> — the studio does not make gambling games"]
 
 🗂 Content and modes (Phase 4.5):
    ✅ [N] levels/stages (assets/data/*.json) | Modes: [Classic + Endless/Time-Attack/Daily]
    ✅ Level/Mode Select is wired to the real data
 
 🧩 Meta systems (Agent E):
-   ✅ SaveService (versioned), Economy (currency + shop), Progression (stars), Achievements
+   ✅ SaveService (versioned), Progression (stars + unlocks), Achievements, Collection album, Daily challenge
    ✅ Analytics/Ads/IAP/RemoteConfig — abstractions (no-op, no external SDKs)
-   [Gambling: disclaimer + responsible play]
 
 🔊 Audio (Phase 3.5):
    ✅ 8 real .wav sound effects synthesised (mood: [mood]) — not placeholders
@@ -674,8 +676,8 @@ generation, integration and verification have passed. Otherwise use
    Report: production/playtest/<ts>/PLAYTEST-REPORT.md
 
 ⚖️ Balance (Session 2):
-   [Gambling: RTP XX.X% (target 95-97%)]
-   [Math model M1–M6: the metric is inside its window, the report is in design/balance/simulation-report.md]
+   [Model B1–B6: e.g. "L1–3 ≥ 92%, hardest 31%, ramp +58 pp" — PASS/CONCERNS/FAIL]
+   [The report is in design/balance/simulation-report.md]
 
 🎨 Campaign art (Phase 10.4):
    [PASS / BLOCKED] — production/store-art/campaign.md
@@ -708,7 +710,7 @@ generation, integration and verification have passed. Otherwise use
 📋 Optional next steps:
    /add-feature [feature]       — add a mechanic
    /code-review                 — a full code review
-   /balance-check               — a detailed balance check (1M iterations)
+   /balance-check               — a detailed balance check (full curve)
    /perf-profile                — performance profiling
    /release-checklist           — the final GO/NO-GO checklist before a store release
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

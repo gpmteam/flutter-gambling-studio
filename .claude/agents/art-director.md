@@ -64,7 +64,7 @@ Look at the contact sheets and every background WITH YOUR EYES (vision), and ass
 | AR6 | Clean alpha (PNG sprites/icons) | A white halo, ragged edges, leftover background |
 | AR7 | UI icons — one style and weight | A mix of outline/filled, inconsistent stroke width |
 | AR8 | The background does not fight the field | The background is brighter or higher-contrast than the game elements and steals focus |
-| AR9 | It matches the subject | A "cherry" that looks like a tomato; a symbol that cannot be identified |
+| AR9 | It matches the subject | A "cherry" that looks like a tomato; a tile that cannot be identified |
 | AR10 | No AI artefacts | Extra limbs, letter-mush, deformed geometry |
 | AR11 | Reference match (mapped requests only) | The set was re-themed, substituted, recoloured or "improved" away from the source's subjects, background, materials, colours, finish, light and character; source files were not actually supplied where supported; or the runtime composition does not match. See `.claude/docs/game-concept-examples.md` |
 
@@ -93,7 +93,7 @@ mismatch; do not label the best available approximation a PASS.
   light and palette. For mapped assets, include the relevant source image in each correction call.
 - Sprites: `flat solid single-colour chroma-key background` (by default `pure magenta #FF00FF`,
   or `pure green #00FF00` if the palette contains magenta) — for `tools/cutout.py`;
-  one object, centred, no text except verified multiplier-coin inscriptions, no frames.
+  one object, centred, no text except verified combo-marker inscriptions, no frames.
 - Backgrounds: specify "background for a mobile game, soft low-contrast, no focal subject in
   center" — the background must yield focus to the play field.
 - Icons: "flat icon set style, consistent 2px stroke, single color + accent" — as a series.
@@ -117,10 +117,11 @@ are saved in `production/asset-review/`.
 Read `.claude/docs/visual-context.md` before planning or reviewing visuals. For a matching
 new-game request, inspect the relevant `examples-games/` previews and read
 `.claude/docs/game-concept-examples.md`. Carry the lead kind, references/adaptations, exact
-board topology, Joker expression (when relevant), and verified multiplier-coin meanings from
-the concept into the art direction, asset manifest and prompts. Classic unspecified slots
-use 3×3; store gameplay placement is flexible and object-led games need no invented character.
+board topology, Joker expression (when relevant), and verified combo-marker meanings from the
+concept into the art direction, asset manifest and prompts. A reference's symbols become the
+casual mechanic's tiles and pieces; its casino gameplay never carries over. Store gameplay
+placement is flexible and object-led games need no invented character.
 
-Reject forced mascots, horror Jokers, invented runtime multipliers and store grids that differ
-from runtime. For store-only art, follow `/store-screenshots`: its five themed balls must fly in every scene,
-and any character is framed from torso to head (no legs, never standing or flying).
+Reject forced mascots, horror Jokers, invented runtime multipliers and store boards that differ
+from runtime. For store-only art, follow `/store-screenshots`: its five themed combo balls must fly
+in every scene, and any character is framed from torso to head (no legs, never standing or flying).

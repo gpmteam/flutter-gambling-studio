@@ -95,10 +95,10 @@ class StoreScreenshotTopologyGuidanceTest(unittest.TestCase):
             with self.subTest(retired=retired):
                 self.assertNotIn(retired, self.guidance_flat)
 
-    def test_lower_edge_is_a_close_up_object_band_over_coins(self) -> None:
+    def test_lower_edge_is_a_close_up_band_of_actual_game_pieces(self) -> None:
         for phrase in (
             "overlapping one another in depth, cropped by the bottom edge",
-            "continuous glittering layer of the game's gold coins",
+            "continuous glittering layer of the game's actual tiles, gems, balls or other pieces",
             "no floor, fabric, tabletop, podium, platform or velvet drape",
         ):
             with self.subTest(phrase=phrase):

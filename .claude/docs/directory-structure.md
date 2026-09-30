@@ -22,12 +22,13 @@ lib/
 ├── components/
 │   ├── [main_component].dart
 │   ├── [element_component].dart
-│   ├── win_animation.dart
+│   ├── clear_animation.dart
 │   ├── ambient_particles.dart
 │   └── screen_shake.dart
 ├── systems/
-│   ├── [game_logic].dart             # RNG / match_detector / spawn_manager
-│   └── [evaluator].dart              # The pure result-scoring function
+│   ├── game_rng.dart                 # The one seeded source of gameplay randomness
+│   ├── [rules]_engine.dart           # The pure rules engine (match/deal/merge/physics step)
+│   └── scoring.dart                  # The pure scoring function
 ├── models/
 │   ├── game_state.dart               # The sealed state class
 │   └── [game_element].dart
@@ -66,11 +67,12 @@ lib/
 │   ├── [name]_world.dart
 │   ├── components/
 │   │   ├── [main_component].dart
-│   │   ├── win_animation.dart
+│   │   ├── clear_animation.dart
 │   │   └── ambient_particles.dart
 │   └── systems/
-│       ├── [game_logic].dart
-│       └── [evaluator].dart
+│       ├── game_rng.dart
+│       ├── [rules]_engine.dart
+│       └── scoring.dart
 ├── ui/                               # Everything Flutter: screens + widgets
 │   ├── screens/
 │   │   ├── splash_screen.dart
@@ -116,8 +118,9 @@ lib/
 │   │   ├── [name]_game.dart
 │   │   └── [name]_world.dart
 │   ├── systems/
-│   │   ├── [game_logic].dart
-│   │   └── [evaluator].dart
+│   │   ├── game_rng.dart
+│   │   ├── [rules]_engine.dart
+│   │   └── scoring.dart
 │   └── models/
 │       ├── game_state.dart
 │       └── [game_element].dart
@@ -128,7 +131,7 @@ lib/
 │       └── audio_service.dart
 └── components/                       # Flame visual components
     ├── [main_component].dart
-    ├── win_animation.dart
+    ├── clear_animation.dart
     └── ambient_particles.dart
 ```
 
@@ -149,15 +152,16 @@ lib/
 │   └── game_config.dart
 ├── mechanics/                        # Game logic
 │   ├── systems/
-│   │   ├── [game_logic].dart
-│   │   └── [evaluator].dart
+│   │   ├── game_rng.dart
+│   │   ├── [rules]_engine.dart
+│   │   └── scoring.dart
 │   └── models/
 │       ├── game_state.dart
 │       └── [game_element].dart
 ├── visuals/                          # The visual layer (Flame components + theme)
 │   ├── components/
 │   │   ├── [main_component].dart
-│   │   ├── win_animation.dart
+│   │   ├── clear_animation.dart
 │   │   └── ambient_particles.dart
 │   └── theme/
 │       ├── game_theme.dart
@@ -193,12 +197,13 @@ lib/
 │   ├── [name]_world.dart
 │   └── components/
 │       ├── [main_component].dart
-│       ├── win_animation.dart
+│       ├── clear_animation.dart
 │       └── ambient_particles.dart
 ├── rules/                            # Rules and mechanics
 │   ├── systems/
-│   │   ├── [game_logic].dart
-│   │   └── [evaluator].dart
+│   │   ├── game_rng.dart
+│   │   ├── [rules]_engine.dart
+│   │   └── scoring.dart
 │   ├── models/
 │   │   ├── game_state.dart
 │   │   └── [game_element].dart
@@ -206,8 +211,8 @@ lib/
 │       └── game_config.dart
 ├── hud/                              # HUD and in-game overlays
 │   ├── hud_widget.dart
-│   ├── win_overlay.dart
-│   └── bonus_overlay.dart
+│   ├── combo_overlay.dart
+│   └── result_overlay.dart
 ├── menus/                            # Menu screens
 │   ├── splash_screen.dart
 │   ├── main_menu.dart
@@ -252,67 +257,65 @@ paths it specifies.
 
 ---
 
-## Key file examples by gambling category (V1 paths)
+## Key file examples by game category (V1 paths)
 
-Every category shares the same skeleton — a source of randomness, a pure outcome evaluator and
-the math model's config. Only what fills them changes.
+Every category shares the same skeleton — one seeded source of randomness, a pure rules engine
+that resolves a move before the animation, and the balance model's config. Only what fills them
+changes.
 
 ```
-lib/systems/weighted_rng.dart       # Random.secure() — the ONLY source of randomness
-lib/systems/[outcome]_resolver.dart # Pure function: the round outcome BEFORE the animation
-design/balance/[model]-config.json  # The math model's numbers (read by simulate_math.py)
-```
-
-### C1 — Social Casino (a slot)
-```
-lib/systems/weighted_rng.dart
-lib/systems/payline_evaluator.dart  # Scoring wins by line
-lib/components/reel_component.dart  # A spinning reel
-lib/components/symbol_component.dart
-design/balance/rtp-config.json      # model M1
+lib/systems/game_rng.dart           # Random(seed) — the ONLY source of gameplay randomness
+lib/systems/[rules]_engine.dart     # Pure function: resolves a move BEFORE the animation
+design/balance/[level|endless]-config.json  # The balance model's numbers (read by simulate_balance.py)
 ```
 
-### C2 — Casino Originals (crash / mines / dice)
+### G1 — Match & Cascade (swap match-3 / link chain / tap blast)
 ```
-lib/systems/round_resolver.dart     # serverSeed+clientSeed+nonce → the round outcome
-lib/systems/multiplier_curve.dart   # The multiplier formula from the house edge
-lib/components/multiplier_display.dart
-lib/components/cashout_button.dart
-design/balance/rtp-config.json      # model M2
-```
-
-### C3 — Spin-to-Progress (build-and-raid)
-```
-lib/systems/weighted_rng.dart
-lib/systems/spin_event_table.dart   # Spin event weights
-lib/systems/energy_service.dart     # Regeneration, cap, spending
-lib/components/village_component.dart
-design/balance/economy-config.json  # model M3
+lib/systems/board_engine.dart       # Matches, gravity, refill, cascades, specials, reshuffle
+lib/systems/scoring.dart            # Points, combo multiplier, stars
+lib/components/board_component.dart # The board, playing back resolved cascades
+lib/components/tile_component.dart
+design/balance/level-config.json    # model B1
 ```
 
-### C4 — Gacha (banner pull)
+### G2 — Tile & Sort (triple tile tray / pair tiles / sort / patience)
 ```
-lib/systems/weighted_rng.dart
-lib/systems/pity_counter.dart       # soft/hard pity — persisted between sessions
-lib/systems/banner_resolver.dart    # Rarity → a specific item
-lib/components/pull_reveal.dart
-design/balance/gacha-config.json    # model M4
-```
-
-### C5 — Casino Roguelike (poker deckbuilder)
-```
-lib/systems/run_rng.dart            # EXCEPTION: Random(seed) — the run is reproducible (ADR!)
-lib/systems/hand_evaluator.dart     # A poker hand → points
-lib/systems/modifier_registry.dart  # Jokers/symbols and their effects
-lib/models/run_state.dart
-design/balance/run-config.json      # model M5
+lib/systems/deal_generator.dart     # Seeded deals, verified solvable
+lib/systems/deal_solver.dart        # The solver used by the generator and the tests
+lib/systems/tray_rules.dart         # Tray / foundation / container rules
+lib/components/tile_stack_component.dart
+design/balance/level-config.json    # model B2 (+ bot-report.json)
 ```
 
-### C6 — Physics (plinko / coin pusher)
+### G3 — Merge & Place (slide merge / drop merge / block place / merge grid)
 ```
-lib/systems/physics_world.dart      # Forge2D, a FIXED timestep
-lib/systems/launch_resolver.dart    # Starting conditions from Random.secure()
+lib/systems/merge_engine.dart       # Slides or placements, merges, run-over detection
+lib/systems/spawn_table.dart        # The next piece from the seeded GameRng
+lib/components/merge_board_component.dart
+design/balance/endless-config.json  # model B3
+```
+
+### G4 — Aim & Physics (bubble / peg clear / bricks / knockdown / draw)
+```
+lib/systems/physics_world.dart      # Forge2D, a FIXED 1/60 s timestep, body cap
+lib/systems/aim_guide.dart          # The predicted trajectory
 lib/components/ball_component.dart
 lib/components/peg_component.dart
-design/balance/physics-config.json  # model M6
+design/balance/level-config.json    # model B4 (+ bot-report.json from test/balance/)
+```
+
+### G5 — Arcade Reflex (runner / stacker / catcher / slicer / flyer / thrower)
+```
+lib/systems/tempo_ramp.dart         # Speed, spawn interval, reaction window over time
+lib/systems/hazard_spawner.dart     # Spawns from the seeded GameRng within the ramp
+lib/components/player_component.dart
+design/balance/endless-config.json  # model B5
+```
+
+### G6 — Logic & Progression (paths / pipes / unblock / memory / logic grid)
+```
+lib/systems/level_generator.dart    # Seeded generation, proven solvable
+lib/systems/level_solver.dart       # Solver + par moves
+lib/components/logic_board_component.dart
+design/balance/level-config.json    # model B6 (+ bot-report.json)
 ```

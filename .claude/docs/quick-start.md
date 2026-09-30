@@ -1,8 +1,8 @@
 # Quick start
 
-Welcome to **Flutter Gambling Studio** — a studio for gambling mini-games:
-slots, poker, roulette, bingo, crash, mines, plinko, gacha, casino roguelikes,
-coin pushers and spin-to-progress hybrids.
+Welcome to the **Flutter Casual Game Studio** — a studio for casual mini-games with casino-grade
+looks: match-3 and link boards, tile trays and sort puzzles, merge games, bubble shooters and peg
+clearers, runners and stackers, logic puzzles.
 
 Here you act as the **studio director**, and the AI agents are your team.
 Your job is to make the decisions; the team handles the rest.
@@ -11,21 +11,22 @@ Your job is to make the decisions; the team handles the rest.
 > design documents, the code and the game's own copy. If you want the game itself in another
 > language, say so explicitly and the player-facing text will use it.
 >
-> **Always virtual.** The studio's games do not accept or pay out real money —
-> see `.claude/rules/responsible-gaming.md`.
+> **Never gambling.** Games may look like slot key art, but nobody bets, there is no money of any
+> kind, and no reward is left to chance — points, stars and unlocks only
+> (`.claude/rules/no-gambling.md`). Ask for "a Zeus slot" and you get a Zeus link-chain game.
 
 ## The six categories the studio works in
 
 | ID | Category | Examples |
 |----|----------|----------|
-| C1 🎰 | Social Casino | slot, video poker, blackjack, roulette, bingo |
-| C2 ⚡ | Casino Originals | crash, mines, dice, hi-lo, tower, keno, scratch |
-| C3 🏰 | Spin-to-Progress | build-and-raid slot, board-dice, prize wheel |
-| C4 🎁 | Gacha & Loot-Box | banner pull, card packs, case opener, gashapon |
-| C5 🃏 | Casino Roguelike | poker deckbuilder, slot-reel roguelike |
-| C6 ⚙️ | Coin Pusher & Plinko | dozer, plinko, pachinko |
+| G1 🧩 | Match & Cascade | swap match-3, link chain, tap blast, rotate match |
+| G2 🗂 | Tile & Sort | triple tile tray, mahjong-style pairs, sort puzzle, TriPeaks patience |
+| G3 🔷 | Merge & Place | 2048-style slide merge, Suika-style drop merge, block place, merge grid |
+| G4 🎯 | Aim & Physics | bubble shooter, peg clear, brick breaker, knockdown, draw & guide |
+| G5 ⚡ | Arcade Reflex | lane runner, stacker, catcher, slicer, one-tap flyer, target throw |
+| G6 🧠 | Logic & Progression | connect paths, rotate pipes, unblock, memory match, logic grid |
 
-The full reference is `.claude/docs/gambling-categories.md`.
+The full reference is `.claude/docs/game-categories.md`.
 
 ## 🚀 How do I start a new game?
 
@@ -36,9 +37,9 @@ Just type:
 ```bash
 /autocreate
 ```
-The studio picks an archetype out of 32 (A–AF across the six categories), declares a
-mathematical model, writes the design, draws the assets, writes the code, runs the balance
-simulation and sets up `pubspec.yaml`.
+The studio picks an archetype out of 28 (A–AB across the six categories), declares a balance
+model, writes the design, draws the assets, writes the code, runs the balance simulation and sets
+up `pubspec.yaml`.
 
 ### Path 2: manual (I want to build a unique game)
 
@@ -57,18 +58,18 @@ The studio produces a build plan with a map of systems.
 
 **Step 3. Detailed mechanic design**
 ```bash
-/design-system rtp-weights        # C1: symbol weights and the payout table
-/design-system multiplier-curve   # C2: the multiplier formula from the house edge
-/design-system pity-system        # C4: soft/hard pity and odds disclosure
-/design-system energy-economy     # C3: regeneration, cap, source/sink
+/design-system board-rules        # G1: matching, cascades, specials, reshuffle
+/design-system deal-generator     # G2: solvable deals and par
+/design-system tier-chain         # G3: the merge ladder and spawn table
+/design-system tempo-ramp         # G5: speed, spawn interval, reaction windows
 ```
-`game-mathematician` and `game-designer` step in and compute the model for your category.
+`balance-designer` and `game-designer` step in and tune the curve for your category.
 
 **Step 4. Write the code**
 ```bash
 /team-dev "Implement the game core from our concept"
 ```
-This orchestrates `mechanics-programmer` (logic and RNG) and `juice-artist` (animation).
+This orchestrates `mechanics-programmer` (the rules engine) and `juice-artist` (animation).
 
 ---
 
@@ -76,13 +77,13 @@ This orchestrates `mechanics-programmer` (logic and RNG) and `juice-artist` (ani
 
 | Specialist | Who to call | What they do |
 |------------|-------------|--------------|
-| Mathematician | `@game-mathematician` | Owner of the math model: RTP, house edge, pity, economy, run win-rate |
-| Game designer | `@game-designer` | GDD: the round, bets, bonuses, progression, compliance screens |
-| Mechanics programmer | `@mechanics-programmer` | `Random.secure()`, stateless outcomes, paylines, multipliers, Forge2D |
-| Meta systems | `@meta-systems-programmer` | Save, economy, progression, achievements, ads/iap abstractions |
-| VFX artist | `@juice-artist` | Anticipation, near-miss, win celebration, particles |
-| UI/UX | `@ui-programmer` | Every Flutter screen, HUD, bet panel, anti-slop design |
-| Sound | `@sound-designer` | Bet, spin, stop, win, cash-out |
+| Balance designer | `@balance-designer` | Owner of the balance model: level curves, budgets, tempo ramps, stars |
+| Game designer | `@game-designer` | GDD: rules, goals, specials, progression, screens |
+| Mechanics programmer | `@mechanics-programmer` | The pure rules engine, seeded `GameRng`, logic before animation, Forge2D |
+| Meta systems | `@meta-systems-programmer` | Save, progression, achievements, collection album, ads/iap abstractions |
+| VFX artist | `@juice-artist` | Match, cascade, combo and clear celebrations, particles |
+| UI/UX | `@ui-programmer` | Every Flutter screen, HUD, level map, anti-slop design |
+| Sound | `@sound-designer` | Tap, match, cascade, combo, clear, fail |
 
 ---
 
@@ -90,26 +91,26 @@ This orchestrates `mechanics-programmer` (logic and RNG) and `juice-artist` (ani
 
 Generating assets:
 ```bash
-/generate-asset symbol cherry     # a reel symbol
-/generate-asset sprite chip-gold  # a chip / ball / capsule
+/generate-asset symbol crown      # a board tile
+/generate-asset sprite bubble-red # a ball / piece / target
 ```
 
-Check the game's mathematics:
+Check the game's balance:
 ```bash
-/balance-check                    # picks the model M1–M6 from the game's category
+/balance-check                    # picks the model B1–B6 from the game's category
 ```
 
 Directly, when you need it quickly:
 ```bash
-python3 tools/simulate_math.py --model m1 --config design/balance/rtp-config.json
-python3 tools/simulate_math.py --selftest   # the reference configs for all six models
+python3 tools/simulate_balance.py --model b1 --config design/balance/level-config.json
+python3 tools/simulate_balance.py --selftest   # the reference configs for the built-in models
 ```
 
 Add a feature to a finished game:
 ```bash
-/add-feature "Add a free spins round"           # C1
-/add-feature "Add auto-bet with limits"         # C2
-/add-feature "Add a guarantee on the 10th pull" # C4
+/add-feature "Add a colour-bomb special"          # G1
+/add-feature "Add an undo with three charges"     # G2
+/add-feature "Add a daily challenge on a seeded level"
 ```
 
 Take a break and continue tomorrow:

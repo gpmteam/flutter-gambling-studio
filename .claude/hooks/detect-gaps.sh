@@ -34,20 +34,14 @@ if [ -f "pubspec.yaml" ]; then
     fi
   fi
 
-  # RNG safety — unconditional: every game in this studio is a gambling game.
-  # The only sanctioned exception is the seeded run RNG in C5 roguelikes (run_rng.dart + ADR).
-  if find lib -name "*.dart" 2>/dev/null | xargs grep -l "math.Random()" 2>/dev/null | grep -v "_test.dart" | grep -qv "run_rng.dart"; then
-    GAPS+=("🚨 CRITICAL: math.Random() found — use Random.secure()!")
-    find lib -name "*.dart" 2>/dev/null | xargs grep -l "math.Random()" 2>/dev/null | grep -v "_test.dart" | grep -v "run_rng.dart" | while read f; do
-      GAPS+=("   → $f")
-    done
-  fi
-
-  # Check for hardcoded probabilities
-  if find lib -name "*.dart" 2>/dev/null | xargs grep -lE "(0\.[0-9]+\s*[<>]=?\s*(win|lose|jackpot|bonus))|if.*random.*<.*0\." 2>/dev/null | grep -q .; then
-    if find lib -name "*.dart" 2>/dev/null | xargs grep -l "WeightedRng\|reelWeights" 2>/dev/null | grep -q .; then
-      GAPS+=("🚨 CRITICAL: probabilities may be hardcoded — use GameConfig!")
+  # No gambling and reproducible gameplay; cosmetic RNG is separate.
+  if [ -f tools/check_no_gambling.py ]; then
+    if ! python3 -B tools/check_no_gambling.py; then
+      GAPS+=("🚨 No-gambling/seeded-RNG gate failed — see findings above")
     fi
+  fi
+  if [ ! -f lib/systems/game_rng.dart ]; then
+    WARNINGS+=("⚠️  GameRng missing — random gameplay must use one seeded stream")
   fi
 
   # Check for GDD

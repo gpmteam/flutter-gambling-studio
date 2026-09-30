@@ -68,7 +68,7 @@ an object or mechanic lead (see [campaign-prompts.md](campaign-prompts.md)):
 TPL=.claude/skills/store-screenshots/references/campaign-prompts.md
 python3 tools/prompt_template.py render --template "$TPL" --id banner-character \
   --set environment="..." --set character="..." --set gameplay="..." --set label_color="..." \
-  --set accent="..." --set ball_fx="..." --set objects="..." --set currency="..." \
+  --set accent="..." --set ball_fx="..." --set objects="..." --set foreground_pieces="..." \
   --set palette="..." --out production/store-art/banner-prompt.txt
 python3 tools/prompt_template.py check --template "$TPL" --id banner-character \
   --prompt production/store-art/banner-prompt.txt || exit 1
@@ -104,7 +104,7 @@ background, and the reference sources. The banner is never the character referen
 
 ```bash
 python3 tools/prompt_template.py render --template "$TPL" --id background-character \
-  --set environment="..." --set character="..." --set currency="..." --set objects="..." \
+  --set environment="..." --set character="..." --set foreground_pieces="..." --set objects="..." \
   --set palette="..." --out production/store-art/background-prompt.txt
 python3 tools/prompt_template.py check --template "$TPL" --id background-character \
   --prompt production/store-art/background-prompt.txt || exit 1

@@ -11,7 +11,7 @@ user-invocable: true
 Read `.claude/docs/visual-context.md` before planning or reviewing visuals. For a matching
 new-game request, inspect the relevant `examples-games/` previews and read
 `.claude/docs/game-concept-examples.md`. Carry the lead kind, references/adaptations, exact
-board topology, Joker expression (when relevant), and verified multiplier-coin meanings from
+board topology, Joker expression (when relevant), and verified combo-marker meanings from
 the concept into the art direction, asset manifest and prompts. Classic unspecified slots
 use 3×3; store gameplay placement is flexible and object-led games need no invented character.
 
@@ -21,8 +21,8 @@ Set `[LETTERING POLICY]` to `NO text` for ordinary assets. For a multiplier coin
 use `ONLY the exact inscription x5` (or the supported value), recording its config source and
 meaning. Prefer x5/x10 when supported; validate exact lettering at 64 px and in runtime. These
 verified inscriptions are allowed under the quality floor. No invented multipliers, marketing
-copy, balances or payout promises. A code overlay can letter an unlettered source using the same
-config value; a different payout symbol is not merely a recolor.
+copy, gambling controls or prize promises. A code overlay can letter an unlettered source using the same
+config value; a different scoring symbol is not merely a recolor.
 The five themed multiplier balls required by `/store-screenshots` are a store-only art exception;
 follow that runbook for their labels and keep this config-backed rule for runtime game assets.
 The code-overlay option above never applies to them: the image model letters the store balls
@@ -108,7 +108,7 @@ Do not omit or merge identities merely to meet the original-concept 12-source de
 derive only where the subject and its game meaning remain the same.
 
 Color variations are allowed only if they do not change the recognizable result of the round,
-rarity, payout or probability. Otherwise it is a separate `generate` asset.
+tier, scoring role or spawn probability. Otherwise it is a separate `generate` asset.
 
 ### Fallback at no extra cost
 
@@ -456,7 +456,7 @@ fi
 
 Read if available:
 - `design/gdd/game-concept.md` → theme, colors, style
-- `design/balance/rtp-config.json` → list of symbols (gambling)
+- `design/gdd/game-concept.md` and the G1–G6 balance config → game pieces, tier chain and specials
 
 ---
 
@@ -483,8 +483,8 @@ no style substitution, transparent-ready, 1024x1024.
 | Type | Add (substitute under DNA) |
 |-----|---------|
 | `symbol` / `sprite` | match reference or DNA: subject/shapes/materials/palette/2D or 2.5D finish, single finish for the set |
-| `wild` (gambling) | premium accent symbol; effect (glow/shine/no) - from DNA |
-| `scatter` (gambling) | a special trigger symbol, visually highlighted using DNA |
+| `special` (casual board) | premium accent symbol; effect (glow/shine/no) - from DNA |
+| `blocker` (casual board) | a level obstacle with a clear state, visually highlighted using DNA |
 | `ui` button | shape from shape language DNA; effect (glow/shadow/flat) from DNA, no text |
 | `background` | peace and **brightness** from DNA (not “always dark casino”), does not distract from the playing field |
 
@@ -633,9 +633,9 @@ If there is an error, stop, show the answer, ask the user.
 
 ---
 
-## --from-concept: from rtp-config.json automatically
+## --from-concept: from the asset manifest and casual concept
 
-1. Read `design/balance/rtp-config.json` → list `symbols[].name`
+1. Read `design/asset-manifest.json` and `design/gdd/game-concept.md` → the game's piece cast, specials and tier chain; cross-check the G1–G6 balance config
 2. Read `design/gdd/game-concept.md` → theme and colors
 3. We build `ASSETS=()` dynamically and run the batch cycle above
 

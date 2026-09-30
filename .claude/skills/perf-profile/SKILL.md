@@ -1,18 +1,18 @@
 ---
 name: perf-profile
 description: "Profiles the mini-game's performance and returns prioritised optimisation recommendations."
-argument-hint: "[reels|particles|audio|memory|full]"
+argument-hint: "[board|particles|audio|memory|full]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Bash, Agent
 ---
 
 # /perf-profile [area]
 
-Invocation: the user runs `/perf-profile [reels|particles|audio|memory|full]`
+Invocation: the user runs `/perf-profile [board|particles|audio|memory|full]`
 
 ## Goal
 
-Structured performance profiling of a gambling game.
+Structured performance profiling of a casual game.
 Finds bottlenecks in the game loop, analyses the frame budget and returns prioritised
 optimisation recommendations.
 
@@ -37,7 +37,7 @@ grep -n "List<" lib/systems/*.dart
 ```
 
 **Checking SpriteBatch:**
-- Is SpriteBatch used for the reel symbols?
+- Is SpriteBatch used for the board pieces?
 - More than 9 symbols on screen without SpriteBatch is a bottleneck
 
 **Checking particles:**
@@ -70,8 +70,8 @@ grep -n "Particle.generate" lib/components/*.dart
 flutter run --profile
 
 # Commands for DevTools:
-# 1. CPU Profiler → Record → 10 spins → Stop → find the top methods
-# 2. Memory → Take snapshot → before and after free spins
+# 1. CPU Profiler → Record → 10 moves/shots/runs → Stop → find the top methods
+# 2. Memory → Take snapshot → before and after repeated level retries
 # 3. Performance → look at the worst frames
 ```
 
@@ -90,7 +90,7 @@ The `performance-analyst` agent produces a prioritised list:
 ## HIGH priority (affects gameplay)
 1. ReelComponent: a Vector2 allocation in update() → pre-initialise it
    Expected effect: -2ms per frame
-   File: lib/components/reel_component.dart:45
+   File: lib/components/board_component.dart:45
 
 ## MEDIUM priority (affects UX)
 2. WinAnimation: 300 particles exceed the budget → cap at 200
@@ -125,7 +125,7 @@ Create `docs/perf-report-YYYY-MM-DD.md`:
 
 ## Arguments
 
-- `reels` — focus on reel performance
+- `board` — focus on board performance
 - `particles` — focus on particles and VFX
 - `audio` — focus on the audio system
 - `memory` — focus on memory and leaks

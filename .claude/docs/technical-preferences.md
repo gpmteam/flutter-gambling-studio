@@ -1,4 +1,4 @@
-# Technical standards of the Gambling Studio
+# Technical standards of the Casual Game Studio
 
 ## Product platform
 
@@ -24,26 +24,23 @@ an installed offline PWA.
 
 ## Flutter + Flame 1.18.x
 
-### Mathematics and RNG
+### Randomness and the rules engine
 
-- **CRITICAL**: NEVER use `math.Random()`. ONLY `Random.secure()` for any outcome that
-  affects a payout:
-  - Picking symbols on the reels, dealing cards, stopping the wheel or the ball
-  - The crash point in crash, the placement of mines, a dice roll
-  - A keno draw, revealing a scratch field, choosing a chest
-  - Bonus mechanic triggers and pity pulls in gacha
-  - The starting conditions of a physical launch in plinko/pachinko
-- **The single exception** is seeded run determinism in casino roguelikes (category C5,
-  model M5): there `Random(seed)` is mandatory, because the run has to be reproducible.
-  The exception is recorded in an ADR, otherwise `/code-review` treats it as a violation.
-- `Random()` is acceptable ONLY for purely visual elements that do not affect the outcome
-  (particle scatter, idle animation phases). Never for game logic.
-- **Stateless outcomes**: the round result is computed BEFORE the animation starts. The
-  animation simply "plays back" a predetermined script. Without this the RTP is not
-  verifiable, and cash-out in C2 is mathematically incorrect.
-- **Balance tuning**: all game parameters live in `game_config.dart`; the math model's numbers
-  live in the model's JSON config (`design/balance/*.json`), which `tools/simulate_math.py`
-  reads. One source of truth, with no duplication between JSON and code.
+- **No gambling**: randomness sets up play (a board fill, a deal, a spawn order, the next piece,
+  a generated level); it never decides whether a move "wins" and never grants a reward
+  (`.claude/rules/no-gambling.md`).
+- **One seeded `GameRng`**: all gameplay randomness goes through one injectable generator wrapping
+  `Random(seed)`. A level has a fixed seed (or a recorded random one for endless runs; the date for
+  the daily challenge), so it reproduces exactly in the game, the tests and the balance bot.
+  `Random.secure()` is not needed — nothing is wagered, and reproducibility matters more.
+- Cosmetic randomness (particle scatter, idle animation phases) uses a separate `VfxRng`, so
+  effects never shift the gameplay sequence.
+- **Logic before animation**: the pure rules engine resolves each move (matches, cascades,
+  merges, the physics step, score) BEFORE the animation starts. The animation simply "plays back"
+  the resolved steps. Without this neither the tests nor the balance bot can drive the game.
+- **Balance tuning**: all game parameters live in `game_config.dart`; the balance model's numbers
+  live in its JSON config (`design/balance/*.json`), which `tools/simulate_balance.py` reads. One
+  source of truth, with no duplication between JSON and code.
 
 ### Flame API (1.18.x)
 
@@ -52,17 +49,17 @@ an installed offline PWA.
   `class GameWorld extends World with HasCollisionDetection {}`
 - Use the updated `CameraComponent`:
   `camera = CameraComponent(world: _world);`
-- No `.isPaused = true`. Use `GameState` (a sealed class: Idle, Playing, Paused, GameOver).
+- No `.isPaused = true`. Use `GameState` (a sealed class: Ready, Resolving, Paused, Cleared, Failed).
 
 ### Visualisers and particles
 
-For the juiciness of a round we use *ParticleSystemComponent* effects.
-- On key events (a win, a near-miss, a cash-out, a rare pull, a jackpot) spawn thematic
-  particles:
+For the juiciness of a move we use *ParticleSystemComponent* effects.
+- On key events (a match, a cascade, a special created, a big combo, a level cleared, a new best)
+  spawn thematic particles:
   `ParticleSystemComponent(particle: Particle.generate(count: 50, generator: ...))`
 - The strength of the effect scales with the significance of the event (see quality-bar.md §3):
-  a small win gets a local flash, a mega win gets fullscreen. Identical feedback for
-  everything kills the game's grammar.
+  a small match gets a local flash, a three-star clear gets a fullscreen celebration.
+  Identical feedback for everything kills the game's grammar.
 - Effect settings (glow, drop shadow) are implemented through a Flutter Overlay on top of
   Flame, because complex filters inside Flame are expensive.
 
@@ -98,6 +95,6 @@ For the juiciness of a round we use *ParticleSystemComponent* effects.
   For background images the background is not removed.
 - Naming pattern:
   `background_X` (backgrounds)
-  `sprite_X` (game elements: reel symbols, cards, chips, balls, mines, capsules)
-  `ui_X` (buttons, bet panels, decks)
+  `sprite_X` (game elements: tiles, symbols, pieces, balls, pegs, targets, blockers)
+  `ui_X` (buttons, panels, board frames, trays)
   `icon_X` (badges, interface icons)

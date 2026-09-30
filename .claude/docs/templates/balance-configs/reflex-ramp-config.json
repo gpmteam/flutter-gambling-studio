@@ -1,0 +1,24 @@
+{
+  "game_name": "Selftest Thunder Dash",
+  "model": "b5",
+  "rule": "reflex",
+  "lives": 1,
+  "grace_s": 3,
+  "tempo": {
+    "interval_start_s": 1.3,
+    "interval_cap_s": 0.6,
+    "window_start_ms": 900,
+    "window_cap_ms": 430,
+    "time_to_cap_s": 150,
+    "curve": "ease_in"
+  },
+  "player": {
+    "reaction_ms_mean": 430,
+    "reaction_ms_sd": 90,
+    "lapse_rate": 0.006
+  },
+  "points": {
+    "per_second": 10,
+    "per_dodge": 5
+  }
+}

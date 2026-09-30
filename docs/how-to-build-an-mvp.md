@@ -1,113 +1,57 @@
-# How to build a mini-game MVP from scratch
+# Build a casual mini-game
 
-This guide walks you through building a gambling mini-game (slot, roulette, crash, mines,
-gacha, plinko and so on) in `flutter-gambling-studio`, from an empty folder to a working APK.
+The studio produces portrait-phone Flutter + Flame casual games. Premium casino artwork or
+another visual reference can guide the assets; gameplay is always casual. Use points, stars and
+progress unlocks, never money, wagers or random prizes. Read
+[game categories](../.claude/docs/game-categories.md),
+[balance models](../.claude/docs/balance-models.md) and
+[the no-gambling gate](../.claude/rules/no-gambling.md).
 
-> The studio builds **only** gambling games — six categories C1–C6,
-> see `.claude/docs/gambling-categories.md`.
+Claude, Codex and Gemini use the same canonical `.claude/` framework. Codex starts at `AGENTS.md`
+and uses `.codex/commands.md` to resolve slash-command runbooks.
 
-> **Important**: development can run through Claude Code or through OpenAI Codex.
-> In Codex the entry point is `AGENTS.md`, and the commands, roles and hooks come from
-> `.codex/` and `.claude/`. You direct the process; the agents write the mathematics, the
-> design, the code and the effects.
+## Full pipeline
 
----
+Run `/autocreate` for autonomous creation or `/autocreate --from-concept` for an existing
+`design/gdd/game-concept.md`. The pipeline covers concept/reference detection, assets and data,
+implementation, analysis/tests, UI/balance checks, Chrome runtime, actual playtest and release
+preparation. Its three sessions persist handoffs so interrupted work can resume. It does not
+build an APK/AAB or archive; request `/release-package` when ready.
 
-## Option 1: the one-click path (magic)
+## Step-by-step route
 
-If you want a finished game instantly, with no questions asked:
+1. `/brainstorm` selects G1–G6, an archetype A–AB or unique casual mechanic, theme and B1–B6
+   model. `/auto-idea` does this autonomously. The Classification block records scoring, balance
+   config, reference gameplay and the no-gambling check. Casino gameplay is translated;
+   already-casual references may retain their mechanic, such as Zeus's 7×6 link board.
+2. `/gate-check concept`, then `/map-systems`, writes the architecture and dependency plan.
+3. `/design-system board-rules`, `/design-system tier-chain`, `/design-system tempo-ramp` or
+   another category-appropriate system writes its GDD and JSON config with `balance-designer`.
+   Built-in balance bots verify swap/link/blast, sort, slide merge and reflex ramps. Other
+   mechanics require the actual game's headless rules/physics/solver bot before final signoff.
+4. `/generate-png-asset --from-concept` generates the piece cast, UI and backgrounds from the
+   asset manifest and reference sources. Ordinary assets have no lettering; verified combo
+   markers follow the game's scoring. Match identity and visual style without casino controls.
+5. `/team-dev "Build the core from our design document"` implements rules, presentation, UI and
+   deterministic save/progression/achievement/collection/daily systems. One seeded `GameRng`
+   resolves moves in the pure rules engine before animation.
+6. `sound-designer` supplies sound effects through `flame_audio`. Background music is opt-in.
+7. `/balance-check`, `/code-review`, `/ui-audit`, `/emulator-test` and `/playtest` verify the
+   complete game. Play valid moves to actual complete/fail states; a generic button tour cannot
+   prove that direct board manipulation works. Verify the four portrait phone sizes.
+8. `/release-checklist` checks the no-gambling gate, content, seeded replay, curve evidence and
+   playability. Metadata describes casual play and records “simulated gambling: no”, with an age
+   rating based on actual content. Do not add gambling disclaimers, odds screens or age gates.
+9. `/release-engineering --prep-only` prepares icons, splash, metadata, version and CI without
+   native builds; `/release-package` explicitly builds and archives sources, APK and screenshots.
 
 ```bash
-/autocreate
+python3 tools/simulate_balance.py --model b1 --config design/balance/level-config.json
+python3 tools/simulate_balance.py --model report --config design/balance/bot-report.json
+python3 tools/simulate_balance.py --selftest
+python3 -B tools/check_no_gambling.py
 ```
 
-The studio picks one of the 32 archetypes (A–AF), declares a mathematical model, generates
-`pubspec.yaml`, draws the assets, writes the logic, the UI and the compliance layer, runs the
-balance simulation and configures the project. A few minutes later you can run `flutter run`.
-
----
-
-## Option 2: the designer's path (step by step)
-
-If you want control over every aspect (mechanics, balance, theme):
-
-### Step 1. The concept (brainstorm)
-First you pick the category and the archetype.
-
-```bash
-/brainstorm
-```
-The agent asks about the category (C1 casino · C2 originals · C3 spin-to-progress · C4 gacha ·
-C5 roguelike · C6 physics), the archetype and the theme. The result is a
-`design/gdd/game-concept.md` file with the mandatory **Classification** block (category,
-archetype, mathematical model, target metric, compliance profile).
-
-### Step 2. Break it into components
-```bash
-/map-systems
-```
-The studio decomposes the idea into a class architecture for Flame. The map helps the
-programmers understand the scale of the work.
-
-### Step 3. Set up the mathematical model
-Each category is computed with its own model (the thresholds are in
-`.claude/docs/math-models.md`):
-```bash
-/design-system rtp-weights       # C1: symbols, weights, the payout table  → M1
-/design-system multiplier-curve  # C2: house edge and the multiplier curve → M2
-/design-system energy-economy    # C3: regeneration, cap, source/sink      → M3
-/design-system pity-system       # C4: base rates and soft/hard pity       → M4
-```
-`game-mathematician` steps in, computes the parameters and saves them to the JSON config
-(`design/balance/*.json`) — the single source of truth for those numbers.
-
-### Step 4. Draw the graphics
-Ask for the base assets.
-```bash
-/generate-asset ui spin-button
-/generate-asset symbol cherry
-/generate-asset sprite chip-gold
-```
-
-### Step 5. Orchestrate development (code + VFX)
-Once the plan, the balance and the assets are ready, call the team:
-```bash
-/team-dev "Build the game core from our design document"
-```
-This skill runs `mechanics-programmer` (writing the Flutter+Flame logic) and `juice-artist`
-(setting up the effects, particles and animation) together.
-
-### Step 6. Game audio
-Without sound the game is dead.
-```bash
-@sound-designer Set up the sounds and BGM through flame_audio.
-```
-
-### Step 7. Check the balance and the quality
-```bash
-/balance-check
-```
-This runs the category's model through `tools/simulate_math.py` (1,000,000 trials) and returns
-a PASS / CONCERNS / FAIL verdict with a report in `design/balance/simulation-report.md`.
-A FAIL stops production: the numbers are fixed by `game-mathematician`, and only in JSON.
-
-Directly, when you need it quickly:
-```bash
-python3 tools/simulate_math.py --model m1 --config design/balance/rtp-config.json
-python3 tools/simulate_math.py --selftest   # the reference configs for all six models
-```
-
-### Step 8. Release
-Once the game runs under `flutter run`, it is time for the final quality check.
-```bash
-/release-checklist
-```
-The checklist includes the **compliance blockers**: disclaimer, responsible play,
-odds disclosure, and the absence of real-currency symbols next to the game balance
-(`.claude/rules/responsible-gaming.md`). Without them the store will reject the game.
-
----
-
-🎉 **Done — your MVP is built.**
-Keep improving the game by adding features: `/add-feature "add a Wild symbol"` or
-`/add-feature "add auto-bet with limits"` — the balance is recalculated automatically.
+Balance returns 0 PASS, 1 CONCERNS or 2 FAIL and writes `design/balance/simulation-report.md`.
+Adjust the JSON with `balance-designer` and rerun after a difficulty change. Extend the result
+with `/add-feature "rocket special"` or `/add-feature "daily skill challenge"`.

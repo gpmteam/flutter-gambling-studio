@@ -23,13 +23,13 @@ Every significant technical decision should have an ADR.
 
 ## When to create an ADR
 
-- Choosing the RNG approach (why Random.secure and not X)
+- Choosing the RNG approach (seed reproducibility and separation of gameplay/VFX streams)
 - Choosing the GameState architecture (sealed class vs enum vs boolean)
 - Choosing state management (ValueNotifier vs Riverpod vs Bloc)
-- Choosing the reel structure (infinite scroll vs sprite swap)
+- Choosing the board representation and the pure rules-engine boundary
 - Adding a new dependency to pubspec.yaml
 - Changing the directory structure
-- Choosing the RTP range and volatility
+- Changing a difficulty target window for the declared B1–B6 balance model
 
 ## Order of work
 
@@ -57,7 +57,7 @@ Option B: [name]
 ### Step 3: the technical-director's recommendation
 
 A clear recommendation with its rationale.
-Taking into account: RNG safety, RTP correctness, performance, maintainability.
+Taking into account: RNG safety, balance correctness, performance, maintainability.
 
 ### Step 4: creating the ADR file
 
@@ -77,7 +77,7 @@ Create `docs/architecture/adr-NNN-short-title.md`:
 
 ## Game integrity context
 
-[How does this decision affect RNG safety / RTP correctness / the fairness of the game?]
+[How does this decision affect RNG safety / balance correctness / the fairness of the game?]
 
 ## Options considered
 
@@ -102,7 +102,7 @@ Create `docs/architecture/adr-NNN-short-title.md`:
 - ...
 
 ### Game integrity
-- [Impact on RNG / RTP / the fairness of the game]
+- [Impact on seeded RNG / difficulty curve / the fairness of the game]
 
 ## Implementation
 
@@ -122,5 +122,5 @@ Maintain `docs/architecture/README.md` with a table of every ADR:
 ```markdown
 | ID | Title | Status | Date |
 |----|-------|--------|------|
-| ADR-001 | Using Random.secure() for the RNG | Accepted | 2026-01-15 |
+| ADR-001 | Using one seeded GameRng for gameplay | Accepted | 2026-01-15 |
 ```

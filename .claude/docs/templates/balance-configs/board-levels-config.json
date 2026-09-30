@@ -1,0 +1,140 @@
+{
+  "game_name": "Selftest Jewel Match",
+  "model": "b1",
+  "rule": "swap",
+  "min_group": 3,
+  "points_per_piece": 10,
+  "combo_bonus": 0.5,
+  "dead_board": "reshuffle",
+  "player_skill": 0.6,
+  "stars": {
+    "two_star_ratio": 1.25,
+    "three_star_ratio": 1.5
+  },
+  "levels": [
+    {
+      "id": 1,
+      "cols": 7,
+      "rows": 8,
+      "kinds": 4,
+      "moves": 20,
+      "target_score": 1800
+    },
+    {
+      "id": 2,
+      "cols": 7,
+      "rows": 8,
+      "kinds": 4,
+      "moves": 20,
+      "target_score": 2600
+    },
+    {
+      "id": 3,
+      "cols": 7,
+      "rows": 8,
+      "kinds": 5,
+      "moves": 20,
+      "target_score": 1250
+    },
+    {
+      "id": 4,
+      "cols": 7,
+      "rows": 8,
+      "kinds": 5,
+      "moves": 20,
+      "target_score": 1500
+    },
+    {
+      "id": 5,
+      "cols": 7,
+      "rows": 8,
+      "kinds": 5,
+      "moves": 18,
+      "target_score": 1550
+    },
+    {
+      "id": 6,
+      "cols": 7,
+      "rows": 8,
+      "kinds": 5,
+      "moves": 20,
+      "target_score": 1750
+    },
+    {
+      "id": 7,
+      "cols": 7,
+      "rows": 8,
+      "kinds": 5,
+      "moves": 22,
+      "target_score": 1700
+    },
+    {
+      "id": 8,
+      "cols": 7,
+      "rows": 8,
+      "kinds": 5,
+      "moves": 18,
+      "target_score": 1800
+    },
+    {
+      "id": 9,
+      "cols": 7,
+      "rows": 8,
+      "kinds": 6,
+      "moves": 22,
+      "target_score": 1150
+    },
+    {
+      "id": 10,
+      "cols": 7,
+      "rows": 8,
+      "kinds": 6,
+      "moves": 20,
+      "target_score": 1150
+    },
+    {
+      "id": 11,
+      "cols": 7,
+      "rows": 8,
+      "kinds": 5,
+      "moves": 16,
+      "target_score": 1650
+    },
+    {
+      "id": 12,
+      "cols": 7,
+      "rows": 8,
+      "kinds": 6,
+      "moves": 20,
+      "target_score": 1300
+    },
+    {
+      "id": 13,
+      "cols": 7,
+      "rows": 8,
+      "kinds": 6,
+      "moves": 22,
+      "target_score": 1100,
+      "collect": {
+        "kind": 2,
+        "count": 18
+      }
+    },
+    {
+      "id": 14,
+      "cols": 7,
+      "rows": 8,
+      "kinds": 6,
+      "moves": 18,
+      "target_score": 1300
+    },
+    {
+      "id": 15,
+      "cols": 7,
+      "rows": 8,
+      "kinds": 6,
+      "moves": 20,
+      "target_score": 1420
+    }
+  ]
+}

@@ -1647,7 +1647,7 @@ class ContextCompositionTests(unittest.TestCase):
             HeroBustGateTests()._pano().save(source)
             common = [sys.executable, str(SCRIPT), "triptych", "--src", str(source),
                       "--size", "180x360", "--panels", "3", "--seam-snap", "off",
-                      "--pop", "off", "--lead-kind", "object", "--lead-bounds",
+                      "--pop", "off", "--art-gate", "strict", "--lead-kind", "object", "--lead-bounds",
                       "0.36,0.18,0.6,0.58"]
             for protected, succeeds in (("0.40,0.25,0.12,0.20", True),
                                          ("0.30,0.25,0.12,0.20", False)):

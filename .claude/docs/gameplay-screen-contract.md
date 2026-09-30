@@ -1,7 +1,7 @@
 # Gameplay Screen Contract — Full-Screen, Integrated, Portrait Phone
 
 This contract prevents a working mechanic from being presented as a small demo embedded inside
-a generic app page. It applies to every C1–C6 `GameScreen`, regardless of Design Signature or
+a generic app page. It applies to every G1–G6 `GameScreen`, regardless of Design Signature or
 layout recipe.
 
 The product canvas is defined by `.claude/docs/mobile-first-contract.md`: a portrait phone is
@@ -32,8 +32,9 @@ screen is never recomposed for them.
 4. **Integrate HUD and controls.** Attach compact controls to the field as overlays, a slim edge
    cluster within thumb reach, or one deliberate command deck. Reuse the field's alignment grid, materials, shapes, and
    depth. A generic panel stacked below an unrelated game rectangle fails.
-5. **The core loop never requires page scrolling.** The live field, primary action, balance or
-   score, stake/risk control, and result feedback must be visible together on the first viewport.
+5. **The core loop never requires page scrolling.** The live field, primary action, score, the
+   level goal and moves/time left, and result feedback must be visible together on the first
+   viewport.
    Rules, history, explanations, and secondary configuration may open a sheet or separate screen.
 6. **Controls are proportioned and usable.** Every tap target is at least 48×48 logical pixels;
    the primary action is at least 56 logical pixels high, within thumb reach, visually dominant,
@@ -50,8 +51,9 @@ screen is never recomposed for them.
 
 Add stable keys so widget tests and runtime audits can measure the actual hierarchy:
 
-- `Key('gameplaySurface')` on the live field/board/reels/physics surface.
-- `Key('primaryAction')` on the main Spin/Play/Drop/Collect control.
+- `Key('gameplaySurface')` on the live field/board/tray/physics surface.
+- `Key('primaryAction')` on the main Play/Shoot/Drop/Start control — or, when the field itself is
+  the input (swap, link, tap), on the field's interactive layer.
 - `Key('controlDeck')` on the compact group of core controls, when one exists.
 
 Do not put `gameplaySurface` or `primaryAction` under a vertical `Scrollable`. Do not solve a

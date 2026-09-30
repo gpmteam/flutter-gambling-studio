@@ -38,7 +38,7 @@ echo "Project: $APP_NAME"
 
 Read from the concept (`design/gdd/game-concept.md`): the human-readable game title (for the
 launcher label and the listing), the splash background colour (from the Design DNA → Background),
-the category C1–C6 and the compliance profile (for the metadata and the age rating).
+the casual category G1–G6 and the no-gambling check (for the metadata and the age rating).
 Read `.claude/docs/mobile-first-contract.md`. This studio ships portrait phone games: a missing
 portrait lock, a desktop/tablet/landscape layout, or a desktop platform scaffold is a blocker.
 
@@ -279,9 +279,10 @@ Fill `title/short/full description` from the concept's sections (title, USP, fea
 The privacy policy is a real template: what data is collected (by default: none, since analytics
 is no-op), how it is stored (locally), and a contact.
 
-> **Compliance (MANDATORY for moderation):** `full_description.txt` and `age-rating.md` must
-> state explicitly: "a social-casual game, **for entertainment only, with no real money and no
-> real winnings**". Without that, Google/Apple will reject a gambling app.
+> **No-gambling gate:** store copy describes the actual casual mechanic and points-based
+> scoring. `age-rating.md` records “simulated gambling: no”; determine the age rating from the
+> content/art, normally Everyone / PEGI 3. Do not add a virtual-money disclaimer, odds disclosure
+> or gambling age gate. Inspect art and captions against `.claude/rules/no-gambling.md`.
 
 ---
 
@@ -327,7 +328,7 @@ template.
    Symbols: build/symbols/ (for de-obfuscating stack traces)
 🍎 iOS: the scaffold is ready (the IPA build happens on macOS)
 🏪 Store metadata: store/ (listing + privacy + data-safety + age-rating)
-   [Gambling: disclaimer noted]
+   [Casual game: simulated gambling = no; rating based on content]
 ⚙️ CI: .github/workflows/build.yml [with --with-ci]
 
 Next:
@@ -352,6 +353,6 @@ Next:
 1. Overwriting an existing keystore.
 2. Committing `key.properties`, `*.jks` or passwords (all of it goes in .gitignore).
 3. Publishing artifacts to external services without an explicit request from the user.
-4. Shipping without a disclaimer / responsible play (a release blocker).
-   Relaxation is acceptable only for C5 without purchases, and must be recorded in the concept.
+4. Shipping a wager, currency, chance-based reward, casino mechanic or gambling claim.
+   The no-gambling gate is unconditional across G1–G6; do not add an age gate or gambling disclaimer.
 5. Store metadata in a language other than English, unless the user explicitly asked otherwise.

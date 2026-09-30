@@ -16,10 +16,10 @@ import 'dart:math';
 // 2. package: (alphabetical)
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
-import 'package:my_slot/game/slot_config.dart';
+import 'package:my_game/game/game_config.dart';
 
 // 3. Relative (inside the package only)
-import '../components/reel_component.dart';
+import '../components/board_component.dart';
 ```
 
 ### Class file — member order
@@ -54,7 +54,7 @@ import '../components/reel_component.dart';
 ### The required lifecycle method order
 
 ```dart
-class ReelComponent extends PositionComponent with HasGameRef<SlotMachineGame> {
+class BoardComponent extends PositionComponent with HasGameRef<BoardGame> {
   // Fields
   final _tempPos = Vector2.zero(); // Pre-initialised!
 
@@ -88,22 +88,22 @@ class ReelComponent extends PositionComponent with HasGameRef<SlotMachineGame> {
 ```dart
 // ❌ Creates objects every frame — FORBIDDEN
 void update(double dt) {
-  position = Vector2(x, y + scrollOffset); // allocation!
+  position = Vector2(x, y + dropOffset); // allocation!
   final paint = Paint()..color = Colors.red; // allocation!
 }
 
 // ✅ Pre-initialised
 final _tempPos = Vector2.zero();
-late final Paint _symbolPaint;
+late final Paint _tilePaint;
 
 @override
 Future<void> onLoad() async {
-  _symbolPaint = Paint()..color = Colors.amber;
+  _tilePaint = Paint()..color = Colors.amber;
 }
 
 @override
 void update(double dt) {
-  _tempPos.setValues(x, y + scrollOffset);
+  _tempPos.setValues(x, y + dropOffset);
   position.setFrom(_tempPos);
 }
 ```
@@ -119,21 +119,23 @@ void update(double dt) {
 
 ## 3. Game-specific standards
 
-### WeightedRNG — the single source of randomness (gambling)
+### GameRng — the single seeded source of gameplay randomness
 
 ```dart
-/// Weighted random number generator using cryptographically secure Random.
-/// See design/gdd/rtp-math-model.md for weight specifications.
-class WeightedRNG {
-  // One instance for the whole game
-  final _rng = Random.secure();
+/// The only source of gameplay randomness (fills, deals, spawns, level generation).
+/// Seeded so a level reproduces exactly in the game, the tests and the balance bot.
+/// See .claude/rules/game-code.md.
+class GameRng {
+  GameRng(this.seed) : _random = Random(seed);
 
-  /// Picks a symbol index based on weights.
-  /// [weights] must correspond to SlotConfig.reelWeights.
-  int pickSymbol(List<int> weights) {
+  final int seed;
+  final Random _random;
+
+  /// Picks a symbol kind using the level's spawn weights from GameConfig/level data.
+  int pickKind(List<int> weights) {
     assert(weights.isNotEmpty);
     final total = weights.reduce((a, b) => a + b);
-    var roll = _rng.nextInt(total);
+    var roll = _random.nextInt(total);
     for (var i = 0; i < weights.length; i++) {
       roll -= weights[i];
       if (roll < 0) return i;
@@ -143,16 +145,15 @@ class WeightedRNG {
 }
 ```
 
-### PaylineEvaluator — a pure function (gambling)
+### MatchFinder — a pure function
 
 ```dart
-/// Evaluates winning combinations on a slot result grid.
-/// Pure function — no side effects, no state.
-/// See design/gdd/payline-system.md, AC-1 through AC-5.
-class PaylineEvaluator {
-  /// Evaluates all paylines and returns win results.
-  /// [grid] is a List<List<int>> — reels × visible rows.
-  static WinResult evaluate(List<List<int>> grid, List<List<int>> paylines) {
+/// Finds every run of 3+ identical kinds on a board.
+/// Pure function — no side effects, no state, no randomness.
+/// See design/gdd/board-rules.md, AC-1 through AC-5.
+class MatchFinder {
+  /// [cells] is row-major, [cols] wide; returns the indexes to clear.
+  static Set<int> find(List<int> cells, int cols) {
     // Pure logic, no RNG, no state
   }
 }
@@ -161,27 +162,30 @@ class PaylineEvaluator {
 ### GameState — a sealed class is mandatory
 
 ```dart
-/// Represents all possible states of the slot machine.
-/// Transitions: Idle → Spinning → Evaluating → Win|Idle
-///              Idle → Spinning → Evaluating → FreeSpins → Spinning...
+/// Represents all possible states of a level.
+/// Transitions: Ready → Resolving → Ready | Cleared | Failed
+///              Ready → Paused → Ready
 sealed class GameState {
   const GameState();
 }
 
-final class IdleState extends GameState { const IdleState(); }
-final class SpinningState extends GameState {
-  const SpinningState({required this.outcome});
-  final SpinOutcome outcome; // The result is KNOWN before the animation!
+final class ReadyState extends GameState { const ReadyState(); }
+final class ResolvingState extends GameState {
+  const ResolvingState({required this.result});
+  final MoveResult result; // The move is resolved BEFORE the animation!
 }
-final class EvaluatingState extends GameState { const EvaluatingState(); }
-final class WinState extends GameState {
-  const WinState({required this.result});
-  final WinResult result;
+final class ClearedState extends GameState {
+  const ClearedState({required this.score, required this.stars});
+  final int score;
+  final int stars;
 }
-final class FreeSpinsState extends GameState {
-  const FreeSpinsState({required this.remaining, required this.multiplier});
-  final int remaining;
-  final int multiplier;
+final class FailedState extends GameState {
+  const FailedState({required this.score});
+  final int score;
+}
+final class PausedState extends GameState {
+  const PausedState({required this.previous});
+  final GameState previous;
 }
 ```
 
@@ -194,50 +198,51 @@ final class FreeSpinsState extends GameState {
 ```dart
 // ✅ Correct — the HUD only reads
 class HudWidget extends StatelessWidget {
-  final ValueNotifier<int> balance;     // From SlotMachineGame
-  final ValueNotifier<int> bet;         // From SlotMachineGame
-  final ValueNotifier<bool> isSpinning; // From SlotMachineGame
+  final ValueNotifier<int> score;        // From BoardGame
+  final ValueNotifier<int> movesLeft;    // From BoardGame
+  final ValueNotifier<bool> isResolving; // From BoardGame
 
   const HudWidget({
-    required this.balance,
-    required this.bet,
-    required this.isSpinning,
+    required this.score,
+    required this.movesLeft,
+    required this.isResolving,
     super.key,
   });
 
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<int>(
-      valueListenable: balance,
-      builder: (context, bal, _) => Text('$bal', style: ...),
+      valueListenable: score,
+      builder: (context, points, _) => Text('$points', style: ...),
     );
   }
 }
 ```
 
-### Spin button — double-tap protection
+### Primary action — double-tap protection
 
 ```dart
-class SpinButtonWidget extends StatefulWidget {
-  final VoidCallback onSpin;
-  final ValueNotifier<bool> isSpinning;
+class PlayButtonWidget extends StatefulWidget {
+  final VoidCallback onPlay;
+  final ValueNotifier<bool> isResolving;
 
   @override
-  State<SpinButtonWidget> createState() => _SpinButtonWidgetState();
+  State<PlayButtonWidget> createState() => _PlayButtonWidgetState();
 }
 
-class _SpinButtonWidgetState extends State<SpinButtonWidget> {
-  DateTime? _lastTap;
+class _PlayButtonWidgetState extends State<PlayButtonWidget> {
+  final _sinceTap = Stopwatch();
 
   void _handleTap() {
-    final now = DateTime.now();
-    if (_lastTap != null &&
-        now.difference(_lastTap!) < const Duration(milliseconds: 300)) {
+    if (_sinceTap.isRunning &&
+        _sinceTap.elapsed < const Duration(milliseconds: 300)) {
       return; // Debounce
     }
-    _lastTap = now;
-    if (!widget.isSpinning.value) {
-      widget.onSpin();
+    _sinceTap
+      ..reset()
+      ..start();
+    if (!widget.isResolving.value) {
+      widget.onPlay();
     }
   }
 }
@@ -250,32 +255,25 @@ class _SpinButtonWidgetState extends State<SpinButtonWidget> {
 ### AudioService — at most 3 concurrent
 
 ```dart
-/// Manages game audio — max 3 concurrent sounds: BGM + Spin + Effect.
+/// Manages game audio — max 3 concurrent sounds: BGM + Action + Effect.
 /// See .claude/docs/technical-preferences.md for audio spec.
 class AudioService {
   static const int maxConcurrent = 3;
 
   AudioPlayer? _bgmPlayer;
-  AudioPlayer? _spinPlayer;
 
   /// Opt-in: games ship SFX-only by default, so this is a no-op unless a BGM
   /// asset was generated. Keep the method and the Settings toggle regardless —
   /// see .claude/agents/sound-designer.md → "Music is opt-in".
   Future<void> startBgm() async {
     await _bgmPlayer?.stop();
-    _bgmPlayer = await FlameAudio.loopLongAudio('bgm_main.ogg', volume: 0.7);
+    _bgmPlayer = await FlameAudio.loopLongAudio('audio/bgm/bgm_main.wav', volume: 0.7);
   }
 
-  Future<void> playSpinStart() async {
-    await _spinPlayer?.stop();
-    _spinPlayer = await FlameAudio.loop('sfx_reel_spin.ogg', volume: 0.9);
-  }
+  Future<void> playMatch(int cascadeStep) =>
+      FlameAudio.play('audio/sfx/sfx_score.wav', volume: (0.7 + cascadeStep * 0.1).clamp(0, 1));
 
-  Future<void> playSpinStop() async {
-    await _spinPlayer?.stop();
-    _spinPlayer = null;
-    await FlameAudio.play('sfx_reel_stop.ogg');
-  }
+  Future<void> playClear() => FlameAudio.play('audio/sfx/sfx_win_big.wav');
 }
 ```
 
@@ -286,15 +284,15 @@ class AudioService {
 ```dart
 // ✅ Always name the exception type
 try {
-  await loadRtpConfig();
+  await loadLevelData();
 } on FileSystemException catch (e, stack) {
-  logger.severe('RTP config load failed', e, stack);
-  // Fallback to SlotConfig.defaults
+  logger.severe('Level data load failed', e, stack);
+  // Fall back to the bundled level set
 }
 
 // ❌ Forbidden — swallowing errors
 try {
-  await loadRtpConfig();
+  await loadLevelData();
 } catch (e) {
   // silence
 }
@@ -307,14 +305,14 @@ try {
 ### Doc comments — mandatory for public APIs
 
 ```dart
-/// Computes the weighted random outcome for a spin.
+/// Resolves a swap on the board.
 ///
-/// Returns [SpinOutcome] with predetermined symbols for all [reelCount] reels.
-/// The outcome is computed BEFORE animation starts (Stateless Outcomes pattern).
-/// See design/gdd/rtp-math-model.md.
+/// Returns [MoveResult] with every cascade step, the cleared cells and the points earned.
+/// The move is resolved BEFORE the animation starts (logic before animation).
+/// See design/gdd/board-rules.md.
 ///
-/// Throws [InsufficientBalanceException] if [bet] exceeds [balance].
-SpinOutcome computeOutcome({required int bet, required int balance}) { ... }
+/// Throws [IllegalMoveException] if the swap makes no match.
+MoveResult resolveSwap({required int from, required int to}) { ... }
 ```
 
 ### TODO format
@@ -322,7 +320,7 @@ SpinOutcome computeOutcome({required int bet, required int balance}) { ... }
 ```dart
 // TODO(agent-name): Description [TASK-NNN]
 // Example:
-// TODO(mechanics-programmer): Add Near Miss detection [SLOT-42]
+// TODO(mechanics-programmer): Add the colour-bomb special [BOARD-42]
 ```
 
 ---
@@ -332,17 +330,15 @@ SpinOutcome computeOutcome({required int bet, required int balance}) { ... }
 ### The AAA structure — mandatory
 
 ```dart
-test('PaylineEvaluator determines 3-match horizontal win', () {
+test('MatchFinder finds a horizontal run of three', () {
   // Arrange
-  final grid = [[0, 0, 0], [1, 2, 3], [4, 5, 6]]; // Row 0: three cherries
-  final paylines = [[0, 0, 0]]; // The top line
+  final cells = [0, 0, 0, 1, 2, 3, 4, 5, 6]; // Row 0: three bells
 
   // Act
-  final result = PaylineEvaluator.evaluate(grid, paylines);
+  final matched = MatchFinder.find(cells, 3);
 
   // Assert
-  expect(result.winLines, hasLength(1));
-  expect(result.totalMultiplier, equals(SlotConfig.cherry3Multiplier));
+  expect(matched, equals({0, 1, 2}));
 });
 ```
 
@@ -350,9 +346,9 @@ test('PaylineEvaluator determines 3-match horizontal win', () {
 
 | File | Minimum |
 |------|---------|
-| weighted_rng.dart | 95% |
-| payline_evaluator.dart | 95% |
-| slot_config.dart | 90% |
+| board_engine.dart / rules engine | 95% |
+| scoring.dart | 95% |
+| game_rng.dart + level generation | 90% |
 | game_state.dart | 85% |
 | Screens / widgets | 70% |
 
@@ -366,21 +362,21 @@ test('PaylineEvaluator determines 3-match horizontal win', () {
 <type>(<scope>): <description>
 
 Examples:
-feat(slot): add Wild symbol substitution [SLOT-42]
-fix(rng): replace math.Random() with Random.secure() [BUG-7]
-test(payline): add scatter position tests [QA-12]
+feat(board): add the crown special tile [BOARD-42]
+fix(rng): route refills through the seeded GameRng [BUG-7]
+test(board): add cascade resolution tests [QA-12]
 ```
 
 Types: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`, `perf`
-Scopes: `slot`, `rng`, `ui`, `audio`, `vfx`, `balance`, `qa`
+Scopes: `board`, `rng`, `ui`, `audio`, `vfx`, `balance`, `qa`
 
 ### PR checklist
 
 - [ ] dart analyze — 0 errors
 - [ ] flutter test — all green
-- [ ] No `math.Random()` in production code
-- [ ] No hardcoded probabilities
-- [ ] Every game constant in GameConfig / SlotConfig
+- [ ] No `Random()` outside `game_rng.dart` / `vfx_rng.dart`
+- [ ] No wager, currency or chance-based reward (no-gambling.md)
+- [ ] Every game constant in GameConfig
 - [ ] A GDD reference in the doc comment (for a new mechanic)
 - [ ] No allocation in update()/render()
 
@@ -388,8 +384,8 @@ Scopes: `slot`, `rng`, `ui`, `audio`, `vfx`, `balance`, `qa`
 
 ## 10. Forbidden patterns
 
-1. **`math.Random()` or `Random()`** — only `Random.secure()`
-2. **Hardcoded probabilities** outside GameConfig / SlotConfig
+1. **`math.Random()` or `Random()` in game logic** — only the seeded `GameRng` (cosmetics: `VfxRng`)
+2. **Hardcoded spawn weights or budgets** outside GameConfig / level data
 3. **`isPaused = true`** — use `GameState` + `pauseEngine()`
 4. **`await` in `update()` / `render()`** — they must be synchronous
 5. **`BuildContext` in Flame components** — use callbacks
@@ -397,4 +393,5 @@ Scopes: `slot`, `rng`, `ui`, `audio`, `vfx`, `balance`, `qa`
 7. **Allocation in `update()` / `render()`** — pre-initialise
 8. **`dynamic`** outside JSON boundaries
 9. **Inheritance more than 3 levels** below Component
-10. **Changing RTP weights** outside `rtp-config.json` + game-mathematician's approval
+10. **Changing balance numbers** outside the balance config + balance-designer's approval
+11. **Any wager, currency or chance-based reward** — `.claude/rules/no-gambling.md`

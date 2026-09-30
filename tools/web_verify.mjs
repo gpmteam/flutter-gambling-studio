@@ -294,8 +294,8 @@ function findLeafByLabel(nodes, exactLabels, fallbackRe) {
     })[0];
 }
 
-const PRIMARY_PLAY_LABEL = /^(?:play|start|begin|spin|new game|continue|tap to play)\b/i;
-const PRIMARY_ACTION_LABEL = /^(?:spin|play|tap|roll|throw|drop|launch|deal|draw|pull|bet|go|move|open)\b/i;
+const PRIMARY_PLAY_LABEL = /^(?:play|start|begin|new game|continue|tap to play)\b/i;
+const PRIMARY_ACTION_LABEL = /^(?:play|tap|shoot|throw|drop|launch|draw|go|move|next|retry|restart|hint)\b/i;
 
 // ─── the tour ──────────────────────────────────────────────────────────────
 async function main() {
@@ -362,14 +362,14 @@ async function main() {
   await sleep(SETTLE);
   await screenshot('03-game-idle');
 
-  // 4. main action (spin/play/tap) — labeled if possible, else thumb zone again
+  // 4. main action (move/shoot/tap) — labeled if possible, else thumb zone again
   const nodes2 = await readSemantics();
   // Prefer the exact leaf action. Flutter semantics also exposes a composite
   // root label containing the whole HUD; a broad regex can otherwise select
-  // that root and tap its centre instead of the real SPIN control.
+  // that root and tap its centre instead of the real action control.
   const act = findLeafByLabel(
     nodes2,
-    ['spin', 'play', 'tap', 'roll', 'throw', 'drop', 'launch', 'deal', 'draw', 'pull', 'bet', 'go', 'move', 'open'],
+    ['play', 'tap', 'shoot', 'throw', 'drop', 'launch', 'draw', 'go', 'move', 'next', 'retry', 'restart', 'hint'],
     PRIMARY_ACTION_LABEL,
   );
   if (act) { log(`🎯 action button: "${act.label}"`); await tap(act.x, act.y, act.label); }
@@ -419,7 +419,7 @@ async function main() {
     // Best-effort sweep of secondary screens, by label when available.
     const extras = [
       [/settings|options|preferences/i, '06-settings'],
-      [/help|how to play|rules|paytable|odds|info/i, '07-help'],
+      [/help|how to play|rules|info/i, '07-help'],
       [/profile|stats|statistics|leaderboard|records|scores/i, '08-stats'],
     ];
     for (const [re, name] of extras) {
@@ -431,7 +431,7 @@ async function main() {
       if (back) { await tap(back.x, back.y, back.label); await sleep(1200); }
       const extraNodes = await readSemantics();
       // Prefer an actionable leaf over Flutter's composite screen root. The
-      // root often contains every HUD label (including "Paytable and odds")
+      // root often contains every HUD label (including "How to play")
       // and its centre is not a tappable control.
       const item = extraNodes
         .filter((n) => re.test(n.label))

@@ -20,7 +20,7 @@ Automatically restores the development context and points you at the right stage
    desktop/tablet/landscape layout (an older project may have one: plan its removal).
 5. Determine the project's stage:
    - **Nothing yet**: suggest `/start` or `/brainstorm`
-   - **Only a GDD**: suggest `/design-system rtp-weights` or `/generate-asset symbols`
+   - **Only a GDD**: suggest `/design-system board-rules` or `/generate-asset symbols`
    - **A Flutter project but no slot logic**: suggest calling `mechanics-programmer`
    - **A working slot with no sound/VFX**: suggest `juice-artist` and `sound-designer`
    - **The project looks finished**: suggest `/release-checklist`

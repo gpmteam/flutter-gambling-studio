@@ -14,9 +14,9 @@ Update it after every meaningful step.
 
 ```markdown
 <!-- STATUS -->
-Epic: Neon Spin Slot
-Feature: Payline System
-Task: Implement 5-line evaluator
+Epic: Thunder Link
+Feature: Board engine
+Task: Implement the link-chain resolver
 <!-- /STATUS -->
 
 ## Current task
@@ -24,23 +24,23 @@ Task: Implement 5-line evaluator
 
 ## Progress
 - [x] GDD written
-- [x] rtp-config.json → RTP 96.1%
-- [ ] Payline evaluator — in progress
-- [ ] Payline tests
-- [ ] Win animation
+- [x] level-config.json → B1 PASS (L1–3 ≥ 90%, hardest 31%)
+- [ ] Link-chain resolver — in progress
+- [ ] Resolver tests
+- [ ] Clear animation
 
 ## Key decisions
 - Using a sealed class GameState (ADR-001)
-- RNG: Random.secure() through a WeightedRNG singleton
-- 5 paylines (horizontal + diagonal)
+- RNG: one seeded GameRng injected into the board engine
+- Chains of 6+ call down a bolt that clears a column
 
 ## Files in flight
-- lib/systems/payline_evaluator.dart
-- test/systems/payline_evaluator_test.dart
-- design/gdd/payline-system.md
+- lib/systems/board_engine.dart
+- test/systems/board_engine_test.dart
+- design/gdd/board-rules.md
 
 ## Open questions
-- Should Wild count on the diagonal lines?
+- Should diagonal links be allowed on the 7×6 board?
 
 ## Last compaction
 [date and time — updated automatically by the hook]
@@ -101,19 +101,19 @@ The cycle is the same in every category — only the config and the model change
 
 ```bash
 # edit the numbers in JSON → run → read the verdict
-python3 tools/simulate_math.py --model m1 --config design/balance/rtp-config.json --trials 100000
+python3 tools/simulate_balance.py --model b1 --config design/balance/level-config.json --trials 20
 ```
 
-| Category | What `game-mathematician` turns | Model |
-|----------|--------------------------------|-------|
-| C1 | Symbol weights, payouts in `rtp-config.json` | M1 |
-| C2 | House edge, the multiplier formula, the cap | M2 |
-| C3 | Spin event weights, unlock prices, energy regen | M3 |
-| C4 | Base rates, soft/hard pity | M4 |
-| C5 | Round thresholds, modifier strength, income | M5 |
-| C6 | Bucket multipliers, board geometry | M6 |
+| Category | What `balance-designer` turns | Model |
+|----------|-------------------------------|-------|
+| G1 | Symbol kinds, move budgets, targets, collect goals | B1 |
+| G2 | Kinds, layers, empty containers, generator policy | B2 |
+| G3 | Board size, spawn table, goal tier | B3 |
+| G4 | Layouts, shot budgets, target counts | B4 |
+| G5 | Tempo ramp, reaction windows, grace period | B5 |
+| G6 | Level size, constraints, move/time budgets | B6 |
 
-Do NOT keep all the mathematics in the conversation. It lives in files — the config and the
+Do NOT keep all the balance numbers in the conversation. It lives in files — the config and the
 report survive compaction.
 
 ### After /balance-check
@@ -130,4 +130,4 @@ Save this to `active.md` before compacting:
 - The current task and the next step
 - Open questions awaiting a user answer
 - Test status (green/red)
-- The game's category (C1–C6), its math model (M1–M6) and the latest run verdict
+- The game's category (G1–G6), its balance model (B1–B6) and the latest run verdict

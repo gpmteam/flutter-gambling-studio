@@ -7,29 +7,29 @@ globs: ["lib/screens/**/*.dart", "lib/widgets/**/*.dart", "lib/ui/**/*.dart", "l
 
 ## 1. Separating UI state from game state
 
-- **NEVER** store game state (balance, bet, the current spin) in Flutter widgets
+- **NEVER** store game state (score, moves left, the move being resolved) in Flutter widgets
 - The Flutter UI only **reads** state, through a `ValueNotifier` or a `Stream`
 - Game logic lives in Flame components; the UI only displays it
 
 ```dart
 // ✅ CORRECT — the HUD reads through a ValueNotifier
 class HudWidget extends StatelessWidget {
-  final ValueNotifier<int> balance;
-  final ValueNotifier<int> bet;
-  final ValueNotifier<bool> isSpinning;
+  final ValueNotifier<int> score;
+  final ValueNotifier<int> movesLeft;
+  final ValueNotifier<bool> isResolving;
 
   const HudWidget({
-    required this.balance,
-    required this.bet,
-    required this.isSpinning,
+    required this.score,
+    required this.movesLeft,
+    required this.isResolving,
     super.key,
   });
 }
 
-// ❌ FORBIDDEN — the HUD manages the balance itself
+// ❌ FORBIDDEN — the HUD manages the score itself
 class HudWidget extends StatefulWidget {
-  int _balance = 1000; // Not allowed!
-  void _onWin(int amount) => setState(() => _balance += amount); // Not allowed!
+  int _score = 0; // Not allowed!
+  void _onClear(int points) => setState(() => _score += points); // Not allowed!
 }
 ```
 
@@ -140,8 +140,8 @@ owner inactive and cancel timers immediately, but defer disposal of its active
 queued microtask). Guard subsequent notifications against the inactive owner. If a
 callback can add or remove controllers/subscribers, iterate a stable snapshot and skip
 released entries. Snapshot iteration alone does not make notifier disposal reentrant.
-Verify this with two subscribers: the first releases itself on a wallet update, while
-the second still receives the committed balance with no Flutter errors.
+Verify this with two subscribers: the first releases itself on a score update, while
+the second still receives the committed score with no Flutter errors.
 
 ### 2.4 Missing assets
 
@@ -321,7 +321,7 @@ Read and implement `.claude/docs/gameplay-screen-contract.md` for every `GameScr
   `Key('primaryAction')`, and the core control group under `Key('controlDeck')` when present.
 - Compose the field, HUD, and controls as one full-screen phone composition. Do not embed the
   field in a small decorative window above a separate generic information card.
-- Keep the field, essential counters, stake/risk controls, and primary action visible without
+- Keep the field, essential counters (score, moves/time, goal), and primary action visible without
   vertical page scrolling.
 - Verify it at 360×640, 360×800, 390×844, and 430×932 in portrait — the only layout targets.
 
@@ -378,13 +378,13 @@ Add `onUnknownRoute:` as a fallback.
 
 ```dart
 // ❌ The overlay hangs around forever
-game.overlays.add('win');
+game.overlays.add('combo');
 
 // ✅ The overlay closes itself
-game.overlays.add('win');
+game.overlays.add('combo');
 Future.delayed(Duration(seconds: 3), () {
-  if (game.overlays.isActive('win')) {
-    game.overlays.remove('win');
+  if (game.overlays.isActive('combo')) {
+    game.overlays.remove('combo');
   }
 });
 ```
@@ -393,7 +393,7 @@ Future.delayed(Duration(seconds: 3), () {
 
 ## 5. BUTTONS AND INTERACTION
 
-### 5.1 The action button (Spin / Play) — THE COMPLETE PATTERN
+### 5.1 The action button (Play / Shoot / Drop) — THE COMPLETE PATTERN
 
 ```dart
 class ActionButton extends StatefulWidget {
@@ -474,40 +474,30 @@ class _ActionButtonState extends State<ActionButton> with SingleTickerProviderSt
 
 Use monotonic elapsed time (for example `Stopwatch`) for the debounce interval,
 with an injectable elapsed-time source for tests. Device wall-clock corrections must
-not disable Spin until a previous timestamp catches up. Keep UTC/calendar clocks for
+not disable the action until a previous timestamp catches up. Keep UTC/calendar clocks for
 persisted daily eligibility and event dates. When a configured cooldown is zero, bypass
 the interval gate explicitly; a negative wall-clock delta must not enable a disabled
 cooldown. Test a completed action after the debounce has elapsed while the device clock
-moves backward, and test zero-cooldown recovery separately from once-per-date gifts.
+moves backward, and test zero-cooldown recovery separately from once-per-date daily challenges.
 
-### 5.2 Bet +/- — locked while the round runs
+### 5.2 Secondary controls — locked while a move resolves
 
 ```dart
-// ❌ The bet can be changed mid-spin
-ElevatedButton(onPressed: () => bet.value++, child: Text('+'))
+// ❌ A booster can be fired mid-cascade
+ElevatedButton(onPressed: () => useHammer(), child: Text('Hammer'))
 
-// ✅ The bet is locked
+// ✅ Boosters, shuffle and pause are locked while the move resolves
 ValueListenableBuilder<bool>(
-  valueListenable: isSpinning,
-  builder: (_, spinning, __) {
+  valueListenable: isResolving,
+  builder: (_, resolving, __) {
     return IgnorePointer(
-      ignoring: spinning,
+      ignoring: resolving,
       child: AnimatedOpacity(
-        opacity: spinning ? 0.4 : 1.0,
+        opacity: resolving ? 0.4 : 1.0,
         duration: const Duration(milliseconds: 200),
         child: Row(children: [
-          GestureDetector(
-            onTap: () { if (bet.value > GameConfig.minBet) bet.value--; },
-            child: Text('-'),
-          ),
-          ValueListenableBuilder<int>(
-            valueListenable: bet,
-            builder: (_, b, __) => Text('$b'),
-          ),
-          GestureDetector(
-            onTap: () { if (bet.value < GameConfig.maxBet) bet.value++; },
-            child: Text('+'),
-          ),
+          BoosterButton(kind: BoosterKind.hammer, onTap: useHammer),
+          BoosterButton(kind: BoosterKind.shuffle, onTap: shuffle),
         ]),
       ),
     );
@@ -556,19 +546,18 @@ GestureDetector(
 
 ---
 
-## 6. WIN OVERLAYS
+## 6. RESULT AND CELEBRATION OVERLAYS
 
-- The win overlay appears AFTER the animation finishes
-- Duration: small 2 s, big 3 s, mega 4 s
-- Auto-dismiss on a timer, plus tap-to-dismiss
-- 3 tiers:
-  - Small: < 5x the bet — a toast at the bottom, AnimatedCounter, confetti
-  - Big: 5–20x the bet — half-screen, burst particles, fanfare
-  - Mega: > 20x the bet — fullscreen, explosion, camera shake, an epic win stinger (`sfx_win_mega`)
-- The balance updates with an AnimatedCounter (never a jump)
+- The celebration appears AFTER the resolving animation finishes
+- Scaled to significance, from the points/combos the player earned — never money:
+  - Routine: a local pop and a score tick near the cleared pieces
+  - Notable (a big combo, a special created): a contextual callout, burst particles, `sfx_win_big`
+  - Major (level cleared with 3 stars, a new best): a result takeover with stars filling, `sfx_win_mega`
+- Auto-dismiss on a timer, plus tap-to-dismiss; the level-complete screen always offers Next and Retry
+- The score updates with a short count-up only when the gain matters; stable values update directly
 - The overlay does NOT block the back action
-
----
+- No "WIN", "BIG WIN", "JACKPOT" or "PAYOUT" banners — celebrate in the game's own words
+  (CLEARED!, CHAIN x6!, NEW BEST!), see `.claude/rules/no-gambling.md` §5
 
 ## 7. PERSISTENCE (SharedPreferences)
 
@@ -576,7 +565,7 @@ Must be saved:
 - Settings: sound on/off, sfx on/off, vibration on/off
 - Profile: nickname, avatar index
 - Leaderboard: top 10 scores
-- Daily bonus: the date it was last claimed
+- Daily challenge: the date it was last cleared and the streak
 - High score: the best result
 
 **Pattern**: a try-catch around EVERY SharedPreferences call:
@@ -596,7 +585,7 @@ Future<int> getHighScore() async {
 ## 8. ACCESSIBILITY
 
 - The action button: `Semantics(label: 'Start the game')`
-- Balance/score: `Semantics(value: '$balance coins')`
+- Score: `Semantics(value: '$score points')`
 - Text at least 14sp on mobile
 - Text contrast against the background at least 4.5:1
 - Every interactive element at least 48x48

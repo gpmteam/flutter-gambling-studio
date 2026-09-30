@@ -17,7 +17,7 @@ python3 tools/prompt_template.py list --template "$TPL"
 python3 tools/prompt_template.py render --template "$TPL" --id banner-character \
   --set environment="..." --set character="..." --set gameplay="..." \
   --set label_color="..." --set accent="..." --set ball_fx="..." \
-  --set objects="..." --set currency="..." --set palette="..." \
+  --set objects="..." --set foreground_pieces="..." --set palette="..." \
   --out production/store-art/banner-prompt.txt
 python3 tools/prompt_template.py check --template "$TPL" --id banner-character \
   --prompt production/store-art/banner-prompt.txt   # must print PASS before generating
@@ -29,7 +29,7 @@ python3 tools/prompt_template.py check --template "$TPL" --id banner-character \
 |---|---|---|
 | Character lead (`lead_kind: character`) | `banner-character` | `background-character` |
 | Object lead (crown, coin, capsule) | `banner-object` | `background-object` |
-| Mechanic lead (Plinko, wheel) | `banner-object` | `background-mechanic` |
+| Mechanic lead (peg clear, target throw) | `banner-object` | `background-mechanic` |
 
 Never render a character template for a game with no living character in its concept and shipped
 inventory, and never render an object/mechanic template to avoid drawing a character the game has.
@@ -44,10 +44,10 @@ manifest, the reference contract (`design/reference-contract.md`) and the real g
 - `character` — who the lead is and the traits that identify them (costume colours and pattern,
   headwear, face) — the same words as the reference ledger.
 - `lead` — the lead object, or for a mechanic lead the angled gameplay surface.
-- `gameplay` — the real mechanic, its topology and the state in the capture (e.g. "a 5×3 reel
-  set of jester, crown, lute and gem symbols with a winning middle line lit").
+- `gameplay` — the real mechanic, its topology and the state in the capture (e.g. "a 7×8 match board
+  of jester, crown, lute and gem tiles with a cleared three-tile match").
 - `objects` — 4–7 of the game's own shipped objects in left-to-right order.
-- `currency` — "gold coins" or the game's own currency.
+- `foreground_pieces` — the game's own tiles, gems, balls or decorative objects; never money.
 - `label_color`, `accent`, `ball_fx` — the warm display colour for the ball numerals, the
   accent rim-light colour, and the halo/sparkle ring/energy flare taken from the game's FX.
 - `palette` — the game's authentic palette and light sources.
@@ -72,7 +72,7 @@ identity asset to make room.
 ## Banner templates
 
 ```prompt banner-character
-One continuous, fully illustrated horizontal key-art banner for a mobile casino game, set in the
+One continuous, fully illustrated horizontal key-art banner for a mobile casual game with premium key-art visuals, set in the
 game's own world: {{environment}}. Reproduce the supplied original character asset faithfully: it
 is the identity authority for the face, silhouette, costume and colors, and the other images are
 context. The main character, {{character}}, appears large on the left, framed as a torso-to-head
@@ -98,7 +98,7 @@ text, title, logo, wordmark, tagline, device, UI or empty copy space anywhere in
 banner must look finished on its own. Across the whole lower edge, place about 5–7 of the game's
 own objects very large and close to the camera: {{objects}}, overlapping each other in depth and
 cropped by the bottom edge, filling about the lower quarter to third of the image. Under and
-between them, a continuous glittering layer of {{currency}} runs the full width. No floor, fabric,
+between them, a continuous glittering layer of {{foreground_pieces}} runs the full width. No floor, fabric,
 tabletop, podium or drape, and no miniature clutter. Give the scene vivid, high-impact mobile-game
 key-art lighting from the game's authentic palette: {{palette}}. Separate warm and cool hues, add
 clean specular highlights to polished materials, theme-appropriate rim light on primary subjects,
@@ -111,7 +111,7 @@ and premium before compositor grading.
 ```
 
 ```prompt banner-object
-One continuous, fully illustrated horizontal key-art banner for a mobile casino game, set in the
+One continuous, fully illustrated horizontal key-art banner for a mobile casual game with premium key-art visuals, set in the
 game's own world: {{environment}}. There is no character in this game: do not add a person, hand,
 animal, mascot, deity or player silhouette anywhere. The lead, {{lead}}, appears large on the
 left at a three-quarter/3D angle, reproduced faithfully from the attached shipped asset. Beside
@@ -132,7 +132,7 @@ device, UI or empty copy space anywhere in the image; the banner must look finis
 Across the whole lower edge, place about 5–7 of the game's own objects very large and close to the
 camera: {{objects}}, overlapping each other in depth and cropped by the bottom edge, filling about
 the lower quarter to third of the image. Under and between them, a continuous glittering layer of
-{{currency}} runs the full width. No floor, fabric, tabletop, podium or drape, and no miniature
+{{foreground_pieces}} runs the full width. No floor, fabric, tabletop, podium or drape, and no miniature
 clutter. Give the scene vivid, high-impact mobile-game key-art lighting from the game's authentic
 palette: {{palette}}. Separate warm and cool hues, add clean specular highlights to polished
 materials, theme-appropriate rim light on primary subjects, and reflected color between nearby
@@ -163,7 +163,7 @@ inside the left, right and top edges, with clear open space above the headwear a
 Nothing of the head, headwear, shoulders, hands or held objects is cut by an edge of the image.
 Frame the character as a torso-to-head bust facing the viewer, occupying roughly the upper half of
 the image with the face in the upper third. The torso is cut at about the middle of the image by a
-large mound of the game's own objects and glittering {{currency}} that rises from the bottom edge,
+large mound of the game's own objects and glittering {{foreground_pieces}} that rises from the bottom edge,
 so no legs, knees, hips or feet are visible; the character is not standing full length and is not
 flying, floating or leaping. The mound holds {{objects}}, large and close to the camera,
 overlapping each other in depth and cropped by the bottom edge. No floor, fabric, tabletop,
@@ -187,7 +187,7 @@ game: do not add a person, hand, animal, mascot, deity or player silhouette anyw
 {{lead}}, reproduced faithfully from the attached shipped asset, is large and whole in the upper
 half of the image, inside the left, right and top edges with clear open space around it; nothing
 of it is cut by an edge of the image. A large mound of the game's own objects and glittering
-{{currency}} rises from the bottom edge: {{objects}}, large and close to the camera, overlapping
+{{foreground_pieces}} rises from the bottom edge: {{objects}}, large and close to the camera, overlapping
 each other in depth and cropped by the bottom edge. No floor, fabric, tabletop, podium or drape.
 Keep the lower half calmer, softer and lower in contrast than the lead: in the game, the live board
 and its controls are drawn over the middle and lower part of this image. Do not paint a game
@@ -206,7 +206,7 @@ the world of the attached banner: the same environment, palette, lighting, mater
 in a new composition made for a phone screen: {{environment}}. There is no character in this
 game: do not add a person, hand, animal, mascot, deity or player silhouette anywhere. The upper
 half is carried by {{focus}}, whole inside the edges of the image. A soft band of the game's own
-objects and glittering {{currency}} runs along the bottom edge: {{objects}}, overlapping each
+objects and glittering {{foreground_pieces}} runs along the bottom edge: {{objects}}, overlapping each
 other in depth and cropped by the bottom edge. No floor, fabric, tabletop, podium or drape. Keep
 the middle and lower part calm, soft and lower in contrast: in the game, the live board and its
 controls are drawn over it. Do not paint a game board, pegs, buckets, reels, grid, cards, table,

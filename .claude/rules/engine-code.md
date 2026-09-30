@@ -10,23 +10,23 @@ globs: ["lib/game/**/*.dart", "lib/components/**/*.dart", "lib/systems/**/*.dart
 ### HasCollisionDetection — on World, not on FlameGame
 ```dart
 // ✅ CORRECT (Flame 1.18+)
-class SlotMachineWorld extends World with HasCollisionDetection {
+class BoardWorld extends World with HasCollisionDetection {
   // collision detection goes here
 }
 
 // ❌ FORBIDDEN (deprecated in 1.17, removed in 1.18)
-class SlotMachineGame extends FlameGame with HasCollisionDetection { }
+class BoardGame extends FlameGame with HasCollisionDetection { }
 ```
 
 ### CameraComponent — the new API only
 ```dart
 // ✅ CORRECT
 late final CameraComponent camera;
-late final SlotMachineWorld world;
+late final BoardWorld world;
 
 @override
 Future<void> onLoad() async {
-  world = SlotMachineWorld();
+  world = BoardWorld();
   camera = CameraComponent(world: world);
   await addAll([world, camera]);
 }
@@ -40,19 +40,19 @@ camera = Camera(); // Does not exist in Flame 1.18!
 // Flame 1.18: game.world and game.camera are built-in fields.
 // Do not create your own fields named world/camera — those names are reserved.
 
-class SlotMachineGame extends FlameGame {
+class BoardGame extends FlameGame {
   // this.world — already exists (World)
   // this.camera — already exists (CameraComponent)
   // Create typed getters instead:
-  SlotMachineWorld get slotWorld => world as SlotMachineWorld;
+  BoardWorld get boardWorld => world as BoardWorld;
 }
 ```
 
 ### SpawnComponent (Flame 1.15+)
 ```dart
-// ✅ Use it for periodic spawning of symbols/effects
+// ✅ Use it for periodic spawning of hazards/effects
 add(SpawnComponent(
-  factory: (i) => CoinParticle(),
+  factory: (i) => SparkParticle(),
   period: 0.1,
   area: Rectangle.fromLTWH(0, 0, size.x, size.y),
 ));
@@ -60,8 +60,8 @@ add(SpawnComponent(
 
 ### HasTimeScale (Flame 1.16+) — slow down / speed up
 ```dart
-// For a slow-motion effect on a big win
-class ReelComponent extends PositionComponent with HasTimeScale {
+// For a slow-motion effect on a big combo
+class BoardComponent extends PositionComponent with HasTimeScale {
   void slowMotion() => timeScale = 0.3;
   void normalSpeed() => timeScale = 1.0;
 }
@@ -78,36 +78,36 @@ class ReelComponent extends PositionComponent with HasTimeScale {
 
 ## Required patterns
 
-### The reel component
+### The board component
 ```dart
-class ReelComponent extends PositionComponent with HasGameRef<SlotMachineGame> {
+class BoardComponent extends PositionComponent with HasGameRef<BoardGame> {
   // Pre-initialised for update() — no allocation in the hot path
   final _tempVector = Vector2.zero();
 
-  late final List<SymbolComponent> _symbols;
+  late final List<TileComponent> _tiles;
 
   @override
   Future<void> onLoad() async {
     // Load assets ONLY in onLoad
-    _symbols = await _createSymbols();
-    await addAll(_symbols);
+    _tiles = await _createTiles();
+    await addAll(_tiles);
   }
 
   @override
   void update(double dt) {
     // SYNCHRONOUS! No await!
-    if (!_isSpinning) return;
+    if (!_isAnimatingDrop) return;
     _tempVector.setFrom(position);
-    _updateScrollPosition(dt); // No allocation
+    _advanceDrop(dt); // No allocation — plays back an already-resolved cascade
   }
 }
 ```
 
 ### ParticleSystemComponent — limits
 ```dart
-// For wins above 20x the bet
-void _spawnWinParticles(int multiplier) {
-  final count = (multiplier * 5).clamp(20, SlotConfig.maxParticles);
+// For combos of x5 and above
+void _spawnComboParticles(int combo) {
+  final count = (combo * 10).clamp(20, GameConfig.maxParticles);
   add(ParticleSystemComponent(
     particle: Particle.generate(
       count: count,
@@ -115,8 +115,8 @@ void _spawnWinParticles(int multiplier) {
       generator: (i) => AcceleratedParticle(
         acceleration: Vector2(0, 98),
         speed: Vector2(
-          (gameRng.nextDouble() - 0.5) * 200,
-          -gameRng.nextDouble() * 300,
+          (vfxRng.nextDouble() - 0.5) * 200, // cosmetic only — never the gameplay GameRng
+          -vfxRng.nextDouble() * 300,
         ),
         child: CircleParticle(radius: 3, paint: Paint()..color = Colors.amber),
       ),
@@ -128,17 +128,17 @@ void _spawnWinParticles(int multiplier) {
 ### Audio — at most 3 concurrent sounds
 ```dart
 class AudioService {
-  // Only 3 slots: BGM + Spin + Effect
+  // Only 3 channels: BGM + Action + Effect
   static const int maxConcurrentSounds = 3;
 
-  Future<void> playWin(int multiplier) async {
-    await FlameAudio.play('sfx_win_${_winTier(multiplier)}.ogg');
+  Future<void> playClear(int tier) async {
+    await FlameAudio.play('audio/sfx/sfx_win_${_tierName(tier)}.wav');
   }
 
-  // Coin counting with rising pitch
-  Future<void> playCoinCount(int coins) async {
-    final rate = 1.0 + (coins / 100).clamp(0.0, 0.5);
-    await FlameAudio.play('sfx_coins.ogg', volume: 1.0);
+  // Score ticking with rising pitch along a cascade
+  Future<void> playScoreTick(int cascadeStep) async {
+    final rate = 1.0 + (cascadeStep / 10).clamp(0.0, 0.5);
+    await FlameAudio.play('audio/sfx/sfx_score.wav', volume: 1.0);
     // playbackRate is controlled through the AudioPlayer instance
   }
 }
@@ -147,7 +147,7 @@ class AudioService {
 ## Performance
 
 - No allocation in `update()` or `render()` — pre-initialise Vector2, Rect, Paint
-- `SpriteBatch` for more than 20 identical sprites (the symbols on the reels!)
+- `SpriteBatch` for more than 20 identical sprites (the tiles on the board!)
 - `debugMode = true` only in debug builds
 - `FpsTextComponent` only in debug builds
-- At most 200 active particles at once (SlotConfig.maxParticles)
+- At most 200 active particles at once (GameConfig.maxParticles)

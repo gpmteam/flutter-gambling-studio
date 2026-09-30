@@ -2,6 +2,13 @@
 
 Use this contract when proposing a game, generating its assets, or composing its storefront.
 The user's brief and an existing game's actual mechanics and Design DNA are authoritative.
+
+**The studio look.** Games may look like premium casino key art — jewel-toned symbols, gold trim,
+glossy gems, jokers, crowns, deities, fruit-and-seven symbol families — or reproduce a reference
+exactly. That is an art direction, not a mechanic: every game plays as a casual skill game scored
+in points (`.claude/docs/game-categories.md`, `.claude/rules/no-gambling.md`). A slot preview's
+symbols become tiles, its reel frame becomes the board frame, and its reel strips become column
+backing; nothing about it spins for an outcome.
 For matching new-game requests, inspect the relevant previews in `examples-games/` by default
 and read `.claude/docs/game-concept-examples.md`. They are visual references, not runtime assets
 or complete game specifications. A missing reference does not block an unrelated concept.
@@ -13,19 +20,21 @@ local previews. `/autocreate` requests named **Book of Ra**, **Joker**, **Joker 
 Crown**, **Zeus Game**, or **Plinko** must use the exact local reference mapping in
 `game-concept-examples.md`, on the `--from-concept` path as well; do not replace it with a generic
 category reference. Recreate what the preview shows: theme, character, symbol cast, palette,
-board and composition are matched, not reinterpreted. The full rule is "How close to the
-reference — match it" in `game-concept-examples.md`, and it governs the whole concept, not only
-the art. Follow the production limits in `game-concept-examples.md`; suitable source pixels can
-be reused, while branding and unverified paytable values do not carry over. Shining Crown and
-Plinko are object/mechanic-led and must not gain an invented main
-character or mascot.
+frame and composition are matched, not reinterpreted. The full rule is "How close to the
+reference — match it" in `game-concept-examples.md`, and it governs the whole look of the concept.
+The mechanic is the family's casual "Build as" entry (or the user's casual mechanic, or the
+translation of a gambling ask) — never the casino gameplay a preview shows. Follow the production
+limits in `game-concept-examples.md`; suitable source pixels can be reused, while branding and the
+casino interface do not carry over. Shining Crown and Plinko are object/mechanic-led and must not
+gain an invented main character or mascot.
 **Joker** and **Joker Jewels** are two different entries: Joker Jewels resolves to every file in
-the `examples-games/joker-jewels/` folder and to a 5×3 board, never to the plain Joker row's 3×3.
+the `examples-games/joker-jewels/` folder and to the swap match-3 board, never to the plain Joker
+row's tap-blast board.
 
 ## Decide the visual lead before generating
 
 Record `lead_kind: character | object | mechanic`, the lead's identity and runtime role,
-reference paths, traits borrowed, original adaptations, board topology, and supported multiplier
+reference paths, traits borrowed, original adaptations, board topology, and supported combo
 markers in `design/gdd/game-concept.md`. Carry those decisions into `design/art-direction.md`,
 the asset manifest, generation prompts, and `STORE_BRIEF.md`.
 
@@ -39,10 +48,10 @@ poster, map, or progression hub may choose `supporting` or `absent` with a concr
 | Lead | When it fits | Default storefront direction |
 |---|---|---|
 | Character | Zeus, Joker, chicken, another actual character or animal mascot | Recognizable large character on the first panel; action may occupy any remaining space or span panels |
-| Object | Crown, multiplier coin, capsule, treasure, machine is the visual star | Let that asset and the real mechanic drive the composition; when the game has no living character, slides 1–2 show angled authentic gameplay and introduce no person or mascot |
-| Mechanic | Plinko drop, reels, wheel, cash-out trajectory is the attraction | Lead with active play; a board or trajectory may extend through all panels |
+| Object | Crown, jewel, treasure chest, relic, the top tier of a merge chain is the visual star | Let that asset and the real mechanic drive the composition; when the game has no living character, slides 1–2 show angled authentic gameplay and introduce no person or mascot |
+| Mechanic | Peg field and ball trails, a link-chain board, a stacking tower is the attraction | Lead with active play; a board or trajectory may extend through all panels |
 
-A chicken is a character even though it is not a person. A crown or coin is an object even if
+A chicken is a character even though it is not a person. A crown or gem is an object even if
 someone calls it the game's “hero.” Do not invent a mascot just to fill a template. Conversely,
 do include a requested character in the concept, asset plan, and relevant in-game states rather
 than inventing it only for the store. Existing games retain their established lead.
@@ -59,13 +68,14 @@ the source is available. The local `tools/gpt_image.py edit --image <reference> 
 path accepts JPEG and PNG. If the tool caps input count or bytes, select the relevant references
 for each asset and document which ones were used; never silently drop a required identity image.
 Use the resulting coherent assets in the real game, then compare runtime screenshots beside the
-source at the phone sizes. Fix mismatched character traits, symbol identity, background,
-topology and palette before declaring the asset set complete. See "How close to the reference —
+source at the phone sizes. Fix mismatched character traits, symbol identity, background, frame
+and palette before declaring the asset set complete. See "How close to the reference —
 match it" in `game-concept-examples.md`.
 
 Directly reuse an example image or a cleanly isolated element when its pixels are suitable for
 the intended runtime size and the requested reproduction; preserve provenance in the manifest.
-Do not turn a flattened screenshot with UI, title or payout text into a background or sprite.
+Do not turn a flattened screenshot with UI, title, bet panel or payout text into a background or
+sprite.
 When isolation would be visibly poor, regenerate with the source image as a visual input and
 compare again. For an unmapped concept, derive the visual style from its brief and Design DNA.
 
@@ -83,34 +93,33 @@ gesture. Favor impish swagger over a polite elegant courtier. Keep it playful an
 avoid horror, gore, creepy realistic skin, monstrous teeth, or frightening expressions.
 Rich fabrics and gold trim can support the character without making elegance its personality.
 
-### Slot topology
+### Board topology
 
-An unspecified “slot game” request defaults to a classic **3 reels × 3 visible rows (3×3)**,
-not 4×4. A named preview-mapped family overrides that default with its own mapped topology:
-Joker 3×3, Joker Jewels and Book of Ra 5×3, Zeus Game 7×6. Save the topology
-in the concept and the M1 JSON config; implementation, board assets, runtime screenshots, and
-marketing must agree. A requested 5×3 video slot, cluster slot, or an existing different grid
-keeps its documented dimensions. Do not change a shipped game to satisfy a marketing default.
+The mechanic sets the board, not the preview's reels. An unspecified match game (G1) defaults to
+a **7 columns × 8 rows** board; a named preview-mapped family takes the "Build as" topology from
+`game-concept-examples.md` (Zeus 7×6, Joker and Joker Jewels 7×8, Shining Crown 4×4, Book of Ra
+a layered tile pile with a 7-slot tray, Plinko a tilted peg field). Save the topology in the
+concept and the balance config; implementation, board assets, runtime screenshots, and marketing
+must agree. A user's explicit grid keeps its dimensions when the mechanic can be played on it.
+Do not change a shipped game to satisfy a marketing default.
 
-### Multiplier coins
+### Combo markers
 
-Prefer prominent `x5` and `x10` coins/badges in runtime rewards when the theme and actual
-mechanics support those values. Coin material and edging follow the
-game: royal jewel medallion, playful jester chip, charged Plinko token, and so on.
-At new-concept design time, prefer real x5/x10 reward tiers when they suit the mechanic and have
-the game-mathematician verify the resulting model before generating their assets. This is a
-concept choice, not permission for store generation to alter an existing game's payouts.
-Record each marker's exact config/paytable source and meaning in the manifest. A total payout,
-per-line multiplier, bonus modifier, and ten-pull count are different meanings; do not substitute
-one for another or imply a guaranteed reward. If x5/x10 do not exist, use a supported value or
-unlettered objects for runtime assets. Never change balance just to justify a promotional coin.
+Prefer prominent `x2`, `x5` and `x10` combo badges in runtime feedback when the scoring model has
+a combo multiplier on points (a long chain, a cascade, a multi-line clear). Badge material and
+edging follow the game: royal jewel medallion, playful jester token, charged lightning orb, and so
+on. A marker always shows a points multiplier the player just *earned by play* — never a random
+multiplier, never a prize, never anything convertible. Record each marker's exact scoring source
+in the manifest. If the game has no combo multiplier, use unlettered objects for runtime assets.
+Never change balance just to justify a promotional badge.
 
 For `/store-screenshots`, every generated game's store screenshot set instead includes five
-theme-matched background balls marked `x5`, `x10`, `x25`, `x50` and `x100`, regardless of its
-paytable. They are store-only scene elements: do not insert them into real gameplay captures,
-imply those tiers are reachable, or alter game math to justify them. Build their shape, material,
-palette and light from the current Design DNA. For every C1-C6 category and lead kind, make each
-ball a prominent secondary subject, starting near 35-40% of the final portrait panel width.
+theme-matched background combo balls marked `x5`, `x10`, `x25`, `x50` and `x100`, regardless of
+the game's combo tiers. They are store-only scene decoration: do not insert them into real
+gameplay captures, imply those tiers are reachable, present them as prizes, or alter the scoring
+model to justify them. Build their shape, material, palette and light from the current Design
+DNA. For every G1–G6 category and lead kind, make each ball a prominent secondary subject,
+starting near 35-40% of the final portrait panel width.
 The flying balls are mandatory: all five appear in the banner and the panorama (and any
 `--panels 0` showcase background), and every panorama panel, including the character's, carries
 at least one. Scatter them in flight at varied heights and depths around the character and across
@@ -122,7 +131,7 @@ These short, verified runtime game-object inscriptions and the five store-only b
 are exceptions to the no-baked-copy rule.
 Keep ordinary UI and marketing text in code/compositor typography. For runtime assets, check
 exact lettering at runtime size and derive it from the same config value; do not recolor a
-symbol to invent a new payout identity. Store-only ball labels are never code/compositor
+symbol to invent a new tile identity. Store-only ball labels are never code/compositor
 typography: the image model letters them from the exact labels written in the prompt, in the same
 call that paints the scene. Check all five inscriptions at final screenshot size against the
 required visual set.
@@ -131,7 +140,8 @@ required visual set.
 
 Plan every panel as a readable crop of one continuous scene. Choose positions and spans from
 the mechanic, aspect ratio, and visual lead. Examples include character-left/gameplay-right-two,
-full-width active Plinko, object-led reels across all three, or a contained field on any panel.
+full-width active peg field, an object-led jewel board across all three, or a contained field on
+any panel.
 The middle panel has no privileged role. Multiple play fields are allowed when they depict
 real, coherent states and each remains readable; one continuous field is often stronger.
 Generate the feature banner first, then the panorama with that banner attached as world context.
@@ -139,11 +149,12 @@ Each scene is one image that already contains the character, gameplay, foregroun
 labelled multiplier balls: attach a shipped ball/coin/orb asset as the ball model and write the
 exact labels into the prompt, so the image model paints and letters the balls in the scene.
 Nothing is pasted or lettered onto generated art by script. Give the image generator the real
-active gameplay capture as context for the mechanic, symbols, topology and outcome; have it render
-gameplay naturally at a three-quarter/3D angle within the same image as the environment and
+active gameplay capture as context for the mechanic, symbols, topology and scoring moment; have it
+render gameplay naturally at a three-quarter/3D angle within the same image as the environment and
 foreground.
 Do not paste the capture or a derived board plate into the panorama, or leave a placeholder
-opening for a later gameplay insert. Reject generated gameplay that changes the real outcome.
+opening for a later gameplay insert. Reject generated gameplay that changes the real mechanic —
+a match board redrawn as spinning reels is a failure.
 
 When the game has a main character, show that character from torso to head in the banner and
 the panorama, including enough torso to read the costume and pose. This framing is mandatory.
@@ -161,24 +172,25 @@ For an object/mechanic-led game with no living character in its concept and ship
 the first two carousel slides are gameplay-led. Show the authentic board or mechanic at a readable
 three-quarter/3D angle in each crop, or use one continuous angled gameplay surface with meaningful
 play visible in both. Do not invent a human, hand, animal, mascot or player silhouette, and do not
-use a decorative object-only first slide. Preserve the real topology, symbols and resolving state.
+use a decorative object-only first slide. Preserve the real topology, symbols and scoring state.
 Character-led games keep their existing character-first defaults.
 
 Boards may cross any seams. Put cuts through noncritical housing, gaps, or background; keep
-faces, decisive symbols, multiplier inscriptions, bucket outcomes, and critical interaction
-clear of the actual gaps. Review both the assembled panorama and the gapped carousel. If a
+faces, decisive symbols, combo inscriptions, targets, and critical interaction clear of the
+actual gaps. Review both the assembled panorama and the gapped carousel. If a
 critical region cannot survive a proposed span, move/scale the composition or change the cuts.
 
 Use one visual review of the final crops; numeric composition bounds are optional diagnostics.
 The background may be colorful and luminous while staying subordinate through softer focus and
 lower local contrast.
 
-Frame the lower edge like close-up casino key art: roughly 5–7 of the game's own objects across a
-three-panel scene, each very large and near the camera, overlapping in depth and cropped by the
-bottom edge, over a continuous glittering layer of the game's gold coins or currency that runs the
-full width. Keep each object's silhouette readable. Avoid miniature clutter and any supporting
-surface beneath the objects; no floor, fabric, tabletop or drape. Keep selected multiplier balls
-flying in front of the gameplay: at least two must visibly cover part of the board or mechanic in
+Frame the lower edge like close-up slot-style key art: roughly 5–7 of the game's own objects
+across a three-panel scene, each very large and near the camera, overlapping in depth and cropped
+by the bottom edge, over a continuous glittering layer of the game's gold treasure (gold, gems and
+sparkle as decoration — never a currency the game has) that runs the full width. Keep each
+object's silhouette readable. Avoid miniature clutter and any supporting surface beneath the
+objects; no floor, fabric, tabletop or drape. Keep selected multiplier balls flying in front of
+the gameplay: at least two must visibly cover part of the board or mechanic in
 the marketing scene. Balls may obscure anything in the scene except the main character; keep
 every ball outside the player/hero character silhouette. For lighting, use the game's
 authentic palette with strong warm/cool separation, clean specular highlights, local reflected

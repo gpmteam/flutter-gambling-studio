@@ -1,0 +1,33 @@
+{
+  "game_name": "Selftest Crown Merge",
+  "model": "b3",
+  "rule": "slide",
+  "size": 4,
+  "tier_chain": [
+    "cherry",
+    "lemon",
+    "bell",
+    "clover",
+    "horseshoe",
+    "bar",
+    "seven",
+    "diamond",
+    "crown"
+  ],
+  "spawn": [
+    {
+      "tier": 1,
+      "weight": 9
+    },
+    {
+      "tier": 2,
+      "weight": 1
+    }
+  ],
+  "goal_tier": 9,
+  "seconds_per_move": 1.2,
+  "player_skill": 0.6,
+  "points": {
+    "per_merge_tier": 10
+  }
+}

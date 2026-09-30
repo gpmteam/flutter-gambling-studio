@@ -24,7 +24,7 @@ makes (genre/theme agnostic — everything visual comes from the arguments):
             visibly cover gameplay while keeping the player/hero unobscured.
             Object/mechanic leads need no invented character. The scene carries
             no marketing copy. Store-only multiplier balls may use x5/x10/x25/
-            x50/x100 even when they are absent from the game's paytable; they
+            x50/x100 even when they are absent from the game's scoring config; they
             are not claims about actual gameplay. Marketing lettering across a
             panel boundary is cut by the store's gutters, and a lockup inside
             one panel breaks the single-picture illusion.

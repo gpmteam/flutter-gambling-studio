@@ -24,14 +24,14 @@ The player reaches a verdict in the first minute. This is the most important are
   feedback occur within the first 10 seconds after launch.
 - **Opening state ≤ 2 s**, auto-advancing. It may be animated or deliberately direct according to
   the Design Signature; it must not hold the player on an inert branding image.
-- **The menu sells the game**: it implements the recorded memorable interface idea and M/O/R
+- **The menu sells the game**: it implements the recorded memorable interface idea and M/O/P
   recipe, so the player understands the world and route to play before acting. A character,
   object, mechanic, scene, path, machine facade, shelf, or typographic/poster composition can
   lead. Do not invent a mascot or force a centered one-third-height centerpiece. V19 checks the
   documented attention order and intentional composition, not a universal subject placement.
-- The first launch does not greet the player with emptiness: starting resources are credited, the
-  first playable path is available, and the next optional reward/progression route is discoverable
-  without forcing a daily-bonus badge into every menu composition.
+- The first launch does not greet the player with emptiness: the first level is ready to play,
+  the first playable path is obvious, and the next progression route (the level map, the daily
+  challenge) is discoverable without forcing a badge into every menu composition.
 
 ## 2. Responsiveness (response windows)
 
@@ -40,8 +40,8 @@ A professional game answers EVERY touch inside hard time windows:
 | Event | Window | What exactly |
 |-------|--------|--------------|
 | Activating any control | ≤ 100 ms | Immediate visible/tactile acknowledgement from the control's documented feedback role |
-| The main game action | ≤ 100 ms | Commitment feedback starts instantly; the resolved outcome remains predetermined |
-| The round result | ≤ 2 s after the action | Instant rounds (C2/C4); reel/wheel animation up to 3 s |
+| The main game action | ≤ 100 ms | Commitment feedback starts instantly; the rules engine has already resolved the move |
+| The move result | ≤ 2 s after the action | A move resolves and its cascade/merge/shot plays back within 2 s; long chains may run to 3 s |
 | Result feedback | immediately on the result | Field, HUD, audio/haptics, and overlays change coherently where each is applicable |
 | Ordinary screen transition | 0–400 ms | Direct/standard is valid; longer sequences are reserved for recorded dramatic states and remain skippable/reduced-motion safe |
 
@@ -90,8 +90,8 @@ The game must visibly respond to input and state changes. Continuous ambient mot
 ## 7. Product completeness (not a demo)
 
 - Content: N > 1 levels/stages; 2–3 modes; progression with real unlocks.
-- The economy closes: earn → spend → receive visible value (a skin, a booster).
-- Achievements/daily bonus work and are discoverable from the menu or its documented hub/navigation
+- Progression closes: play → earn stars/milestones → unlock visible value (a world, a theme, an album page).
+- Achievements/daily challenge work and are discoverable from the menu or its documented hub/navigation
   model; they do not require a universal icon row.
 - All 12+ screens are complete; empty states speak in the game's voice.
 - Game over is not a dead end: instant restart + a path to the menu + a rewarded continue if one exists.
@@ -114,8 +114,9 @@ The game must visibly respond to input and state changes. Continuous ambient mot
 These duplicate the studio's critical rules; here they act as a final checklist:
 
 - Crashes are impossible on every path (a 20/20 crash-prevention audit).
-- GameState is a sealed class, stateless outcomes hold, GameConfig is the single source of constants.
-- Gambling: Random.secure(), RTP 95–97%, disclaimer + responsible play.
+- GameState is a sealed class, logic-before-animation holds, GameConfig is the single source of constants.
+- No gambling: no wagers, no currency, no chance-based rewards (`.claude/rules/no-gambling.md`);
+  the balance model PASSES; one seeded `GameRng`.
 - A double click or spam on the main button does not break the state.
 - Every player-facing string is in English (unless the user explicitly asked otherwise) and
   free of untranslated placeholders.

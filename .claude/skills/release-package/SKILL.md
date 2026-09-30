@@ -125,15 +125,15 @@ validation, `89 50 4E 47`).
 | 04 | 04-game-action-start.png | The start of the main action | Tap the action button |
 | 05 | 05-game-action-mid.png | The middle of the action (animation) | Sleep 1 after the start |
 | 06 | 06-game-action-end.png | The end of the action | Sleep 3 after the start |
-| 07 | 07-game-win-small.png | The small win overlay (if a win of ≤ 5x occurred) | Wait for the overlay |
-| 08 | 08-game-win-big.png | The big win overlay (try several actions) | Up to 10 attempts |
-| 09 | 09-paytable.png | The rules/payouts screen | Back → menu → Help/Paytable |
+| 07 | 07-game-combo.png | An earned combo callout | Wait for the overlay |
+| 08 | 08-level-complete.png | A completed level or new best | Up to 10 attempts |
+| 09 | 09-level-map.png | The level map | Back → menu → Level Map |
 | 10 | 10-settings.png | Settings | Back → menu → Settings |
 | 11 | 11-help.png | The guide | Back → menu → Help |
-| 12 | 12-daily-bonus.png | Daily bonus | Back → menu → Daily Bonus |
+| 12 | 12-daily-challenge.png | Daily challenge | Back → menu → Daily Challenge |
 | 13 | 13-leaderboard.png | The leaderboard | Back → menu → Leaderboard |
 | 14 | 14-profile.png | The profile | Back → menu → Profile |
-| 15 | 15-insufficient-funds.png | Insufficient funds (optional) | Drop the balance below the bet, then tap |
+| 15 | 15-level-failed.png | A failed level / run over | Play until moves/time/shots run out |
 | 16 | 16-game-paused.png | Paused (if it exists) | System back / the pause button |
 
 **The navigation coordinates** come from `adb shell wm size` (as in emulator-test).

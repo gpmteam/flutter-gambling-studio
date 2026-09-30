@@ -18,12 +18,12 @@ SPEC.loader.exec_module(prompt_template)
 BANNER_VALUES = {
     "environment": "a purple carnival stage with bunting and confetti",
     "character": "a belled-cap jester in a red and gold striped costume",
-    "gameplay": "a 5x3 reel set of jester, crown, lute and gem symbols with the middle line lit",
+    "gameplay": "a 7x8 match board of jester, crown, lute and gem tiles with a cleared three-tile match",
     "label_color": "warm gold",
     "accent": "magenta",
     "ball_fx": "confetti sparkle ring",
     "objects": "a red faceted gem, a cyan faceted gem, a blue orb, a gold crown, a lute",
-    "currency": "gold coins",
+    "foreground_pieces": "glossy gem tiles",
     "palette": "purple, gold and cyan under warm stage lights",
 }
 

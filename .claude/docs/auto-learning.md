@@ -12,7 +12,7 @@ must invoke `/auto-learn` on a concrete reusable finding and process pending ite
 
 ## When to trigger
 
-- A failed build, asset review, runtime check, math verification, or store composition review
+- A failed build, asset review, runtime check, balance verification, or store composition review
   exposes a reusable framework gap after the immediate task has been corrected.
 - A user correction reveals a wrong default, conflicting guidance, or a missing contextual rule.
 - A measured alternative produces the same or better result faster or with fewer retries.

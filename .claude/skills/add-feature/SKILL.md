@@ -1,6 +1,6 @@
 ---
 name: add-feature
-description: "Adds a new feature to a finished gambling game. C1: Wild symbols, free spins, a jackpot. C2: auto-bet, a new risk profile. C3: a new spin event type, a board season. C4: a guarantee on an x10, a new rarity. C5: a new modifier. C6: a special bucket, a jackpot gate."
+description: "Adds a new feature to a finished casual game. G1: a new special or blocker. G2: undo or hints. G3: a new tier or milestone. G4: a new target type. G5: a new hazard. G6: a new rule. Any category: a daily challenge, achievements, a collection page, a new world. Never a wager, currency or chance-based reward."
 user-invocable: true
 allowed-tools: Bash, Read, Edit, Write, Agent
 argument-hint: "<feature-name>"
@@ -12,43 +12,45 @@ The correct way to add a new mechanic to a finished game.
 
 ## Instructions
 
-1. Read `design/gdd/game-concept.md`, the **Classification** block — the category (C1–C6),
-   the mathematical model (M1–M6) and the path to its config.
+1. Read `design/gdd/game-concept.md`, the **Classification** block — the category (G1–G6),
+   the balance model (B1–B6) and the path to its config.
 
-2. Ask the user:
+2. Check the feature against `.claude/rules/no-gambling.md`. A wager, a currency, a shop, a
+   chance-based reward (spins, chests, packs, scratch reveals) or a casino game is not added; offer
+   the casual alternative (a milestone reward, a daily challenge, an album page) instead.
+
+3. Ask the user:
    - How does the feature work?
-   - How often should it appear or fire?
-   - How much does it affect the model's target metric?
+   - Where does it appear (which levels/worlds, which mode)?
+   - How much should it change difficulty?
 
-3. **Update the mathematical model's config** — a feature almost always changes the numbers:
+4. **Update the balance config** — a feature almost always changes the numbers:
 
    | Category | Config | What typically changes |
    |----------|--------|------------------------|
-   | C1 | `design/balance/rtp-config.json` | weights, payouts, the `bonus` block |
-   | C2 | `design/balance/rtp-config.json` | house edge, the multiplier formula, the cap |
-   | C3 | `design/balance/economy-config.json` | `spin_events[]`, `unlock_prices[]`, regeneration |
-   | C4 | `design/balance/gacha-config.json` | `rarities[]`, `hard_pity`, soft pity |
-   | C5 | `design/balance/run-config.json` | `modifiers[]`, `round_targets[]`, income |
-   | C6 | `design/balance/physics-config.json` | `bucket_multipliers[]`, geometry |
+   | G1 | `design/balance/level-config.json` | kinds, budgets, targets, blockers per level |
+   | G2 | `design/balance/level-config.json` | layout size, kinds, par, generator policy |
+   | G3 | `design/balance/endless-config.json` | the tier chain, spawn weights, goal tier |
+   | G4 | `design/balance/level-config.json` + bot report | layouts, shot budgets, targets |
+   | G5 | `design/balance/endless-config.json` | the tempo ramp, hazards, grace period |
+   | G6 | `design/balance/level-config.json` + bot report | constraints, sizes, par |
 
-4. **Recompute the mathematics** — before writing the code, not after:
+5. **Verify the balance contract** before code, and rerun after implementation:
    ```bash
-   python3 tools/simulate_math.py --model [m1-m6] --config design/balance/[file].json
+   python3 tools/simulate_balance.py --model [b1-b6|report] --config design/balance/[file].json
    ```
-   - Call `game-mathematician` to bring the metric back into its target window.
+   - Call `balance-designer` to bring the curve back into its windows.
    - Run `/balance-check` to confirm it and write the report.
-   - A feature that knocks the metric out of its window does not reach the code until it is balanced.
+   - Use the built-in simulator or the existing engine bot. If new rules need a bot that does
+     not yet exist, record the windows/data/bot plan first and build it with the rules engine.
+     A final PASS from the actual new rules is required before integration/release; never
+     substitute a fabricated report or an old rules simulation for this evidence.
 
-5. **Implementation**: call `mechanics-programmer`. They read the new values from the config —
+6. **Implementation**: call `mechanics-programmer`. They read the new values from the config —
    not one of the feature's numbers appears as a Dart literal.
 
-6. **Check the compliance consequences** (`.claude/rules/responsible-gaming.md`):
-   - The feature adds a new random award for currency → update the odds disclosure screen.
-   - The feature changes payouts → update the paytable/rules so what is shown matches the config.
-   - The feature adds a purchase → for C5 the relaxed profile automatically becomes the full one.
-
 7. Any new player-facing copy is written in English (unless the user explicitly asked for the
-   game in another language).
+   game in another language), and uses the game's own words — never gambling vocabulary.
 
 8. Create an issue in `production/session-state/` and call `/team-dev` for the full implementation.
 

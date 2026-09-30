@@ -11,18 +11,18 @@ personas. When a task needs specialised behaviour, Codex should:
 |------|------|----------------|
 | `creative-director` | `.claude/agents/creative-director.md` | Concept, pillars, visual direction |
 | `technical-director` | `.claude/agents/technical-director.md` | ADRs, architectural conflicts, choosing patterns |
-| `game-mathematician` | `.claude/agents/game-mathematician.md` | RTP, weights, difficulty, scoring |
+| `balance-designer` | `.claude/agents/balance-designer.md` | Level curves, move/shot budgets, tempo ramps, scoring, star thresholds, `tools/simulate_balance.py` |
 | `game-designer` | `.claude/agents/game-designer.md` | GDD, mechanic rules, progression |
-| `mechanics-programmer` | `.claude/agents/mechanics-programmer.md` | Flame game logic, RNG, physics, spawning |
-| `meta-systems-programmer` | `.claude/agents/meta-systems-programmer.md` | SaveService, Economy, Progression, Achievements, Analytics/Ads/IAP abstractions (Agent E in /autocreate) |
+| `mechanics-programmer` | `.claude/agents/mechanics-programmer.md` | Pure rules engine, seeded `GameRng`, Flame logic, physics, spawning |
+| `meta-systems-programmer` | `.claude/agents/meta-systems-programmer.md` | SaveService, Progression, Achievements, Collection, Analytics/Ads/IAP abstractions (Agent E in /autocreate) |
 | `art-director` | `.claude/agents/art-director.md` | Visual consistency of the asset set: AR1–AR11 vision review, regeneration of rejects (/asset-review, Phase 3.6) |
-| `juice-artist` | `.claude/agents/juice-artist.md` | VFX, particles, win feel, motion + Gameplay Feel Pass (Phase 6.5) |
+| `juice-artist` | `.claude/agents/juice-artist.md` | VFX, particles, match/combo/clear feel, motion + Gameplay Feel Pass (Phase 6.5) |
 | `lead-programmer` | `.claude/agents/lead-programmer.md` | Architecture, code review, refactoring control |
 | `performance-analyst` | `.claude/agents/performance-analyst.md` | FPS, memory, batching, hot-path analysis |
 | `ui-programmer` | `.claude/agents/ui-programmer.md` | Flutter screens, HUD, anti-slop UI |
 | `sound-designer` | `.claude/agents/sound-designer.md` | SFX (BGM is opt-in), flame_audio, pitch scaling |
 | `qa-tester` | `.claude/agents/qa-tester.md` | Test plans, edge cases, validation |
-| `release-manager` | `.claude/agents/release-manager.md` | Release gate, final checklist |
+| `release-manager` | `.claude/agents/release-manager.md` | Release gate, no-gambling audit, final checklist |
 | `auto-learner` | `.claude/agents/auto-learner.md` | Evidence-backed framework improvements on isolated review branches; human merge only |
 
 ## Recommendations for Codex

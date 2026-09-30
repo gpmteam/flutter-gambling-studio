@@ -1,9 +1,9 @@
 ---
 name: prototype
-description: "Creates quick, isolated Flutter code for testing juiciness — spin, bounce and glow animations."
+description: "Creates quick, isolated Flutter code for testing juiciness — cascade, merge, bounce and glow animations."
 user-invocable: true
 allowed-tools: Bash, Read, Edit, Write
-argument-hint: "[mechanic-name] (e.g. spin-bounce, glow-effect)"
+argument-hint: "[mechanic-name] (e.g. merge-bounce, glow-effect)"
 ---
 
 # `prototype` — the juiciness lab

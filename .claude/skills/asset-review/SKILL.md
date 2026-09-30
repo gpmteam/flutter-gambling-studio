@@ -11,7 +11,7 @@ allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Agent
 Read `.claude/docs/visual-context.md` before planning or reviewing visuals. For a matching
 new-game request, inspect the relevant `examples-games/` previews and read
 `.claude/docs/game-concept-examples.md`. Carry the lead kind, references/adaptations, exact
-board topology, Joker expression (when relevant), and verified multiplier-coin meanings from
+board topology, Joker expression (when relevant), and verified combo-marker meanings from
 the concept into the art direction, asset manifest and prompts. Classic unspecified slots
 use 3×3; store gameplay placement is flexible and object-led games need no invented character.
 

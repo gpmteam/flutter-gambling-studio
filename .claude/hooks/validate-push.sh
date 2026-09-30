@@ -14,9 +14,9 @@ if echo "$INPUT_JSON" | grep -qE '"git push.*main|git push.*master|git push --fo
   echo ""
   echo "⚠️  WARNING: attempting to push to a protected branch!"
   echo "   Make sure that:"
-  echo "   1. /balance-check passed (RTP within 95-97%)"
+  echo "   1. /balance-check passed for the whole B1–B6 difficulty curve"
   echo "   2. /release-checklist has been run"
-  echo "   3. There is no state leakage between spins"
-  echo "   4. The RNG uses Random.secure() everywhere"
+  echo "   3. There is no state leakage between moves, levels or retries"
+  echo "   4. Gameplay uses one seeded GameRng; no wagers, currency or random rewards"
   echo ""
 fi

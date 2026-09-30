@@ -2,7 +2,7 @@
 
 When the user types a slash command (`$name` or `/name`), Codex must treat it as a call to the
 matching runbook in `.claude/skills/`. For how the Claude mechanics (Agent tool, Skill tool,
-hooks, vision, image generation) are adapted, see `AGENTS.md` → "Execution Model".
+hooks, vision, image generation) are adapted, see `AGENTS.md` and the invoked runbook.
 
 All commands inherit `.claude/docs/mobile-first-contract.md`: games are portrait phone games,
 touch only, with no tablet, desktop or landscape layout.
@@ -12,9 +12,9 @@ touch only, with no tablet, desktop or landscape layout.
 | Command | Skill file | Purpose |
 |---------|------------|---------|
 | `/start` | `.claude/skills/start/SKILL.md` | Onboarding, routing, choosing the next step |
-| `/brainstorm` | `.claude/skills/brainstorm/SKILL.md` | Interactive mini-game concept |
-| `/auto-idea` | `.claude/skills/auto-idea/SKILL.md` | Auto-generate an idea from the 32 archetypes A–AF across 6 categories (incl. Classification, Reference Bar, Design DNA, Production Plan) |
-| `/autocreate` | `.claude/skills/autocreate/SKILL.md` | **The Zero-to-Production pipeline.** In Codex the three "sessions" run as three checkpoints of ONE session: Phases 1–3.8 → handoff-1 → `autocreate-implement` (Phases 4–10.7) → handoff → `autocreate-finalize` (Phases 10.5–12). The "5 parallel agents" of Phase 4 become sequential persona passes A→E→D→B→C. Assets are PNG via GPT Image 2: the built-in tool, or `tools/gpt_image.py` in the headless CLI; simple assets go on a flat chroma-key background + `tools/cutout.py` |
+| `/brainstorm` | `.claude/skills/brainstorm/SKILL.md` | Interactive casual game concept |
+| `/auto-idea` | `.claude/skills/auto-idea/SKILL.md` | Auto-generate an idea from the 28 archetypes A–AB across 6 categories (incl. Classification, Reference Bar, Design DNA, Production Plan) |
+| `/autocreate` | `.claude/skills/autocreate/SKILL.md` | Three sessions: pre-production, implementation and finalization (including campaign art at Phase 10.4). Follow the runbook's fresh-context handoffs and file checkpoints; use inline persona passes only where delegation is unavailable. PNG through the built-in image tool or `tools/gpt_image.py`; native packaging remains an explicit run. |
 | `/autocreate-implement` | `.claude/skills/autocreate-implement/SKILL.md` | Session 2 (implementation, Phases 4–10.7) — also the manual restart after a failure (`--resume`) |
 | `/autocreate-finalize` | `.claude/skills/autocreate-finalize/SKILL.md` | Session 3 (runtime + soak, playtest, release-eng PREP, report) — also a manual restart |
 | `/continue-project` | `.claude/skills/continue-project/SKILL.md` | Resume work from the current state |
@@ -22,7 +22,6 @@ touch only, with no tablet, desktop or landscape layout.
 | `/design-system` | `.claude/skills/design-system/SKILL.md` | A GDD for one individual mechanic |
 | `/prototype` | `.claude/skills/prototype/SKILL.md` | A quick prototype of feel and juiciness |
 | `/team-dev` | `.claude/skills/team-dev/SKILL.md` | Orchestrate a multi-disciplinary team (in Codex: sequential persona passes) |
-| `/team-gambling` | `.claude/skills/team-gambling/SKILL.md` | Alias of `/team-dev` |
 | `/add-feature` | `.claude/skills/add-feature/SKILL.md` | Add a new feature to an existing game |
 
 ## Assets
@@ -43,8 +42,8 @@ touch only, with no tablet, desktop or landscape layout.
 | `/code-review` | `.claude/skills/code-review/SKILL.md` | Architectural and gameplay review |
 | `/ui-audit` | `.claude/skills/ui-audit/SKILL.md` | Anti-slop audit (100+ checks) + auto-fix; measured against `.claude/docs/quality-bar.md` |
 | `/emulator-test` | `.claude/skills/emulator-test/SKILL.md` | Runtime verification. **Default platform: Chrome/Web** (headless, `tools/web_verify.mjs`, no emulator). Android ADB is an explicit fallback via `--platform android` |
-| `/playtest` | `.claude/skills/playtest/SKILL.md` | **Deep gameplay verification**: actually plays through CDP, checks P1–P10 (numbers change, win/lose paths, living board, progression, leaks). Phase 10.6 in finalize |
-| `/balance-check` | `.claude/skills/balance-check/SKILL.md` | RTP, difficulty curve, full-curve content validation |
+| `/playtest` | `.claude/skills/playtest/SKILL.md` | **Deep gameplay verification**: actually plays through CDP, checks P1–P10 (score changes, clear/fail paths, responsive board, progression, leaks). Phase 10.6 in finalize |
+| `/balance-check` | `.claude/skills/balance-check/SKILL.md` | Balance model B1–B6 via `tools/simulate_balance.py`: level curve, par, run length, reflex ramp |
 | `/perf-profile` | `.claude/skills/perf-profile/SKILL.md` | FPS, memory, particles, audio |
 | `/tech-debt` | `.claude/skills/tech-debt/SKILL.md` | The technical debt register |
 | `/auto-learn` | `.claude/skills/auto-learn/SKILL.md` | Record, implement, validate and push bounded evidence-backed learning proposals; owner merges |
@@ -55,7 +54,7 @@ touch only, with no tablet, desktop or landscape layout.
 
 | Command | Skill file | Purpose |
 |---------|------------|---------|
-| `/release-checklist` | `.claude/skills/release-checklist/SKILL.md` | GO/NO-GO checklist (release-manager persona; takes the playtest and asset-review verdicts into account) |
+| `/release-checklist` | `.claude/skills/release-checklist/SKILL.md` | GO/NO-GO checklist (release-manager persona; no-gambling gate; takes the playtest and asset-review verdicts into account) |
 | `/release-engineering` | `.claude/skills/release-engineering/SKILL.md` | Icons/splash/version/signed AAB/store metadata/CI. Inside the pipeline: only `--prep-only --no-keystore` |
 | `/release-package` | `.claude/skills/release-package/SKILL.md` | Screenshots + release APK/AAB + `flutter clean` + an archive in `project_zip/`. **An explicit user action**, NOT an automatic call from the pipeline |
 | `/store-screenshots` | `.claude/skills/store-screenshots/SKILL.md` | Context-based store kit with character/object/mechanic lead, flexible gameplay, real captures, feature graphic and ZIP, built on the finalization campaign art (banner and game background). |
@@ -65,10 +64,10 @@ touch only, with no tablet, desktop or landscape layout.
 1. Open the named `SKILL.md`.
 2. Run the steps in the order the skill gives, respecting each phase's exit criteria.
 3. If the skill needs several roles, use persona passes over `.claude/agents/*.md`
-   (see `agents.md`).
+   (see `.codex/agents.md`); follow the invoked runbook when it requires fresh subagents.
 4. A Claude-specific step maps to its nearest equivalent in the Execution Model table in
-   `AGENTS.md`:
-   - Claude Agent tool → an inline persona pass / continuing in the same session
+   the invoked skill:
+   - Claude Agent tool → Codex subagent where available; inline persona pass otherwise
    - Claude Skill tool → open the SKILL.md as a runbook
    - Claude hook → `bash tools/codex-hooks.sh ...`
    - Vision analysis → Codex's built-in vision; PNG generation → GPT Image 2 built-in or

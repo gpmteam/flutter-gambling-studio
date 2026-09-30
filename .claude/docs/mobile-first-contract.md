@@ -114,8 +114,8 @@ class PhoneColumn extends StatelessWidget {
 - Create projects with `flutter create --platforms web,android,ios`. Never add Windows, macOS or
   Linux scaffolds.
 
-Secondary informational screens (rules, odds, history, settings) may scroll. The gameplay core
-may not; follow `gameplay-screen-contract.md`.
+Secondary informational screens (how to play, collection, stats, settings) may scroll. The
+gameplay core may not; follow `gameplay-screen-contract.md`.
 
 ## Blocking failures
 

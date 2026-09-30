@@ -1,6 +1,6 @@
 ---
 name: design-review
-description: "Checks a GDD for completeness, quality and mathematical correctness against the studio's standards."
+description: "Checks a GDD for completeness, quality, balance correctness and the no-gambling gate against the studio's standards."
 argument-hint: "[file or system]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Agent
@@ -13,13 +13,13 @@ Invocation: the user runs `/design-review [path to the GDD or the system's name]
 ## Goal
 
 Checks the completeness and quality of a mini-game's Game Design Document.
-Confirms that the GDD contains all 8 required sections, that the mathematics is correct, that
+Confirms that the GDD contains all 8 required sections, that the scoring and balance are correct, that
 edge cases are described and that the acceptance criteria are testable.
 
 ## Agents
 
 - `game-designer` — design completeness and correctness
-- `game-mathematician` — verification of the mathematical formulas
+- `balance-designer` — verification of the scoring formulas and the difficulty curve
 
 ## Order of work
 
@@ -42,13 +42,14 @@ The `game-designer` agent checks each GDD:
 - [ ] Tuning knobs — a table with ranges
 - [ ] Acceptance criteria — at least 5 testable criteria
 
-**Gambling-specific checks (where applicable):**
-- [ ] The target RTP is stated (95–97%)
-- [ ] The paytable is present
-- [ ] The Wild symbol: what it substitutes for, and what it does not
-- [ ] Scatter: how it triggers the bonus, and from which positions
-- [ ] The near-miss effect is described (if there is one)
-- [ ] Free spins: the trigger condition, the count, the multiplier
+**Casual-game checks (where applicable):**
+- [ ] The target curve is stated and sits inside the model's windows
+- [ ] Goals, budgets and star thresholds are in the balance config
+- [ ] Specials/blockers: how each is created or cleared, and what combinations do
+- [ ] No dead ends: reshuffle, solvable generation, retry
+- [ ] Scoring is a pure function of play; combo multipliers are earned, never random
+- [ ] **No gambling** (`.claude/rules/no-gambling.md`): no wager, currency, shop, chance-based
+      reward, casino game, gambling copy or age gate
 
 **Document status:**
 - [ ] There is a `Status:` line (Draft / Review / Approved / Implemented)
@@ -63,15 +64,15 @@ The `game-designer` agent checks each GDD:
 - [ ] The layout proves the four portrait phones, including thumb reach, the P strategy for short
       and tall phones, and no scrolling in the gameplay core
 
-### Step 3: game-mathematician — the mathematical check
+### Step 3: balance-designer — the balance check
 
-The `game-mathematician` agent checks:
+The `balance-designer` agent checks:
 
-- [ ] The RTP formulas are correct and complete
-- [ ] The symbol weights in the table agree with `rtp-config.json`
-- [ ] The hit rate is realistic (15–45%)
-- [ ] The payouts are balanced (no obvious holes in the math model)
-- [ ] The free spins contribution to the RTP has been computed
+- [ ] The scoring formulas are correct and complete
+- [ ] The level table in the GDD agrees with the balance config
+- [ ] The latest `tools/simulate_balance.py` run PASSES and is newer than the last config change
+- [ ] New elements arrive on easier levels; breathers follow spikes
+- [ ] The config contains no currency, wager or odds fields
 
 ### Step 4: the report
 
@@ -96,5 +97,5 @@ The `game-mathematician` agent checks:
 ## Arguments
 
 - No arguments: review every GDD in `design/gdd/`
-- `reel-mechanics` — review `design/gdd/reel-mechanics.md`
-- `--math-only` — the mathematical check only
+- `board-rules` — review `design/gdd/board-rules.md`
+- `--balance-only` — the balance check only
