@@ -70,6 +70,14 @@ test -f production/session-state/autocreate-handoff.md || {
   exit 1
 }
 
+# A relocated workspace may omit generated dependency metadata. Hydrate before analysis.
+if [[ ! -f .dart_tool/package_config.json ]]; then
+  flutter pub get > /tmp/finalize_preflight_pub_get.log 2>&1 || {
+    echo "Dependency hydration failed; inspect /tmp/finalize_preflight_pub_get.log."
+    exit 1
+  }
+fi
+
 # 2. The project must compile
 dart analyze lib/ > /tmp/finalize_preflight_analyze.log 2>&1
 if grep -q " error " /tmp/finalize_preflight_analyze.log; then

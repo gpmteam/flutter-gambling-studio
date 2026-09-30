@@ -15,6 +15,10 @@ Automatically restores the development context and points you at the right stage
 1. Read `design/gdd/game-concept.md` (if it exists).
 2. Read `pubspec.yaml` (if it exists).
 3. Read `production/session-state/active.md` (if it exists).
+   Before resuming Flutter analysis or tests, check `.dart_tool/package_config.json`.
+   If it is missing from a relocated project with `pubspec.yaml`, run `flutter pub get`
+   using the existing lockfile; do not upgrade dependencies or native toolchain versions.
+   Report a hydration failure as an environment blocker, not as application import defects.
 4. Read `.claude/docs/mobile-first-contract.md`; if code exists, check the four-phone layout
    tests, the portrait lock, the phone column, touch-only interaction, and that no screen has a
    desktop/tablet/landscape layout (an older project may have one: plan its removal).
