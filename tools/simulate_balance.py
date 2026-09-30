@@ -26,7 +26,9 @@ Usage
     python3 tools/simulate_balance.py --selftest
 
 Every run writes `design/balance/simulation-report.md` (or `--report`) and stamps the config's
-`simulation` block with the date and verdict (`--no-stamp` to skip).
+`simulation` block with the date and verdict (`--no-stamp` to skip). A `.json` report path
+writes structured JSON; other paths and console output use Markdown. Use `--report`, rather
+than redirecting console output, to save a JSON artifact.
 
 Exit code is 0 on PASS, 1 on CONCERNS, 2 on FAIL — so CI and hooks can gate on it.
 Stdlib only, no dependencies.
@@ -42,7 +44,7 @@ import re
 import statistics
 import sys
 from collections import deque
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from datetime import date
 from pathlib import Path
 from typing import Any, Callable, Iterable, Sequence
@@ -117,6 +119,16 @@ class Report:
         if any(m.verdict == CONCERNS for m in self.metrics):
             return CONCERNS
         return PASS
+
+    def to_json(self) -> str:
+        """Serialize the same evidence and verdict as the human-readable report."""
+        data = asdict(self)
+        data.update(schema_version=1, date=date.today().isoformat(), verdict=self.verdict)
+        data["tables"] = [
+            {"caption": caption, "header": header, "rows": rows}
+            for caption, header, rows in self.tables
+        ]
+        return json.dumps(data, indent=2, ensure_ascii=False, allow_nan=False) + "\n"
 
     def to_markdown(self) -> str:
         out: list[str] = [f"# Balance Report — {self.title}", ""]
@@ -206,7 +218,7 @@ def forbidden_keys(node: Any, path: str = "") -> list[str]:
 def check_no_gambling(cfg: dict, report: Report) -> None:
     bad = forbidden_keys(cfg)
     report.add(Metric(
-        "No currency / wager / odds fields", len(bad), "0", PASS if not bad else FAIL, INT,
+        "Casual-only config fields", len(bad), "0", PASS if not bad else FAIL, INT,
         note=", ".join(bad[:5]) + (" …" if len(bad) > 5 else "") if bad else ""))
 
 
@@ -1071,7 +1083,7 @@ def run(args: argparse.Namespace) -> int:
     md = report.to_markdown()
     out = Path(args.report)
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(md, encoding="utf-8")
+    out.write_text(report.to_json() if out.suffix.lower() == ".json" else md, encoding="utf-8")
     if not args.no_stamp:
         stamp(cfg_path, cfg, report.verdict, args.model)
     print(md)
@@ -1128,7 +1140,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     p.add_argument("--trials", type=int, default=None, help="runs per level / per model (model default)")
     p.add_argument("--seed", type=int, default=7, help="seed for the simulations (default 7)")
     p.add_argument("--report", default="design/balance/simulation-report.md",
-                   help="where to write the report")
+                   help="where to write the report (.json for structured JSON; otherwise Markdown)")
     p.add_argument("--no-stamp", action="store_true",
                    help="do not write the date/verdict into the config's `simulation` block")
     p.add_argument("--selftest", action="store_true", help="run every built-in model on the templates")

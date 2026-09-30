@@ -5,6 +5,7 @@ import contextlib
 import io
 import json
 import random
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -49,7 +50,7 @@ class NoGamblingFieldTests(unittest.TestCase):
         cfg["bet"] = 5
         code, report = run_model("b5", cfg, trials=200)
         self.assertEqual(code, 2)
-        self.assertIn("No currency / wager / odds fields", report)
+        self.assertIn("Casual-only config fields", report)
 
 
 class BoardTests(unittest.TestCase):
@@ -169,6 +170,81 @@ class ReportTests(unittest.TestCase):
         rep = json.loads((TEMPLATES / "bot-report-example.json").read_text(encoding="utf-8"))
         code, _ = run_model("b4", rep)
         self.assertEqual(code, 0)
+
+
+class ReportOutputTests(unittest.TestCase):
+    def test_json_artifacts_preserve_evidence_and_pass_the_casual_gate(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            config = root / "bot-report.json"
+            source = (TEMPLATES / "bot-report-example.json").read_text(encoding="utf-8")
+            config.write_text(source, encoding="utf-8")
+            for name in ("simulation-500.json", "simulation-preproduction.json"):
+                output = root / "design/balance" / name
+                result = subprocess.run(
+                    [sys.executable, "-B", str(SCRIPT), "--model", "report", "--config",
+                     str(config), "--report", str(output), "--no-stamp"],
+                    capture_output=True, text=True)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                data = json.loads(output.read_text(encoding="utf-8"))
+                self.assertEqual(data["verdict"], "PASS")
+                self.assertEqual(data["seed"], 7)
+                self.assertTrue(data["metrics"])
+                levels = next(table for table in data["tables"] if table["caption"] == "Levels")
+                self.assertEqual(len(levels["rows"]), 15)
+                self.assertEqual(levels["rows"][0][1:4], ["200", "97%", "100%"])
+            self.assertEqual(config.read_text(encoding="utf-8"), source)
+            gate = subprocess.run(
+                [sys.executable, "-B", str(REPO / "tools/check_no_gambling.py"),
+                 "--root", str(root)], capture_output=True, text=True)
+            self.assertEqual(gate.returncode, 0, gate.stdout + gate.stderr)
+
+    def test_json_and_markdown_keep_the_same_nonpassing_verdicts(self) -> None:
+        for rate, verdict, code in ((0.4, "CONCERNS", 1), (0.1, "FAIL", 2)):
+            with self.subTest(verdict=verdict), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                config = root / "config.json"
+                config.write_text(json.dumps({"model": "b3", "bot": "merge bot", "endless": {
+                    "runs": 200, "session_minutes": 8, "early_move_rate": 0.05,
+                    "skilled_goal_rate": 0.3, "player_milestone_rate": rate}}), encoding="utf-8")
+                for suffix in (".json", ".md"):
+                    output = root / ("report" + suffix)
+                    with contextlib.redirect_stdout(io.StringIO()):
+                        result = sb.main(["--model", "report", "--config", str(config),
+                                          "--report", str(output), "--no-stamp"])
+                    self.assertEqual(result, code)
+                    body = output.read_text(encoding="utf-8")
+                    if suffix == ".json":
+                        data = json.loads(body)
+                        self.assertEqual(data["verdict"], verdict)
+                        metric = next(m for m in data["metrics"]
+                                      if m["name"] == "Player bot reaches goal − 3")
+                        self.assertEqual(metric["value"], rate)
+                        self.assertEqual(metric["verdict"], verdict)
+                    else:
+                        self.assertTrue(body.startswith("# Balance Report"))
+                        self.assertIn(f"**{verdict}**", body)
+
+    def test_json_report_does_not_hide_forbidden_config_fields(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            config = root / "config.json"
+            cfg = json.loads((TEMPLATES / "bot-report-example.json").read_text(encoding="utf-8"))
+            cfg["bet"] = 5
+            config.write_text(json.dumps(cfg), encoding="utf-8")
+            output = root / "design/balance/report.json"
+            with contextlib.redirect_stdout(io.StringIO()):
+                code = sb.main(["--model", "report", "--config", str(config),
+                                "--report", str(output), "--no-stamp"])
+            self.assertEqual(code, 2)
+            data = json.loads(output.read_text(encoding="utf-8"))
+            self.assertEqual(data["verdict"], "FAIL")
+            self.assertIn("bet", data["metrics"][0]["note"])
+            gate = subprocess.run(
+                [sys.executable, "-B", str(REPO / "tools/check_no_gambling.py"),
+                 "--root", str(root)], capture_output=True, text=True)
+            self.assertEqual(gate.returncode, 2)
+            self.assertIn("bet", gate.stdout)
 
 
 class TemplateTests(unittest.TestCase):
