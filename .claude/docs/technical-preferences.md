@@ -8,6 +8,17 @@
 - Web is the Chrome/CDP verification and preview host. It runs the same phone screens; a wide
   browser shows them in the phone column over the game's background.
 
+### Pinned Web touch-state retention
+
+If a touch soak grows engine pointer/sanitizer maps, capture raw down/up/cancel/leave ordering
+and strong retaining paths before choosing a remedy. Flutter 3.27 can remove touch state on
+up, then recreate it when a zero-buttons touch leave is treated as hover. When this exact
+path is confirmed, a browser capture filter may suppress only finished touch leaves;
+active touch, mouse and pen events, up/cancel delivery, scrolling and real gameplay must
+remain intact. Repeat the same forced-GC workload and verify retained map instances stop
+growing. Keep SDK/native versions pinned; do not ban pointerleave for other pointer types
+or prescribe this workaround for engines where the path is absent.
+
 ### Web font and engine resource verification
 
 Before claiming that a served Web game starts without external resources, use a fresh browser
