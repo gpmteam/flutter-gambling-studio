@@ -22,6 +22,14 @@ and repeat the blocked-network run. Do not assume the same workaround is require
 Flutter version or renderer. This verifies a locally served build, not serverless startup or
 an installed offline PWA.
 
+### Transient gameplay capture evidence
+
+Follow `.claude/skills/playtest/SKILL.md` P1/P2/P5 when a caption names a transient
+state such as an earned special: capture when that state is actually observed and
+assert it in the saved screenshot state, rather than assuming a fixed action index.
+Inspect the pixels before accepting the caption. Preserve mislabeled raw captures
+and identify supplemental runs separately; never inject an engine state to stage proof.
+
 ## Flutter + Flame 1.18.x
 
 ### Randomness and the rules engine
