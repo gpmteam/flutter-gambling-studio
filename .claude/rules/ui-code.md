@@ -84,6 +84,34 @@ class _MyState extends State<MyWidget> {
 **Rule**: EVERY `setState` inside `Future.then()`, `Timer`, `StreamSubscription.listen()`,
 `.whenComplete()` or any async callback MUST be preceded by `if (!mounted) return;`.
 
+Route initialization can also cause `setState() or markNeedsBuild() called during build`:
+a service call in `initState` or `didChangeDependencies` may synchronously publish to a
+still-mounted screen behind the new route. If the initialization publishes to those
+listeners, schedule that call once after the frame and check route ownership first.
+For example, with an injected `services` and nullable `_session`:
+
+```dart
+bool _startScheduled = false;
+
+@override
+void didChangeDependencies() {
+  super.didChangeDependencies();
+  if (_startScheduled) return;
+  _startScheduled = true;
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (!mounted) return;
+    final session = services.startSession(GameMode.campaign);
+    setState(() => _session = session);
+  });
+}
+```
+
+Do not refresh or start the session from `build()`, and do not schedule it again on
+each rebuild. Pure local initialization does not need this deferral. Move resolution
+still commits in the rules engine before animation. Verify real navigation with a
+listening menu underneath the route, repeated dependency updates, and route disposal
+before the callback; there must be no framework exception or abandoned new session.
+
 ### 2.3 Dispose every resource
 
 ```dart
