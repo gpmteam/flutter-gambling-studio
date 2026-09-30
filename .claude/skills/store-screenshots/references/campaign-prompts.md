@@ -36,6 +36,11 @@ inventory, and never render an object/mechanic template to avoid drawing a chara
 
 ## Filling placeholders
 
+When runtime capture metadata supplies board rows, symbols, or selected cells, derive those
+facts directly from the recorded state and compare them with the capture. Do not hand-copy a
+long cell map from an earlier prompt. Missing state evidence requires a new authentic capture,
+not invented selection indices. A passing template check verifies wording, not generated art.
+
 A value names this game's own subjects, in plain words, from the concept, Design DNA, asset
 manifest, the reference contract (`design/reference-contract.md`) and the real gameplay capture:
 

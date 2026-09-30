@@ -34,7 +34,9 @@ A mini-game succeeds when balance (difficulty and pacing), code design and juici
 For evidence-backed framework learning, `.claude/skills/auto-learn/SKILL.md` has standing owner
 authorization to implement and push tested `learning/*` proposals. This exception does not
 authorize merging or silently changing active production rules; the owner reviews and merges.
-Record reusable findings from every stage, deduplicate, and preserve pending findings if blocked.
+Record reusable findings from every stage and deduplicate. Process them in a dedicated learning
+task; do not interrupt production or prolong a blocked store run with learning implementation.
+An explicit request for a framework fix keeps that fix as the primary task.
 
 Mistakes are inevitable. If one mechanic contradicts another, pause and bring in the specialist:
 

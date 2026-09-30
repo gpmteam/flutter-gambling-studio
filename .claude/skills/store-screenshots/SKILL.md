@@ -106,6 +106,10 @@ which follows `.claude/docs/mobile-first-contract.md` (portrait phone only).
 
 ## Phase 0 — context and preflight
 
+Read the runbook and relevant references once. Reuse already-read guidance and extracted game
+facts; reread only changed files or the specific section needed for a new decision. Keep learning
+observations pending for a separate task, including when an art gate blocks delivery.
+
 Select and verify an existing interpreter before installing dependencies. A missing import in
 system Python does not mean the project's virtual environment is missing that package. Honor
 an explicit `STORE_PYTHON` executable path; otherwise probe the active environment, project
@@ -218,7 +222,8 @@ Write `STORE_BRIEF.md` before any generation call:
 - One initial attempt per required scene (banner, panorama, any `--panels 0` showcase background
   and any icon), with at most one fresh retry for an objective failure in that scene. Retries
   restart from the original assets, plus the accepted banner for scenes generated after it. Do not
-  iterate from a rejected output. If the banner is retried, later scenes use the accepted one.
+  iterate a fresh render from a rejected output. Targeted edits are allowed by the correction
+  policy below. If the banner is retried, later scenes use the accepted one.
 
 Collect the original character asset and the gameplay sprites that will be visible in the art.
 Exclude UI chrome, fonts, backgrounds and store outputs. Preserve originals; convert non-PNG
@@ -412,24 +417,28 @@ captures. Check for a pasted screenshot boundary in the single final visual pass
 
 ### Correcting a generated scene
 
-Read every inscription at final crop size. Each of these is an objective failure: a misspelled,
-missing, duplicated or extra label; a missing ball, or a panorama panel with no ball; a ball on
-the character; a ball resting on a lower object; character drift from its asset; or a character
-shown full length, standing, flying/floating or with legs, knees, hips or feet visible. Use the
-scene's one fresh retry with the same references. If exactly one inscription is still wrong after
-the retry, make at most one image-tool edit of the selected
-scene that changes only that inscription, naming the exact label in the prompt and attaching the
-original character asset first. Never letter it with a script. If that edit alters anything else,
-keep the unedited scene and record the defect in `STORE_INFO.md`. A label cut by a seam is fixed
-by the crop (Phase 4), not by regeneration.
+Review inscriptions and gameplay at final export size. Objective failures include incorrect
+labels or missing balls, forbidden character framing, character drift, balls overlapping the
+character, incorrect board dimensions or symbol ordering, and links that change the captured
+move or scoring state. Preserve the real mechanic, topology, symbols, and state.
 
-Character framing and the flying balls are hard requirements, not defects to record and ship.
-If the retry still shows legs or a standing/flying character, or lacks a required ball, make at
-most one image-tool edit of that scene. The edit either raises the foreground objects over
-everything below the torso cut, or adds or lifts the missing ball into the air. Attach the
-original character asset first and the multiplier reference, and change nothing else. If the
-scene still fails, do not export it: stop and report the blocker in `STORE_INFO.md` and the final
-answer.
+Use the scene's one fresh retry from the original assets for a failed initial render. After the
+retry, allow up to two targeted image-tool edits of the closest candidate, each addressing one
+explicit defect or one coherent board correction. A wrong symbol or selected-chain connector is
+eligible: attach the candidate, original identity assets, authentic capture, and exact runtime
+facts; identify the cells and requested change. Keep all unrelated scene content unchanged.
+Record the prompt, input/output paths, and review result for every edit. Review the corrected
+region and verify that previously accepted character, balls, labels, and gameplay remain valid.
+An edit that introduces unrelated drift is rejected; retain the previous candidate and use only
+any remaining edit budget. Never paste, warp, repaint, or composite a board or chain locally.
+
+The same bounded edits can correct an inscription, raise foreground over a torso cut, or add or
+lift a required ball. Attach the original character asset first when present and the shipped
+multiplier reference when correcting a ball. A label cut by a seam needs a crop adjustment,
+not a new image. Character framing, the flying balls, and accurate gameplay remain hard gates.
+If the fresh retry and two edits still fail, preserve evidence, report BLOCKED, and do not export
+rejected art. Continue only independent work within the requested kit. A later explicit request
+to retry authorizes a new invocation's budget; preserve earlier evidence and reuse accepted art.
 
 ## Phase 2 — visual review criteria (apply after exports)
 
@@ -606,6 +615,29 @@ phone-slide backdrop (`shared-background.png` and its SHA-256, or the fallback p
 `--bg-subject` extent), feature phone capture and no-text result, background guard and compliance notes. Do not require per-sprite audit tables, measured
 bounds, numeric gate results or repeated visual verdicts.
 
+Before packaging, copy the finished icon master, listing icon, and transparent emblem into
+`$STORE_DIR/branding/` as `app_icon.png`, `store_icon_512.png`, and `emblem.png`. After actual
+visual review confirms identity, framing, balls, and accurate gameplay, write
+`$STORE_DIR/STORE_DELIVERY.json` with the resolved request count and Play-set choice:
+
+```json
+{
+  "schema_version": 1,
+  "status": "COMPLETE",
+  "screenshot_count": 8,
+  "play_set": true,
+  "visual_review": "PASS",
+  "gameplay_review": "PASS",
+  "icon_master": "branding/app_icon.png",
+  "listing_icon": "branding/store_icon_512.png",
+  "emblem": "branding/emblem.png"
+}
+```
+
+Set STORE_COUNT to the resolved screenshot count. `8` and `true` are defaults, not overrides
+of `--count` or `--no-play-set`. Set review PASS
+only from the real image review; a blocked or pending scene cannot be declared COMPLETE.
+
 ```bash
 ARCHIVE_NAME="$PROJECT_NAME-store-$TS.zip"
 ARCHIVE_PATH="$STORE_ROOT/$ARCHIVE_NAME"
@@ -617,3 +649,16 @@ shasum -a 256 "$ARCHIVE_PATH" > "$ARCHIVE_PATH.sha256"
 Verify ZIP contents: ordered screenshots, feature graphic and branding. Final answer links
 ZIP/report, gives composition/counts and actual limitations. Record reusable failures or faster
 methods for a separate `/auto-learn` run; do not add that workflow to store-kit delivery.
+
+Create the ZIP after this file exists, then validate the archive itself:
+
+```bash
+"$STORE_PYTHON" tools/check_store_kit.py --archive "$ARCHIVE_PATH" --count "$STORE_COUNT"
+# Add --no-play-set when requested. STORE_COUNT is the resolved screenshot count.
+```
+
+The worker requires a new or changed ZIP whose contents pass this gate. A successful image call,
+source-rule check, or CLI exit does not complete store delivery. On failure, preserve the report,
+exact runtime facts, attempt prompts and evidence under `production/store-art/failed-delivery/`
+as well as the export directory; worker snapshots exclude `project_zip/`. Do not package rejected
+art merely to satisfy the archive gate.

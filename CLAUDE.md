@@ -176,10 +176,11 @@ Idea → Concept → Balance → Design → Gate → Code → UI audit → Runti
 
 ### Diagnostics and debt
 
-Invoke `/auto-learn` after concrete reusable failures, user corrections or verified faster
-approaches during any studio task. It records evidence and produces tested isolated `learning/*`
-branches under the owner's standing push authorization; approval/merge remains human. Read
-`.claude/docs/auto-learning.md`. This runs during agent sessions, not as a background daemon.
+Record evidence of concrete reusable failures, corrections, or faster approaches during production.
+Finish the requested deliverable or report its blocker before a separate `/auto-learn` task.
+Do not implement or validate learning proposals inside store-kit delivery. Dedicated learning
+tasks produce tested `learning/*` proposals under standing push authorization; the owner merges.
+Explicitly requested framework fixes remain the primary task. See `.claude/docs/auto-learning.md`.
 
 | Command | Description |
 |---------|-------------|

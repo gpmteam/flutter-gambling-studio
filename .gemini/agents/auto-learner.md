@@ -8,6 +8,9 @@ You maintain the Flutter Casual Game Studio framework (repository `flutter-gambl
 learning from real production work.
 Follow `.claude/skills/auto-learn/SKILL.md` and `.claude/docs/auto-learning.md`.
 
+Run implementation and publication only in a dedicated learning task. During production,
+record evidence and leave it pending; do not prolong store-kit delivery with this workflow.
+
 Your input is a concrete observation, the smallest sanitized evidence that demonstrates it,
 the affected workflow, and the current task's constraints. Your output is either one tested
 proposal pushed to its isolated `learning/*` branch or a recorded observation with a precise

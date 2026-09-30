@@ -108,7 +108,7 @@ gameplay captures, and never present them as prizes.
 
 All agent responses must be in English, and every artifact the pipeline writes — design documents, concepts, reports, session state and commit messages — must be in English as well. Dart/Flutter code, file paths, class names and CLI commands are English by definition.
 
-The generated game ships in English too: every player-facing string (menus, buttons, HUD, how-to-play, level goals, result messages, empty states) plus store metadata and screenshot captions. The only exception is an explicit user request for a different language — then the player-facing copy uses that language, the choice is recorded in `design/gdd/game-concept.md`, and everything else (identifiers, file names, comments, design docs, reports) stays English. Do not switch the game's language on your own initiative and do not infer it from the language the user is typing in. Before writing code, read `CLAUDE.md`, `.claude/docs/game-categories.md`, `.claude/docs/balance-models.md`, `.claude/rules/no-gambling.md`, `.claude/rules/game-code.md`, `.claude/rules/engine-code.md`, `.claude/rules/ui-code.md`, `.claude/rules/anti-slop-design.md`, `.claude/docs/mobile-first-contract.md`, `.claude/docs/gameplay-screen-contract.md`, `.claude/rules/test-standards.md`, `.claude/rules/data-files.md`, `.claude/rules/design-docs.md`, `.claude/docs/technical-preferences.md`, `.claude/docs/coding-standards.md`, `.claude/docs/directory-structure.md`, and `.claude/docs/coordination-rules.md`.
+The generated game ships in English too: every player-facing string (menus, buttons, HUD, how-to-play, level goals, result messages, empty states) plus store metadata and screenshot captions. The only exception is an explicit user request for a different language — then the player-facing copy uses that language, the choice is recorded in `design/gdd/game-concept.md`, and everything else (identifiers, file names, comments, design docs, reports) stays English. Do not switch the game's language on your own initiative and do not infer it from the language the user is typing in. Read shared guidance once per session and reread only changed or previously unread relevant sections. Before modifying a game’s Dart code, read `CLAUDE.md`, `.claude/docs/game-categories.md`, `.claude/docs/balance-models.md`, `.claude/rules/no-gambling.md`, `.claude/rules/game-code.md`, `.claude/rules/engine-code.md`, `.claude/rules/ui-code.md`, `.claude/rules/anti-slop-design.md`, `.claude/docs/mobile-first-contract.md`, `.claude/docs/gameplay-screen-contract.md`, `.claude/rules/test-standards.md`, `.claude/rules/data-files.md`, `.claude/rules/design-docs.md`, `.claude/docs/technical-preferences.md`, `.claude/docs/coding-standards.md`, `.claude/docs/directory-structure.md`, and `.claude/docs/coordination-rules.md`.
 
 Treat slash commands as manual runbooks. When a user types `/brainstorm`, `/autocreate`, `/team-dev`, `/code-review`, `/ui-audit`, `/emulator-test`, `/balance-check`, `/release-package`, `/release-checklist`, or another studio command, open the matching file in `.claude/skills/*/SKILL.md` and follow it. For specialized roles, use the persona briefs in `.claude/agents/*.md`. If needed, run helper checks with `bash tools/codex-hooks.sh <hook-name>`.
 
@@ -133,18 +133,20 @@ Then restart Codex CLI.
 
 ## Automatic learning during studio work
 
-After every concrete reusable failure, user correction, or verified faster approach, invoke
-`.claude/skills/auto-learn/SKILL.md` and the `.claude/agents/auto-learner.md` role. Record evidence,
-deduplicate by cause/remedy, implement a bounded improvement in an isolated worktree, validate
-it, and push a `learning/*` proposal branch using `tools/auto_learn.py`. The owner has authorized
-these proposal pushes in `.claude/auto-learning.json`; do not ask again. Only the owner approves
-or merges. Never merge, force-push, publish unrelated work, or silently adopt unmerged rules.
-Suggest or implement new skills, agents, scripts or rules only when the observed gap warrants
-them; prefer correcting existing guidance. Keep the no-gambling gate, seeded-RNG/balance rules
-and quality gates intact. Process pending findings during agent sessions; this is not an
-always-running background service. An explicit pause or narrower user request overrides
-automatic learning. See `.claude/docs/auto-learning.md` for commands, evidence requirements and
-recovery.
+During a production task, record concrete reusable failures, user corrections, or verified
+faster approaches as sanitized evidence. Complete the user's requested deliverable first.
+Do not prepare worktrees, implement learning proposals, run their tests, or publish them inside
+store-kit delivery or another production workflow. If production is blocked, report its actual
+blocker and preserve evidence; a blocked task is not permission to start unrelated learning.
+
+Process recorded observations in a dedicated `/auto-learn` task, or when the user explicitly
+requests framework improvements. Follow `.claude/skills/auto-learn/SKILL.md` and the
+`.claude/agents/auto-learner.md` role then. The owner has authorized tested `learning/*`
+proposal pushes in `.claude/auto-learning.json`; only the owner approves or merges. Never merge,
+force-push, publish unrelated work, or silently adopt unmerged rules through auto-learning.
+An explicit user request to implement a framework fix is direct task authorization, not a
+requirement to replace that fix with an unmerged learning proposal. Keep the no-gambling,
+seeded-RNG, balance, layout, and runtime gates intact. See `.claude/docs/auto-learning.md`.
 
 ## Project Structure & Module Organization
 

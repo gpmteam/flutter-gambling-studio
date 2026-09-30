@@ -4,7 +4,7 @@
 
 STATE_FILE="production/session-state/active.md"
 if [ -f tools/auto_learn.py ]; then
-  echo "Learning observations (process concrete pending findings with /auto-learn):"
+  echo "Learning observations (process in a dedicated /auto-learn task):"
   python3 -B tools/auto_learn.py pending || true
 fi
 LOG_DIR="production/session-logs"

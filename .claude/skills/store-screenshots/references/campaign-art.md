@@ -90,10 +90,11 @@ a ball on the character; character drift from its asset; a character shown full 
 flying or floating, or with legs, knees, hips or feet visible; any title, logo, copy or blank copy
 space; a pasted-screenshot boundary; a world that is not the game's (or not the reference's).
 
-Correction follows `/store-screenshots` → "Correcting a generated scene" exactly: one fresh retry
-from the same prompt file and the original references; then at most one image-tool edit that fixes
-only a single wrong inscription, or only raises the foreground over the torso cut / lifts a
-missing ball, with the original character asset attached first. Still failing → BLOCKED.
+Correction follows `/store-screenshots` → "Correcting a generated scene": one fresh retry
+from the original references, then at most two targeted image-tool edits. An incorrect symbol
+or selected-chain connection qualifies for a bounded board correction using the authentic
+capture and exact runtime facts. Verify that identity, composition, balls, and other gameplay
+remain accurate. No local board compositing. After the bounded corrections still fail → BLOCKED.
 
 ## Step 3 — the game background
 

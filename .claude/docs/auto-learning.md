@@ -8,7 +8,10 @@ learned correction, and an unmerged proposal is not a new production rule.
 This is session-driven automation. The skill and persona guide an available Codex or Claude
 agent; `tools/auto_learn.py` does not call a model, invent fixes, schedule jobs, run between
 sessions, or merge branches. Session hooks may display the pending queue. The active agent
-must invoke `/auto-learn` on a concrete reusable finding and process pending items when useful.
+records concrete reusable findings during production and processes them in a dedicated
+`/auto-learn` task. Production delivery and its blockers take priority; do not run learning
+implementation, validation, or publication inside store-kit delivery. A user request to fix
+the framework directly authorizes that implementation without requiring a learning proposal.
 
 ## When to trigger
 
