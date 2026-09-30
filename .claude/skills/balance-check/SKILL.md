@@ -37,8 +37,18 @@ python3 tools/simulate_balance.py \
   --report design/balance/simulation-report.md
 ```
 
-For a mechanic without a built-in simulator, the game's own rules engine is the simulator: run
-the headless bot test first, then grade its report.
+Before accepting a built-in run, check that its legal moves, special rules and scoring match
+the game. The current B1 `link` implementation clears connected components; a branching
+component need not fit one continuous, non-repeating finger path. For a continuous-path link
+game, treat that built-in result as an approximation and use an actual rules-engine bot report
+for the balance gate. Include the configured adjacency, path restrictions, earned specials,
+refill and scoring; record the player/skilled policies and their search limits. Also retain a
+legal goal-reaching move sequence for each shipped level seed. A failed bounded greedy search
+is not a proof that a level is impossible.
+
+For these continuous-path games and other mechanics without an equivalent built-in simulator,
+the game's own rules engine is the simulator: run the headless bot test first, then grade its
+report. Keep the same declared balance model and threshold windows.
 
 ```bash
 flutter test test/balance/bot_sim_test.dart        # writes design/balance/bot-report.json
