@@ -189,6 +189,24 @@ class CampaignArtGuidanceTest(unittest.TestCase):
         self.assertIn("**Campaign art comes first.**", self.store)
         self.assertIn("V22", self.finalize)
 
+    def test_repairs_do_not_compound_generation_loss(self) -> None:
+        # Every image-model edit re-paints the whole frame; stacking them is what turned a
+        # panorama mushy. Local defects are repaired as regions, composition gets a fresh render.
+        for phrase in ("**Repairs must not compound.**",
+                       "tools/region_repair.py cut",
+                       "tools/region_repair.py merge",
+                       "**At most one whole-frame edit per lineage.**",
+                       "--size like:<candidate.png>",
+                       "never the 1536x1024 default",
+                       "--offset-y",
+                       "tools/region_repair.py upscale",
+                       "merge --mode detail"):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, self.store)
+        self.assertNotIn("targeted edits use the closest candidate", self.store)
+        self.assertIn("tools/region_repair.py", self.art)
+        self.assertNotIn("continue targeted image-tool edits", self.art)
+
 
 class MobileOnlyGuidanceTest(unittest.TestCase):
     """The studio designs portrait phone games; no rule may ask for a desktop/tablet layout."""

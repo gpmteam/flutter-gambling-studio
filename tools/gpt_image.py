@@ -26,6 +26,7 @@ from __future__ import annotations
 import argparse
 import base64
 import json
+import math
 import mimetypes
 import os
 import re
@@ -64,9 +65,39 @@ def _api_key() -> str:
     return key
 
 
+def _size_like(path: str) -> str:
+    """The picture being corrected, as a size the API accepts: same aspect, multiples of 16.
+
+    A whole-frame correction rendered at the 1536x1024 default throws away most of a
+    3456x2384 panorama's pixels; every later export then upscales the loss.
+    """
+    try:
+        with open(path, "rb") as handle:
+            header = handle.read(24)
+    except OSError as exc:
+        raise argparse.ArgumentTypeError(f"like:{path}: {exc}") from exc
+    try:
+        width, height = _png_dimensions(header)
+    except ImageGenerationError as exc:
+        raise argparse.ArgumentTypeError(f"like:{path}: needs a PNG ({exc})") from exc
+    aspect = max(1 / 3, min(3.0, width / height))
+    pixels = min(8_294_400, max(655_360, width * height))
+    for _ in range(64):
+        h = math.sqrt(pixels / aspect)
+        w = min(3840, h * aspect)
+        h = min(3840, w / aspect)
+        w16, h16 = max(16, int(w) // 16 * 16), max(16, int(h) // 16 * 16)
+        if w16 * h16 >= 655_360:
+            return f"{w16}x{h16}"
+        pixels *= 1.02
+    raise argparse.ArgumentTypeError(f"like:{path}: no valid size for {width}x{height}")
+
+
 def _validate_size(value: str) -> str:
     if value == "auto":
         return value
+    if value.startswith("like:"):
+        return _validate_size(_size_like(value[len("like:"):]))
     match = re.fullmatch(r"(\d+)x(\d+)", value)
     if not match:
         raise argparse.ArgumentTypeError("size must be auto or WIDTHxHEIGHT")
@@ -515,7 +546,8 @@ def _parser() -> argparse.ArgumentParser:
         "--size",
         type=_validate_size,
         default="1536x1024",
-        help="auto or WIDTHxHEIGHT; edges must be multiples of 16",
+        help="auto, WIDTHxHEIGHT (edges multiples of 16), or like:PNG for the size of "
+             "the picture being corrected — never let a correction fall back to the default",
     )
     edit.add_argument(
         "--quality",

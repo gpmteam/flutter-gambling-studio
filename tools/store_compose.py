@@ -345,31 +345,49 @@ def load_image(path: str | Path, label: str = "image") -> Image.Image:
 
 
 def cover_geometry(src_w: int, src_h: int, w: int, h: int, bias_x: float = 0.0,
-                   zoom: float = 1.0) -> tuple[int, int, int, int, float]:
+                   zoom: float = 1.0, bias_y: float = 0.0
+                   ) -> tuple[int, int, int, int, float]:
     """Where `cover` puts the picture: scaled size, crop left/top, scale factor."""
     tw, th = max(w, round(w * zoom)), max(h, round(h * zoom))
     scale = max(tw / src_w, th / src_h)
     nw, nh = max(tw, math.ceil(src_w * scale)), max(th, math.ceil(src_h * scale))
     left = int(round((nw - w) * (0.5 + 0.5 * max(-1.0, min(1.0, bias_x)))))
-    return nw, nh, left, (nh - h) // 2, scale
+    top = int((nh - h) * (0.5 + 0.5 * max(-1.0, min(1.0, bias_y))))  # == //2 at 0
+    return nw, nh, left, top, scale
+
+
+def upscale_sharpen(img: Image.Image, scale: float) -> Image.Image:
+    """The unsharp pass for art enlarged by `scale`, after the Lanczos resize.
+
+    Its radius grows with the factor: interpolation blurs over about one source
+    pixel, so a fixed 2px radius at 2.75x sharpened the Lanczos ringing instead
+    of the picture and drew crunchy dark outlines round every soft edge. The
+    same curve is in tools/region_repair.py (`upscale`).
+    """
+    if scale <= 1.25:
+        return img
+    return img.filter(ImageFilter.UnsharpMask(
+        radius=round(0.8 * scale, 2), percent=int(min(60, 24 * scale)), threshold=2))
 
 
 def cover(img: Image.Image, w: int, h: int, sharpen: bool = True,
-          bias_x: float = 0.0, zoom: float = 1.0) -> Image.Image:
+          bias_x: float = 0.0, zoom: float = 1.0, bias_y: float = 0.0) -> Image.Image:
     """Scale to fully cover w×h (preserving aspect), then crop.
 
     `zoom` >1 oversamples to create horizontal slack; `bias_x` in -1..1 then
     slides the crop window inside that slack (-1 = hard left, +1 = hard right).
     That pair is how a face sitting on a panel seam gets moved off it without
-    paying for a whole new generation.
+    paying for a whole new generation. `bias_y` does the same vertically
+    (-1 = keep the top, +1 = keep the bottom) wherever the picture is taller
+    than the target, as a 1.45:1 panorama is for the 9:16 Play set.
     """
-    nw, nh, left, top, scale = cover_geometry(img.width, img.height, w, h, bias_x, zoom)
+    nw, nh, left, top, scale = cover_geometry(img.width, img.height, w, h, bias_x, zoom,
+                                              bias_y)
     out = img.resize((nw, nh), RES)
     # Generated art is usually smaller than a store canvas; a light unsharp pass
     # is the difference between "upscaled" and "soft".
-    if sharpen and scale > 1.25:
-        amount = int(min(120, 45 * scale))
-        out = out.filter(ImageFilter.UnsharpMask(radius=2, percent=amount, threshold=3))
+    if sharpen:
+        out = upscale_sharpen(out, scale)
     return out.crop((left, top, left + w, top + h))
 
 
@@ -1042,6 +1060,9 @@ POP_PRESETS: dict[str, tuple[float, float, float, float, float]] = {
     "max":   (0.48, 0.12, 0.18, 0.36, 0.58),
 }
 DEFAULT_POP = "soft"
+# Above this enlargement a panorama reads soft in the store panels however it is
+# sharpened; the triptych says so and names the two ways to get the pixels.
+MAX_CLEAN_UPSCALE = 1.6
 MAX_POP_SATURATION_TARGET = 0.80
 MAX_POP_SATURATION_FACTOR_CAP = 2.25
 
@@ -3034,11 +3055,17 @@ def cmd_triptych(args) -> None:
     if abs(want - got) / want > 0.35:
         warn(f"key art aspect {got:.2f} is far from the {n}-panel panorama {want:.2f} — "
              f"cover-crop will discard a lot of the picture")
-    if src.width < pano_w * 0.35:
-        warn(f"key art is {src.width}px wide for a {pano_w}px panorama "
-             f"({pano_w / src.width:.1f}× upscale) — generate it as wide as the model allows")
+    upscale = max(pano_w / src.width, pano_h / src.height)
+    if upscale > MAX_CLEAN_UPSCALE:
+        warn(f"key art is {src.width}×{src.height} for a {pano_w}×{pano_h} panorama "
+             f"({upscale:.2f}× upscale) — the panels will be soft. Render the panorama at "
+             "3456x2384 through tools/gpt_image.py; when only the built-in image tool "
+             "(~1.6 MP) is available, run the detail pass (tools/region_repair.py upscale, "
+             "then merge --mode detail on the lead and the ball labels) and export from "
+             "that canvas")
 
-    pano = cover(src, pano_w, pano_h, bias_x=args.offset, zoom=args.zoom)
+    pano = cover(src, pano_w, pano_h, bias_x=args.offset, zoom=args.zoom,
+                 bias_y=getattr(args, "offset_y", 0.0))
     pano = pop_grade(pano, args.pop, vibrance=args.vibrance, lift=args.lift,
                      contrast=args.contrast, bloom=args.bloom)
     # Choose cuts directly on the complete prepared art.
@@ -4310,6 +4337,11 @@ def main() -> None:
     t.add_argument("--offset", type=float, default=0.0,
                    help="-1..1 horizontal crop bias; slides a face off a panel seam "
                         "without regenerating the art (needs --zoom > 1)")
+    t.add_argument("--offset-y", type=float, default=0.0,
+                   help="-1..1 vertical crop bias (-1 keeps the top, +1 the bottom) for a "
+                        "picture taller than the panels — the Play set crops ~18%% of a "
+                        "1.45:1 panorama. Moves a clipped board row or headroom back into "
+                        "frame without regenerating the art")
     t.add_argument("--gutter", default=DEFAULT_GUTTER, metavar="PX|N%|auto",
                    help="source strip hidden beneath every publisher carousel gap. "
                         f"Default auto = {GUTTER_REF_PX}px at {GUTTER_REF_W}px panels, "

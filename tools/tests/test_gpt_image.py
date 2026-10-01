@@ -34,6 +34,19 @@ class GptImageTests(unittest.TestCase):
         with self.assertRaises(Exception):
             gpt_image._validate_size("1025x1024")
 
+    def test_size_like_follows_the_picture_being_corrected(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            for size, want in (((3456, 2384), "3456x2384"), ((1508, 1043), "1504x1040"),
+                               ((3840, 1872), "3840x1872"), ((400, 300), "944x704")):
+                path = Path(tmp) / f"{size[0]}x{size[1]}.png"
+                path.write_bytes(png_header(*size))
+                with self.subTest(size=size):
+                    got = gpt_image._validate_size(f"like:{path}")
+                    self.assertEqual(got, want)
+                    self.assertEqual(gpt_image._validate_size(got), got)
+            with self.assertRaises(Exception):
+                gpt_image._validate_size(f"like:{Path(tmp) / 'missing.png'}")
+
     def test_decode_and_validate_png(self) -> None:
         expected = png_header(1536, 1024)
         payload = {

@@ -90,8 +90,10 @@ a ball on the character; character drift from its asset; a character shown full 
 flying or floating, or with legs, knees, hips or feet visible; any title, logo, copy or blank copy
 space; a pasted-screenshot boundary; a world that is not the game's (or not the reference's).
 
-Correction follows `/store-screenshots` → "Correcting a generated scene": continue targeted
-image-tool edits or fresh compositions until the banner passes. Use the original identity
+Correction follows `/store-screenshots` → "Correcting a generated scene": crop, region repairs
+(`tools/region_repair.py`) or fresh compositions until the banner passes — never a whole-frame
+edit of a banner that is already an edit, which only stacks generation loss. A new pose is a
+composition change: render it fresh. Use the original identity
 references, authentic capture and exact runtime facts for board corrections. Verify identity,
 composition, balls and gameplay after changes. No local board compositing. Failed review or
 attempt count alone does not make the campaign BLOCKED.
@@ -148,8 +150,8 @@ Review `shared-background.png` and `background-crops.png` once. Objective failur
 - for an object/mechanic game, an invented person, hand, animal or mascot.
 
 For a failed background, follow the same correction loop until all four phone crops pass. Use
-targeted image-tool corrections or a fresh composition with the original references and accepted
-banner. Refine the template variables or append concrete crop/pose/margin correction directions
+region repairs for local defects or a fresh composition with the original references and accepted
+banner; never re-edit a background that is already an edit. Refine the template variables or append concrete crop/pose/margin correction directions
 without removing the template requirements; keep the base prompt passing `check` and save the
 correction prompt separately. Rebuild and review the affected crop sheet after each change.
 Repeated clipping requires a more compact pose or safer placement, not the same unchanged prompt.

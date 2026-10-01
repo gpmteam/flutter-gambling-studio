@@ -79,7 +79,9 @@ own light, reflections, glow and motion. Write the exact labels `x5`, `x10`, `x2
 `x100` into the prompt so the model letters them onto the balls. Never cut out, copy, paste or
 alpha-composite the asset (or any sprite, label, board plate or screenshot crop) into generated
 art, and never draw a label with Pillow, the compositor or any other script. The compositor only
-grades, slices and frames finished images.
+grades, slices and frames finished images. The one blend allowed inside generated art is
+`tools/region_repair.py merge`, which lays the image model's own re-render of a region back into
+the same scene (see "Correcting a generated scene").
 
 Create local artifacts; do not publish or build release binaries. Apply icon/emblem unless
 `--no-apply`. Runtime backgrounds and wiring remain unchanged after campaign art: the game's
@@ -221,9 +223,10 @@ Write `STORE_BRIEF.md` before any generation call:
   title or tagline.
 - One initial attempt per required scene (banner, panorama, any `--panels 0` showcase background
   and any icon), followed by correction until the required exports pass. Fresh renders restart
-  from the original assets, plus the accepted banner for later scenes; targeted edits use the
-  closest candidate with the original identity references. Follow the correction policy below.
-  Reuse accepted art and preserve evidence of failed attempts.
+  from the original assets, plus the accepted banner for later scenes; local defects are
+  repaired region by region on the current candidate, never by re-editing an edited frame.
+  Follow the correction policy below. Reuse accepted art and preserve evidence of failed
+  attempts.
 
 Collect the original character asset and the gameplay sprites that will be visible in the art.
 Exclude UI chrome, fonts, backgrounds and store outputs. Preserve originals; convert non-PNG
@@ -427,22 +430,68 @@ all requested exports pass, without a fixed number of fresh retries, targeted ed
 adjustments. Reuse accepted artwork and correct only failed scenes. Never declare PASS or
 package rejected art to end the loop.
 
-Choose the correction from the defect: adjust export crops for seam or gutter clipping; use a
-targeted image-tool edit for a local anatomy, inscription, placement, or board defect; generate
-a fresh composition from the original references when the candidate cannot fit all requested
-formats. Fresh renders may use the accepted banner as world context, never rejected art as an
-identity reference. For a wrong symbol or chain connector, attach the candidate, original
-identity assets, authentic capture, and exact runtime facts; identify the cells and requested
-change. Never paste, warp, repaint, or composite a board or chain locally.
+**Repairs must not compound.** An image-model edit re-renders the whole frame even when the
+prompt says "change only X": every pixel is painted again, so an edit of an edit stacks
+generation loss — detail softens, texture smears, colour drifts and the character's face slowly
+changes. A panorama that went through a fresh render and three corrective edits (move the hero,
+lower the board, re-letter one ball) shipped visibly mushier than the banner beside it. Choose
+the correction from the defect, in this order:
+
+- **Crop first.** A seam, gutter or frame edge clipping a label, the head or a board row is an
+  export problem, not an art problem: move the cut (`--seam-snap`, `--offset` with `--zoom`,
+  `--offset-y` for the Play set's vertical crop) and re-export. No new image.
+- **A local defect is repaired as a region.** A wrong or misspelled label, a ball to add, lift or
+  nudge, a hand, a wrong cell or connector: cut a window around it, let the image model re-render
+  that window, and merge back only the defect box. Every pixel outside the box and its feathered
+  edge stays byte-identical, and the box is drawn at more resolution than the candidate had there, so any
+  number of repairs costs no more picture quality than one.
+- **A composition defect gets a fresh render.** The character too large or in the wrong panel,
+  the board in the wrong place, a ball that has to move across the scene: write the correction
+  into the prompt and render a new composition from the original references (plus the accepted
+  banner as world context), keeping what the review already accepted as explicit direction.
+- **At most one whole-frame edit per lineage.** A whole-frame edit may take only a
+  first-generation render as its input; never send a frame that is itself an edit, or contains a
+  merged repair, to another whole-frame edit. Headless whole-frame edits keep the candidate's
+  size: `tools/gpt_image.py edit ... --size like:<candidate.png>`, never the 1536x1024 default.
+
+```bash
+"$STORE_PYTHON" tools/region_repair.py cut --src "$ART_DIR/panorama.png" \
+  --box X0,Y0,X1,Y1 --out-dir "$ART_DIR/repairs/01-x25-label"
+# Image model: the original character asset first, the shipped multiplier reference when the
+# defect is a ball, then repairs/01-x25-label/window.png named as the EDIT TARGET, with the
+# defect's position in that image (printed by `cut`) and everything else in it as invariants.
+# Headless: tools/gpt_image.py edit ... --size <printed by cut>. Built-in tool: view_image the
+# window first, then copy its output to repairs/01-x25-label/render.png.
+"$STORE_PYTHON" tools/region_repair.py merge \
+  --plan "$ART_DIR/repairs/01-x25-label/plan.json" \
+  --render "$ART_DIR/repairs/01-x25-label/render.png" --out "$ART_DIR/panorama-r1.png"
+```
+
+Keep the box tight but whole: the complete ball with its label, the hand with its prop, the
+cell. `window-marked.png` outlines the box for your review; never attach it to the model. The
+merge aligns the render (models reframe by a few pixels), matches its tone on the untouched ring
+and refuses a render that is not a re-render of that window. Review `proof.png` (before | after |
+difference) and the affected export crops. A seam-difference warning means the model also
+changed the surroundings: widen the box or re-render with them named as invariants. Several boxes
+cut from one candidate merge in turn, each with `--base` set to the newest candidate. The merged
+pixels are the image model's own render of that region of the same scene, which is why this is
+the one blend allowed inside generated art.
+
+Fresh renders may use the accepted banner as world context, never rejected art as an identity
+reference. For a wrong symbol or chain connector, attach the window, original identity assets,
+authentic capture, and exact runtime facts; identify the cells and requested change. Never
+paste, warp, repaint, or composite a board or chain locally.
 Never letter it with a script. Attach the original character asset first when present and the shipped multiplier reference
 when correcting a ball. Keep unrelated scene content unchanged.
 
-Record prompts, input/output paths, the observed defect, and the correction result. Review the
-changed region and affected App Store, Play, or phone crops; verify previously accepted identity,
-labels, and gameplay remain valid. Reject edits that introduce unrelated drift and retain the
-closest valid candidate. If a defect recurs, change the composition, pose, margins, prompt, or
-crop strategy using that evidence instead of repeating the same failed approach. Recheck the
-complete export contact sheet after composition changes; avoid repeated audits of unchanged art.
+Record prompts, input/output paths, the observed defect, and the correction result, plus each
+candidate's parent and how it was made (fresh, whole-frame edit, region merge with its box).
+Review the changed region and affected App Store, Play, or phone crops; verify previously
+accepted identity, labels, and gameplay remain valid. Reject repairs that introduce unrelated
+drift and retain the closest valid candidate. If a defect recurs, change the composition, pose,
+margins, prompt, box or crop strategy using that evidence instead of repeating the same failed
+approach. Recheck the complete export contact sheet after composition changes; avoid repeated
+audits of unchanged art.
 
 Preserve failure evidence under `production/store-art/failed-delivery/` while continuing repairs.
 BLOCKED is reserved for an unavailable required input/tool/service or an explicit user resource
@@ -513,10 +562,38 @@ A flying ball covering gameplay is never a reason to adjust the crop.
 ```
 
 Use `--lead-kind character` or `object` as applicable. Export Play separately with `--size play`
-from the same complete source; do not resize the App Store panels. The compositor's default
-gutter remains suitable for a carousel. A label cut by the gutter needs a crop correction;
-every panel must still carry a ball, at least two balls must still cover gameplay, and no ball
-may cover the player.
+from the same complete source; do not resize the App Store panels. The Play set's 9:16 panels
+crop about 18% of a 1.45:1 panorama's height, centred by default: `--offset-y` (-1 keeps the
+top, +1 the bottom) brings a clipped board row or the headroom back without new art. The
+compositor's default gutter remains suitable for a carousel. A label cut by the gutter needs a
+crop correction; every panel must still carry a ball, at least two balls must still cover
+gameplay, and no ball may cover the player.
+
+**Resolution.** The App Store panels need about 4160×2868 of picture. `tools/gpt_image.py`
+renders the panorama natively at `3456x2384`, a 1.2× export. The built-in image tool returns about
+1.6 MP (around 1508×1043): a 2.75× enlargement that no sharpening hides, and `triptych` warns
+above 1.6×. With such a source, run the **detail pass** on the accepted panorama before
+exporting: make a canvas at panel height, then re-render the regions the eye goes to at the
+model's full resolution and merge them back in detail mode.
+
+```bash
+"$STORE_PYTHON" tools/region_repair.py upscale --src "$ART_DIR/panorama.png" \
+  --height 2868 --out "$ART_DIR/panorama-canvas.png"
+"$STORE_PYTHON" tools/region_repair.py cut --src "$ART_DIR/panorama-canvas.png" \
+  --box X0,Y0,X1,Y1 --context 0.3 --out-dir "$ART_DIR/detail/01-lead"
+# Same references as a repair, window.png as the edit target: "re-render this at full detail —
+# identical pose, expression, labels, objects, positions, sizes and colours; refine only edges,
+# texture and lighting detail".
+"$STORE_PYTHON" tools/region_repair.py merge --mode detail \
+  --plan "$ART_DIR/detail/01-lead/plan.json" --render "$ART_DIR/detail/01-lead/render.png" \
+  --out "$ART_DIR/panorama-canvas-d1.png"
+```
+
+Use at most four windows — the lead's head and shoulders first, then the ball labels — and chain
+them with `--base`. Detail mode refuses a render whose content drifted from the region it
+replaces; still compare identity and every label in `proof.png`. Leave the board out unless you
+then verify every cell. Export both sets from the final canvas. Never feed a canvas or a detailed
+canvas to a whole-frame edit.
 
 ## Phase 5 — showcases and feature graphic
 
@@ -620,7 +697,9 @@ the generation order and the references attached to each image call (the banner 
 for the panorama), panel and lower-edge plan, upload order/dimensions/counts, five store-only ball
 labels and whether each exists in gameplay, the single visual verdict for balls flying in every
 panel and covering gameplay while clearing the player, the character framing verdict (torso to
-head, no legs, not standing, not flying), any retry or correction, whether the campaign art was
+head, no legs, not standing, not flying), any retry or correction with each accepted scene's
+lineage (fresh render, whole-frame edit, region repairs and detail windows), its native size and
+export enlargement, whether the campaign art was
 reused from finalization or made in this run (and why, with the runtime files it changed), the
 phone-slide backdrop (`shared-background.png` and its SHA-256, or the fallback panel and
 `--bg-subject` extent), feature phone capture and no-text result, background guard and compliance notes. Do not require per-sprite audit tables, measured
