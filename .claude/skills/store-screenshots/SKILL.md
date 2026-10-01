@@ -66,9 +66,9 @@ without touching it. Several must fly **in front of gameplay** and visibly cover
 board, symbols or outcome area in the marketing scene. Balls may obscure any scene element except
 the visible player/hero character silhouette, including headwear, face, hands and costume.
 Character occlusion is a placement error. A missing ball, a ball resting on an object or a panel
-with no ball is an objective failure. Keep the five ball labels legible. Review art once at final
-crop size; use format/dimension checks for exports. Do not run numeric composition
-gates or repeat visual audits to optimize scores.
+with no ball is an objective failure. Keep the five ball labels legible. Review art at final
+crop size; after a correction review affected crops again. Use format/dimension checks for exports. Do not run numeric composition gates or repeat visual
+audits of unchanged art to optimize scores.
 
 **The image model generates the multiplier balls and their labels in the same call as the rest
 of the scene.** Choose one suitable shipped round asset, such as a ball, coin, token or orb,
@@ -220,10 +220,10 @@ Write `STORE_BRIEF.md` before any generation call:
   The feature graphic is text-free: record the chosen capture for its right-side phone, not a
   title or tagline.
 - One initial attempt per required scene (banner, panorama, any `--panels 0` showcase background
-  and any icon), with at most one fresh retry for an objective failure in that scene. Retries
-  restart from the original assets, plus the accepted banner for scenes generated after it. Do not
-  iterate a fresh render from a rejected output. Targeted edits are allowed by the correction
-  policy below. If the banner is retried, later scenes use the accepted one.
+  and any icon), followed by correction until the required exports pass. Fresh renders restart
+  from the original assets, plus the accepted banner for later scenes; targeted edits use the
+  closest candidate with the original identity references. Follow the correction policy below.
+  Reuse accepted art and preserve evidence of failed attempts.
 
 Collect the original character asset and the gameplay sprites that will be visible in the art.
 Exclude UI chrome, fonts, backgrounds and store outputs. Preserve originals; convert non-PNG
@@ -422,23 +422,33 @@ labels or missing balls, forbidden character framing, character drift, balls ove
 character, incorrect board dimensions or symbol ordering, and links that change the captured
 move or scoring state. Preserve the real mechanic, topology, symbols, and state.
 
-Use the scene's one fresh retry from the original assets for a failed initial render. After the
-retry, allow up to two targeted image-tool edits of the closest candidate, each addressing one
-explicit defect or one coherent board correction. A wrong symbol or selected-chain connector is
-eligible: attach the candidate, original identity assets, authentic capture, and exact runtime
-facts; identify the cells and requested change. Keep all unrelated scene content unchanged.
-Record the prompt, input/output paths, and review result for every edit. Review the corrected
-region and verify that previously accepted character, balls, labels, and gameplay remain valid.
-An edit that introduces unrelated drift is rejected; retain the previous candidate and use only
-any remaining edit budget. Never paste, warp, repaint, or composite a board or chain locally.
+A failed visual review starts a correction loop; it does not end the pipeline. Continue until
+all requested exports pass, without a fixed number of fresh retries, targeted edits, or crop
+adjustments. Reuse accepted artwork and correct only failed scenes. Never declare PASS or
+package rejected art to end the loop.
 
-The same bounded edits can correct an inscription, raise foreground over a torso cut, or add or
-lift a required ball. Attach the original character asset first when present and the shipped
-multiplier reference when correcting a ball. A label cut by a seam needs a crop adjustment,
-not a new image. Character framing, the flying balls, and accurate gameplay remain hard gates.
-If the fresh retry and two edits still fail, preserve evidence, report BLOCKED, and do not export
-rejected art. Continue only independent work within the requested kit. A later explicit request
-to retry authorizes a new invocation's budget; preserve earlier evidence and reuse accepted art.
+Choose the correction from the defect: adjust export crops for seam or gutter clipping; use a
+targeted image-tool edit for a local anatomy, inscription, placement, or board defect; generate
+a fresh composition from the original references when the candidate cannot fit all requested
+formats. Fresh renders may use the accepted banner as world context, never rejected art as an
+identity reference. For a wrong symbol or chain connector, attach the candidate, original
+identity assets, authentic capture, and exact runtime facts; identify the cells and requested
+change. Never paste, warp, repaint, or composite a board or chain locally.
+Never letter it with a script. Attach the original character asset first when present and the shipped multiplier reference
+when correcting a ball. Keep unrelated scene content unchanged.
+
+Record prompts, input/output paths, the observed defect, and the correction result. Review the
+changed region and affected App Store, Play, or phone crops; verify previously accepted identity,
+labels, and gameplay remain valid. Reject edits that introduce unrelated drift and retain the
+closest valid candidate. If a defect recurs, change the composition, pose, margins, prompt, or
+crop strategy using that evidence instead of repeating the same failed approach. Recheck the
+complete export contact sheet after composition changes; avoid repeated audits of unchanged art.
+
+Preserve failure evidence under `production/store-art/failed-delivery/` while continuing repairs.
+BLOCKED is reserved for an unavailable required input/tool/service or an explicit user resource
+limit that prevents further work; an attempt count or failed visual review alone is not a blocker.
+Stop at the user's request. If an external blocker prevents continuing, save the exact cause and
+resume state, finish independent work, and report the incomplete delivery accurately.
 
 ## Phase 2 — visual review criteria (apply after exports)
 
@@ -459,8 +469,8 @@ player/hero silhouette. Do not move balls off the board to clear the action. Che
 panorama visibly shares the banner's world, and that the lower edge is a close-up band of large,
 readable game objects over a continuous layer of the game's own pieces, without a floor, drape or heap of tiny props.
 For a game without a character, check that no player/mascot was invented. Apply the correction
-policy from Phase 1; do not do repeated full-size/thumbnail passes, per-sprite audits, numeric
-scoring or subjective regeneration cycles.
+policy from Phase 1 and recheck affected crops after repairs; avoid repeated audits of unchanged
+art, per-sprite audits, numeric scoring or subjective regeneration cycles.
 
 Judge lighting in the generated source, before compositor grading. It should feel vivid and
 celebratory while retaining the game's authentic colors. Look for clean highlights, selected
@@ -492,8 +502,9 @@ an unchanged matching capture does not justify another generation call.
 
 Select the game's lead kind and export directly from the complete generated panorama. Turn the
 numeric art gates off; do not measure hero, lead, gameplay or protected-region boxes. Inspect
-actual final crops once in Phase 2. If a label or character is cut by a seam, make one crop
-adjustment and re-export. A flying ball covering gameplay is never a reason to adjust the crop.
+actual final crops in Phase 2. If a label or character is cut by a seam, adjust the crop
+and re-export until all requested formats pass; review the affected crops after each change.
+A flying ball covering gameplay is never a reason to adjust the crop.
 
 ```bash
 "$STORE_PYTHON" tools/store_compose.py triptych --src "$ART_DIR/panorama.png" \
@@ -503,7 +514,7 @@ adjustment and re-export. A flying ball covering gameplay is never a reason to a
 
 Use `--lead-kind character` or `object` as applicable. Export Play separately with `--size play`
 from the same complete source; do not resize the App Store panels. The compositor's default
-gutter remains suitable for a carousel. A label cut by the gutter needs one crop correction;
+gutter remains suitable for a carousel. A label cut by the gutter needs a crop correction;
 every panel must still carry a ball, at least two balls must still cover gameplay, and no ball
 may cover the player.
 
@@ -586,14 +597,14 @@ the one shipped with the phone composited in. Do not ship a feature graphic with
 
 Run `store_compose.py check --dir "$OUT_DIR" --store appstore` and, when enabled, the equivalent
 Play check. Verify RGB PNGs, dimensions, no store-screenshot transparency, file sizes, aspect,
-numbering/counts and feature dimensions. In the single visual review from Phase 2, confirm the
+numbering/counts and feature dimensions. In the final passing visual review from Phase 2, confirm the
 feature graphic has no title, tagline, logo or other copy and exactly one framed phone on the
 right; do not repeat the image review here.
 Read `.claude/rules/no-gambling.md`; check captions, metadata and art for gambling controls,
 currency, chance-based prizes and misleading scoring claims. Metadata describes the casual
 mechanic and records “simulated gambling: no”; rate the content and art. No virtual-currency
 disclaimer, age gate or odds disclosure. Interpret decorative objects in context.
-The Phase 2 review checks the five ball inscriptions once. A missing or altered label follows the
+The Phase 2 review checks the five ball inscriptions in the final crops. A missing or altered label follows the
 Phase 1 correction policy; an unsupported gameplay value does not need one. Balls in the
 generated marketing scene must fly in every panel and cover some gameplay while leaving the
 player clear, and any character stays framed from torso to head. Keep separate real gameplay

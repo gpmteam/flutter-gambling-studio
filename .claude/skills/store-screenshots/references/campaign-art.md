@@ -90,11 +90,11 @@ a ball on the character; character drift from its asset; a character shown full 
 flying or floating, or with legs, knees, hips or feet visible; any title, logo, copy or blank copy
 space; a pasted-screenshot boundary; a world that is not the game's (or not the reference's).
 
-Correction follows `/store-screenshots` → "Correcting a generated scene": one fresh retry
-from the original references, then at most two targeted image-tool edits. An incorrect symbol
-or selected-chain connection qualifies for a bounded board correction using the authentic
-capture and exact runtime facts. Verify that identity, composition, balls, and other gameplay
-remain accurate. No local board compositing. After the bounded corrections still fail → BLOCKED.
+Correction follows `/store-screenshots` → "Correcting a generated scene": continue targeted
+image-tool edits or fresh compositions until the banner passes. Use the original identity
+references, authentic capture and exact runtime facts for board corrections. Verify identity,
+composition, balls and gameplay after changes. No local board compositing. Failed review or
+attempt count alone does not make the campaign BLOCKED.
 
 ## Step 3 — the game background
 
@@ -147,8 +147,14 @@ Review `shared-background.png` and `background-crops.png` once. Objective failur
 - a different world from the accepted banner (environment, palette, light, materials);
 - for an object/mechanic game, an invented person, hand, animal or mascot.
 
-One fresh retry from the same prompt file and original references for an objective failure. Still
-failing → BLOCKED. Do not crop, pad, repaint or composite the character to make it fit.
+For a failed background, follow the same correction loop until all four phone crops pass. Use
+targeted image-tool corrections or a fresh composition with the original references and accepted
+banner. Refine the template variables or append concrete crop/pose/margin correction directions
+without removing the template requirements; keep the base prompt passing `check` and save the
+correction prompt separately. Rebuild and review the affected crop sheet after each change.
+Repeated clipping requires a more compact pose or safer placement, not the same unchanged prompt.
+Do not crop, pad, repaint or composite the character locally to make it fit. Do not report
+BLOCKED merely because a retry or edit count has been reached.
 
 ## Step 4 — put it in the game
 
@@ -207,6 +213,9 @@ nothing over its face; every screen that used the shared scene now uses the camp
 game screen uses `bg_campaign_game.png`; nothing is stretched (V18); the wide-host smoke capture
 shows the campaign picture as the column's surround.
 
-If image generation, the context capture, the integration or a review fails, mark the campaign
-art BLOCKED in `campaign.md` with the reason, keep the game's previous background wired, and
-continue only the independent checks. A run with campaign art BLOCKED is never production-ready.
+If generation, capture, integration or review fails, preserve the cause and correct it, then
+repeat the affected verification until it passes. Keep the previous accepted background wired
+until its replacement passes; revert failed integration before repairing it. Mark the campaign
+BLOCKED only when a required input/tool/service is unavailable or an explicit user resource
+limit prevents continuing. Save the cause and resume state and finish independent work in that
+case. A run with unresolved campaign art is never production-ready.

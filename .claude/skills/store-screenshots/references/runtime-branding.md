@@ -41,8 +41,8 @@ protects the campaign background already integrated in the game.
 
 **Launcher icon.** If no suitable square icon art exists yet (`assets/branding/app_icon.png` or a
 game-world emblem crop from `art/long-banner.png`), generate one with the same Codex GPT
-Images 2.0 path as the rest of the asset set (`generate-png-asset/SKILL.md`, budgeted as one
-`generate` source): a full-bleed square composition of the game's hero character/object/emblem
+Images 2.0 path as the rest of the asset set (`generate-png-asset/SKILL.md`); follow the
+store skill's correction loop until the icon passes: a full-bleed square composition of the game's hero character/object/emblem
 on its own themed background, matching the Design DNA.
 
 **No drawn frame, bezel, ring, or rounded-square backdrop in the icon art.** Google Play and
