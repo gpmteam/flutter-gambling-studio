@@ -36,6 +36,11 @@ makes (genre/theme agnostic — everything visual comes from the arguments):
             game's real symbol files, for the concept panorama: before the game
             exists there is no capture to show the image model the field's
             topology. It is attached as context and never enters any art.
+  composition-guide
+            a context-only placement sketch for a panorama render: red bands
+            where the carousel cuts it, grey where the export's cover crop trims
+            it, and the lead, the field, the five balls and the lower-edge band
+            where they belong. `--over` draws the cuts over a rendered candidate.
   showcase  a real in-game frame placed inside a drawn phone (bezel, notch,
             home indicator, glass glare, drop shadow) over a themed background,
             with the caption typography that sells the frame.
@@ -3617,6 +3622,271 @@ def cmd_layout_draft(args) -> None:
          "is never pasted, warped or composited into generated art.")
 
 
+# ── composition guide: where the panorama will be cut, drawn before it is painted ──
+#
+# The image model is never told where `triptych` will cut its picture, so whether a hand, a held
+# prop or a ball label lands on a cut is luck. One concept panorama took ten fresh renders, most of
+# them lost to exactly that, until the agent drew its own sketch of the cuts. This is that sketch,
+# computed from the export's own geometry (`--seam-snap off`, the publisher allowance, the cover
+# crop of a render of `--canvas` size): red bands where the picture is cut, grey where the cover
+# crop trims it, and the real assets where the lead, the field, the five balls and the lower-edge
+# band belong. It is context only, like the layout draft — attached to the panorama call, never
+# composited into any art. `--over` draws the same cuts over a rendered candidate instead, at the
+# candidate's own size, which is what to look at when the tool returned another aspect.
+GUIDE_SEAM_SAFE = 0.06      # kept clear each side of a hidden allowance, per panel width
+GUIDE_MIN_WIDTH = 2400      # drawn at least this wide so the pasted assets stay legible
+GUIDE_BAND_TOP = 0.76       # the lower-edge band of large game objects, as a fraction of height
+GUIDE_BUST_TALL = 1.4       # a lead asset taller than this (h/w) is a full-length figure …
+GUIDE_BUST_KEEP = 0.58      # … whose top part — head to torso — is all the guide shows
+GUIDE_BUST_BLEED = 1.3      # a bust may be this much wider than its berth, bleeding off the left
+# Where the field's centre sits across the panels it spans. Centred, a two-panel field puts its
+# middle column — usually where the clearing group is — under the cut; left of centre, the cut
+# crosses its right-hand columns and the clearing cells on the left stay whole.
+GUIDE_FIELD_X = 0.38
+GUIDE_BALL_LABELS = ("x50", "x10", "x100", "x25", "x5")
+# Ball spots as (x of the panel width, y of the height, radius of the height). The lead's spot
+# sits above the bust's head; field spots straddle the board's top edge and cross its middle,
+# mirrored on alternate field panels so the five never read as a row.
+GUIDE_LEAD_SPOTS = ((0.50, 0.10, 0.062),)
+GUIDE_FIELD_SPOTS = (
+    ((0.30, 0.20, 0.055), (0.64, 0.57, 0.068), (0.70, 0.31, 0.05), (0.36, 0.64, 0.06)),
+    ((0.62, 0.13, 0.06), (0.38, 0.52, 0.064), (0.28, 0.33, 0.05), (0.70, 0.66, 0.058)),
+)
+
+
+def guide_roles(panels: int, lead_kind: str) -> tuple[int | None, list[int]]:
+    """(the lead's panel or None, the panels the field spans), as the panorama templates ask.
+
+    A character opens the carousel and the field spans the rest; an object lead closes it after
+    the gameplay-led opening panels; a mechanic lead *is* the angled field, across every panel.
+    """
+    if lead_kind == "character":
+        return 0, list(range(1, panels))
+    if lead_kind == "object":
+        return panels - 1, list(range(0, panels - 1))
+    return None, list(range(panels))
+
+
+def guide_ball_spots(panels: int, lead_kind: str) -> list[tuple[int, float, float, float, str]]:
+    """Five (panel, x, y, radius, label) spots: one ball in every panel first, then the field."""
+    lead_panel, field = guide_roles(panels, lead_kind)
+    queue = {p: list(GUIDE_LEAD_SPOTS if p == lead_panel else
+                     GUIDE_FIELD_SPOTS[field.index(p) % 2]) for p in range(panels)}
+    chosen: list[tuple[int, tuple[float, float, float]]] = []
+    for p in range(panels):
+        if len(chosen) < len(GUIDE_BALL_LABELS) and queue[p]:
+            chosen.append((p, queue[p].pop(0)))
+    while len(chosen) < len(GUIDE_BALL_LABELS) and any(queue[p] for p in field):
+        for p in field:
+            if len(chosen) < len(GUIDE_BALL_LABELS) and queue[p]:
+                chosen.append((p, queue[p].pop(0)))
+    return [(p, x, y, r, label) for (p, (x, y, r)), label in zip(chosen, GUIDE_BALL_LABELS)]
+
+
+def guide_geometry(canvas: tuple[int, int], panels: int, panel_w: int, panel_h: int,
+                   gutter: int, zoom: float = 1.0, offset: float = 0.0) -> dict:
+    """Where the export cuts a render of `canvas` size, in that render's own pixels."""
+    pano_w = panel_w * panels + gutter * (panels - 1)
+    _, _, left, top, scale = cover_geometry(canvas[0], canvas[1], pano_w, panel_h,
+                                            bias_x=offset, zoom=zoom)
+    to_x = lambda x: (x + left) / scale  # noqa: E731 - pano → render pixels
+    to_y = lambda y: (y + top) / scale   # noqa: E731
+    spans = [panel_span(i, panel_w, gutter) for i in range(panels)]
+    safe = panel_w * GUIDE_SEAM_SAFE
+    seams = [(to_x(spans[i][1] - safe), to_x(spans[i + 1][0] + safe),
+              to_x((spans[i][1] + spans[i + 1][0]) / 2)) for i in range(panels - 1)]
+    return {"pano": (pano_w, panel_h), "spans": spans, "to_x": to_x, "to_y": to_y,
+            "visible": (to_x(0), to_y(0), to_x(pano_w), to_y(panel_h)), "seams": seams}
+
+
+def _guide_font(size: int):
+    path = pick_face(FALLBACK_FAMILIES, "heavy", charset="x0123456789")
+    if path:
+        return load_font(path, size)
+    try:
+        return ImageFont.load_default(size=size)
+    except TypeError:  # Pillow < 10.1
+        return ImageFont.load_default()
+
+
+def _guide_paste(canvas: Image.Image, path: str, box: tuple[float, float, float, float],
+                 mode: str = "contain") -> None:
+    """Fit an asset's visible pixels into `box`. `bust` keeps a full-length figure's head and
+    torso only and seats them on the box's bottom edge — the torso-to-head crop the panorama
+    asks for — so the guide never shows the model legs to copy."""
+    art = load_image(path, "guide asset").convert("RGBA")
+    bbox = art.getchannel("A").getbbox()
+    if bbox:
+        art = art.crop(bbox)
+    if mode == "bust" and art.height > GUIDE_BUST_TALL * art.width:
+        art = art.crop((0, 0, art.width, round(art.height * GUIDE_BUST_KEEP)))
+    x0, y0, x1, y1 = box
+    bw, bh = max(1.0, x1 - x0), max(1.0, y1 - y0)
+    if mode == "bust":
+        # A store bust fills the panel's height; a wide one may bleed off the picture's left
+        # edge (a left crop is allowed) but never grows toward the cut on its right.
+        scale = min(bh / art.height, GUIDE_BUST_BLEED * bw / art.width)
+    else:
+        scale = min(bw / art.width, bh / art.height)
+    w, h = max(1, round(art.width * scale)), max(1, round(art.height * scale))
+    art = art.resize((w, h), RES)
+    if mode == "bust":
+        x, y = round(min(x0 + (bw - w) / 2, x1 - w)), round(y1 - h)
+    else:
+        x, y = round(x0 + (bw - w) / 2), round(y0 + (bh - h) / 2)
+    layer = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
+    layer.paste(art, (x, y))  # paste clips at the edges; alpha_composite refuses them
+    canvas.alpha_composite(layer)
+
+
+def _guide_label(canvas: Image.Image, centre: tuple[float, float], label: str,
+                 radius: float) -> None:
+    font = _guide_font(max(12, round(radius * (0.82 if len(label) <= 3 else 0.64))))
+    stroke = max(2, round(radius * 0.08))
+    draw = ImageDraw.Draw(canvas)
+    style = {"font": font, "fill": (255, 231, 160, 255), "stroke_width": stroke,
+             "stroke_fill": (52, 34, 14, 255)}
+    try:
+        draw.text(centre, label, anchor="mm", **style)
+    except ValueError:  # a bitmap fallback font has no anchors
+        x0, y0, x1, y1 = draw.textbbox((0, 0), label, font=font, stroke_width=stroke)
+        draw.text((centre[0] - (x1 - x0) / 2, centre[1] - (y1 - y0) / 2), label, **style)
+
+
+def _guide_marks(canvas: Image.Image, geo: dict, k: float) -> None:
+    """Grey where the cover crop trims the render, red bands where the panels are cut."""
+    overlay = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
+    draw = ImageDraw.Draw(overlay)
+    vx0, vy0, vx1, vy1 = (v * k for v in geo["visible"])
+    W, H = canvas.size
+    for box in ((0, 0, vx0, H), (vx1, 0, W, H), (0, 0, W, vy0), (0, vy1, W, H)):
+        if box[2] - box[0] >= 1 and box[3] - box[1] >= 1:
+            draw.rectangle(box, fill=(10, 10, 12, 200))
+    line = max(3, round(W / 900))
+    for a, b, centre in geo["seams"]:
+        draw.rectangle((a * k, vy0, b * k, vy1), fill=(235, 30, 70, 110))
+        draw.line(((centre * k, vy0), (centre * k, vy1)), fill=(255, 40, 80, 255), width=line)
+    canvas.alpha_composite(overlay)
+
+
+def cmd_composition_guide(args) -> None:
+    w, h = parse_size(args.size)
+    n = args.panels
+    if not 2 <= n <= 5:
+        die(f"--panels {n} out of range (2..5)")
+    gutter = parse_gutter(args.gutter, w)
+
+    if args.over:
+        canvas = load_image(args.over, "candidate").convert("RGBA")
+        geo = guide_geometry(canvas.size, n, w, h, gutter, args.zoom, args.offset)
+        _guide_marks(canvas, geo, 1.0)
+        save_png(canvas.convert("RGB"), Path(args.out))
+        ok(f"{Path(args.out).name}  {canvas.width}×{canvas.height}  the export's cuts over "
+           f"{Path(args.over).name}")
+        _guide_report(geo, canvas.size)
+        info("A face, hand, held prop or ball label inside a red band is cut by the carousel; "
+             "inside the grey it is cropped away. Fix it by crop first (--zoom/--offset, same "
+             "flags here), by a region repair second — a fresh render only for composition.")
+        return
+
+    cw, ch = parse_size(args.canvas)
+    k = max(1.0, GUIDE_MIN_WIDTH / cw)
+    gw, gh = round(cw * k), round(ch * k)
+    geo = guide_geometry((cw, ch), n, w, h, gutter, args.zoom, args.offset)
+    px = lambda x: geo["to_x"](x) * k  # noqa: E731 - pano → guide pixels
+    py = lambda y: geo["to_y"](y) * k  # noqa: E731
+    span = lambda p: geo["spans"][p]   # noqa: E731
+
+    # A neutral ground: the guide is a diagram, and its colours must not read as a palette.
+    ramp = np.linspace(58, 34, gh, dtype=np.float32)[:, None, None]
+    ground = np.broadcast_to(ramp * np.array([1.0, 1.06, 1.16], dtype=np.float32), (gh, gw, 3))
+    canvas = Image.fromarray(np.clip(ground, 0, 255).astype(np.uint8), "RGB").convert("RGBA")
+    shapes = ImageDraw.Draw(canvas, "RGBA")
+
+    lead_panel, field = guide_roles(n, args.lead_kind)
+    if lead_panel is not None:
+        left = span(lead_panel)[0]
+        if args.lead_kind == "character":
+            box = (px(left + 0.05 * w), py(0.19 * h), px(left + 0.82 * w), py(h))
+            mode = "bust"
+        else:
+            box = (px(left + 0.14 * w), py(0.22 * h), px(left + 0.86 * w), py(0.74 * h))
+            mode = "contain"
+        if args.lead:
+            _guide_paste(canvas, args.lead, box, mode)
+        else:
+            shapes.rounded_rectangle(box, radius=round(0.04 * (box[2] - box[0])),
+                                     fill=(214, 168, 96, 90), outline=(214, 168, 96, 220),
+                                     width=4)
+    elif args.lead:
+        warn("--lead ignored: a mechanic lead is the angled field itself (--field)")
+
+    margin = 0.06 if args.lead_kind == "mechanic" else 0.10
+    field_box = (px(span(field[0])[0] + margin * w), py(0.15 * h),
+                 px(span(field[-1])[1] - margin * w), py(GUIDE_BAND_TOP * h))
+    if args.field:
+        # Seat the field at --field-x of its span: a box that wide, centred there, and clipped
+        # to the span, so a narrow draft lands where the cut crosses its edge, not its middle.
+        x0, y0, x1, y1 = field_box
+        with Image.open(args.field) as probe:
+            aspect = probe.width / max(1, probe.height)
+        fw = min(x1 - x0, (y1 - y0) * aspect)
+        centre = x0 + (x1 - x0) * args.field_x
+        left = min(max(x0, centre - fw / 2), x1 - fw)
+        _guide_paste(canvas, args.field, (left, y0, left + fw, y1), "contain")
+    else:
+        shapes.rounded_rectangle(field_box, radius=24, fill=(90, 150, 220, 70),
+                                 outline=(90, 150, 220, 220), width=4)
+
+    band = (px(0), py(GUIDE_BAND_TOP * h), px(geo["pano"][0]), py(h))
+    if args.object:
+        size = (band[3] - band[1]) * 1.25
+        count = len(args.object)
+        for i, path in enumerate(args.object):
+            cx = band[0] + (band[2] - band[0]) * (0.07 + 0.86 * (i / max(1, count - 1)))
+            cy = band[1] + size * 0.62 + (size * 0.06 if i % 2 else 0)
+            _guide_paste(canvas, path, (cx - size / 2, cy - size / 2, cx + size / 2,
+                                        cy + size / 2), "contain")
+    else:
+        shapes.rectangle(band, fill=(232, 182, 80, 70))
+
+    for panel, x, y, r, label in guide_ball_spots(n, args.lead_kind):
+        cx, cy = px(span(panel)[0] + x * w), py(y * h)
+        rad = (py(y * h + r * h) - cy)
+        box = (cx - rad, cy - rad, cx + rad, cy + rad)
+        if args.ball:
+            _guide_paste(canvas, args.ball, box, "contain")
+        else:
+            shapes.ellipse(box, fill=(236, 190, 70, 235), outline=(70, 46, 20, 255), width=5)
+        _guide_label(canvas, (cx, cy), label, rad)
+
+    _guide_marks(canvas, geo, k)
+    save_png(canvas.convert("RGB"), Path(args.out))
+    ok(f"{Path(args.out).name}  {gw}×{gh}  composition guide — {n} panels of a {cw}×{ch} "
+       f"render ({args.lead_kind} lead)")
+    _guide_report(geo, (cw, ch))
+    want = geo["pano"][0] / geo["pano"][1]
+    if abs(math.log((cw / ch) / want)) > math.log(1.12):
+        warn(f"a {cw}×{ch} render is {cw / ch:.2f}:1 against the carousel's {want:.2f}:1 — the "
+             "export trims the grey a lot. Ask the image tool for a 3:2 landscape render "
+             "(1536x1024) or render headless at 3456x2384, and draw the guide for that size")
+    info("Context only: attach it to the panorama call after the identity asset and the ball "
+         "model, and say so in the prompt. It is never pasted, warped or composited into art.")
+
+
+def _guide_report(geo: dict, canvas: tuple[int, int]) -> None:
+    cw = canvas[0]
+    cuts = ", ".join(f"{a / cw:.1%}–{b / cw:.1%}" for a, b, _ in geo["seams"])
+    info(f"cut bands (the hidden allowance plus {GUIDE_SEAM_SAFE:.0%} of a panel each side): "
+         f"{cuts} of the render width")
+    vx0, vy0, vx1, vy1 = geo["visible"]
+    trimmed = [f"{name} {value:.1%}" for name, value in (
+        ("left", vx0 / canvas[0]), ("right", 1 - vx1 / canvas[0]),
+        ("top", vy0 / canvas[1]), ("bottom", 1 - vy1 / canvas[1])) if value >= 0.005]
+    if trimmed:
+        info("the export's cover crop trims " + ", ".join(trimmed) + " (grey)")
+
+
 # ── showcase backdrop: the opening panel, slid until the character is whole ──
 #
 # Cover-cropping the whole panorama to portrait lands on its middle — whatever
@@ -4449,6 +4719,37 @@ def main() -> None:
     ld.add_argument("--cell", type=int, default=160)
     ld.add_argument("--gap", type=float, default=0.06)
     ld.set_defaults(func=cmd_layout_draft)
+
+    cg = sub.add_parser("composition-guide",
+                        help="context-only placement sketch of a panorama render, with the "
+                             "carousel cuts marked")
+    cg.add_argument("--out", required=True)
+    cg.add_argument("--panels", type=int, default=3)
+    cg.add_argument("--size", default=DEFAULT_SCREEN_SIZE,
+                    help=f"carousel panel size, as triptych --size (default {DEFAULT_SCREEN_SIZE})")
+    cg.add_argument("--gutter", default=DEFAULT_GUTTER, metavar="PX|N%|auto",
+                    help="the hidden seam allowance, as triptych --gutter")
+    cg.add_argument("--zoom", type=float, default=1.0, help="as triptych --zoom")
+    cg.add_argument("--offset", type=float, default=0.0, help="as triptych --offset")
+    cg.add_argument("--canvas", default="3456x2384", metavar="WxH",
+                    help="the size the image tool returns: 3456x2384 headless (the default), "
+                         "1536x1024 from the built-in tool. The cuts are those of "
+                         "`triptych --seam-snap off` on a render of this size")
+    cg.add_argument("--lead-kind", choices=("character", "object", "mechanic"),
+                    default="character")
+    cg.add_argument("--lead", default=None,
+                    help="the original character asset (bust on panel 1) or the lead object")
+    cg.add_argument("--field", default=None,
+                    help="the layout draft, or a real gameplay capture once the game exists")
+    cg.add_argument("--field-x", type=float, default=GUIDE_FIELD_X,
+                    help="where the field's centre sits across the panels it spans, 0..1 "
+                         f"(default {GUIDE_FIELD_X}: the cut crosses its right-hand columns)")
+    cg.add_argument("--ball", default=None, help="the multiplier reference")
+    cg.add_argument("--object", action="append", default=[],
+                    help="a lower-edge object, repeatable, in left-to-right order")
+    cg.add_argument("--over", default=None, metavar="PNG",
+                    help="draw only the cuts, over a rendered candidate at its own size")
+    cg.set_defaults(func=cmd_composition_guide)
 
     s = sub.add_parser("showcase", help="real game frame in a phone on a themed background")
     s.add_argument("--shot", required=True)

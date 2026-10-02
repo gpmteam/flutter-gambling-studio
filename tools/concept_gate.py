@@ -13,7 +13,10 @@ This tool keeps that state in `production/store-art/concept/concept.json`, besid
 describes, so it survives in every project snapshot:
 
   publish   record a reviewed panorama + its sliced panels as the PENDING concept (and write
-            the small web previews the service shows); archives a previous revision first
+            the small web previews the service shows), with `--known-issue` for anything the
+            render budget left unfixed; archives a previous revision first
+  budget    fresh renders and region repairs left in the revision being made (3 and 5): the
+            user reviews the picture next, so its own review loop is bounded
   revise    archive the PENDING concept before a revision render (status DRAFTING)
   approve   PENDING -> APPROVED, pinned to the panorama's SHA-256 (idempotent when approved)
   status    print the record (`--json` for the service)
@@ -44,6 +47,17 @@ PANEL_PREVIEW_HEIGHT = 1200
 PANORAMA_PREVIEW_WIDTH = 2400
 PREVIEW_QUALITY = 86
 PANEL_SIZE = (1320, 2868)
+DEFAULT_LEDGER = "production/store-art/lineage.json"
+# The concept panorama's own review is bounded, because the user reviews it the moment it is
+# published. Unbounded, one panorama took ten fresh renders and 42 minutes, every one of them
+# re-rolling the grid count and the cut placement together. Per revision: fresh renders (each a
+# new composition), and region repairs (each one local defect). `tools/art_lineage.py` refuses
+# to record the next one once these are spent; crops and re-exports are always free.
+FRESH_RENDER_BUDGET = 3
+REPAIR_BUDGET = 5
+# What a publish may tell the user about the picture it shows, so the card says it, not a log.
+MAX_KNOWN_ISSUES = 8
+MAX_KNOWN_ISSUE_CHARS = 300
 
 
 class GateError(RuntimeError):
@@ -106,6 +120,59 @@ def current_panorama_matches(root: Path, data: dict) -> bool:
     return path.exists() and sha256(path) == data["panorama"]["sha256"]
 
 
+def _instant(stamp: str | None) -> _dt.datetime | None:
+    try:
+        return _dt.datetime.fromisoformat(stamp) if stamp else None
+    except ValueError:
+        return None
+
+
+def render_counts(root: Path, records: list[dict]) -> dict:
+    """Fresh renders and region repairs of the concept panorama in the revision being made.
+
+    A revision starts when `revise` archives the shown one (`drafting_since`); a first revision
+    counts every concept panorama the ledger holds, so a run that resumes an interrupted Session 1
+    inherits what the interrupted one already spent.
+    """
+    data = load(root)
+    if data is None:
+        revision, since = 1, None
+    elif data["status"] == "DRAFTING":
+        revision, since = int(data.get("revision", 0)) + 1, _instant(data.get("drafting_since"))
+    else:
+        revision, since = int(data.get("revision", 1)), _instant(data.get("published_at"))
+    concept = root.resolve()
+    fresh = repairs = 0
+    for record in records:
+        if record.get("role") != "panorama" or record.get("made") not in ("fresh", "repair"):
+            continue
+        path = Path(record.get("path") or "")
+        if concept not in (path if path.is_absolute() else Path.cwd() / path).resolve().parents:
+            continue
+        at = _instant(record.get("recorded_at"))
+        if since is not None and (at is None or at < since):
+            continue
+        if record["made"] == "fresh":
+            fresh += 1
+        else:
+            repairs += 1
+    return {"revision": revision, "fresh": fresh, "fresh_budget": FRESH_RENDER_BUDGET,
+            "repairs": repairs, "repair_budget": REPAIR_BUDGET}
+
+
+def budget_refusal(root: Path, records: list[dict], made: str) -> str | None:
+    """Why another `made` (fresh|repair) concept panorama may not be recorded, or None."""
+    counts = render_counts(root, records)
+    spent = {"fresh": (counts["fresh"], FRESH_RENDER_BUDGET, "fresh renders"),
+             "repair": (counts["repairs"], REPAIR_BUDGET, "region repairs")}.get(made)
+    if spent is None or spent[0] < spent[1]:
+        return None
+    return (f"the concept panorama's {spent[2]} are spent ({spent[0]} of {spent[1]} in revision "
+            f"{counts['revision']}). Choose the best candidate, fix what a crop or re-export can, "
+            "and publish it with `concept_gate.py publish --known-issue \"…\"` for anything still "
+            "off — the user reviews it next and can ask for a revision")
+
+
 def archive(root: Path, data: dict) -> Path:
     """Move the recorded revision's files under revisions/rN/ so a new render starts clean."""
     target = root / "revisions" / f"r{data.get('revision', 0)}"
@@ -166,6 +233,7 @@ def cmd_publish(args: argparse.Namespace) -> int:
     panels_dir = Path(args.panels)
     sample = Path(args.sample)
     sample_spec = Path(args.sample_spec)
+    issues = known_issues(args.known_issue)
     for path, what in ((panorama, "panorama"), (prompt, "panorama prompt"),
                        (sample, "gameplay-sample crop"), (sample_spec, "gameplay-sample spec")):
         if not path.is_file():
@@ -238,10 +306,26 @@ def cmd_publish(args: argparse.Namespace) -> int:
     }
     if args.note:
         data["note"] = args.note
+    data["known_issues"] = issues
     save(root, data)
     print(f"✅ concept revision {revision} is PENDING approval — {rel(panorama, project)} "
           f"({len(panels)} panels, sha256 {data['panorama']['sha256'][:12]}…)")
+    for issue in data["known_issues"]:
+        print(f"   known issue: {issue}")
     return 0
+
+
+def known_issues(values: list[str] | None) -> list[str]:
+    """What is still off in the published picture, one plain sentence each, for the user."""
+    issues = [" ".join(v.split()) for v in values or [] if v and v.strip()]
+    if len(issues) > MAX_KNOWN_ISSUES:
+        raise GateError(f"{len(issues)} known issues; name at most {MAX_KNOWN_ISSUES} — a picture "
+                        "with more is not ready to show")
+    long = [i for i in issues if len(i) > MAX_KNOWN_ISSUE_CHARS]
+    if long:
+        raise GateError(f"a known issue is one sentence of at most {MAX_KNOWN_ISSUE_CHARS} "
+                        f"characters: {long[0][:60]}…")
+    return issues
 
 
 def cmd_revise(args: argparse.Namespace) -> int:
@@ -313,6 +397,7 @@ def cmd_status(args: argparse.Namespace) -> int:
             "panorama_intact": current_panorama_matches(root, data),
             "previews": [p["file"] for p in data.get("previews", [])],
             "approved_at": data.get("approved_at"),
+            "known_issues": data.get("known_issues", []),
         }))
         return 0
     if data is None:
@@ -322,8 +407,37 @@ def cmd_status(args: argparse.Namespace) -> int:
     intact = "intact" if current_panorama_matches(root, data) else "CHANGED SINCE PUBLISH"
     print(f"{data['status']} — revision {data.get('revision')}, panorama "
           f"{data['panorama']['file']} ({intact})")
+    for issue in data.get("known_issues", []):
+        print(f"known issue: {issue}")
     if data.get("approved_at"):
         print(f"approved {data['approved_at']} by {data['approved_by']}")
+    return 0
+
+
+def cmd_budget(args: argparse.Namespace) -> int:
+    ledger = Path(args.ledger)
+    records: list[dict] = []
+    if ledger.exists():
+        try:
+            records = json.loads(ledger.read_text(encoding="utf-8")).get("records", [])
+        except (OSError, json.JSONDecodeError) as exc:
+            raise GateError(f"{ledger} is not readable JSON: {exc}") from exc
+    counts = render_counts(Path(args.dir), records)
+    if args.json:
+        print(json.dumps(counts))
+        return 0
+    fresh_left = counts["fresh_budget"] - counts["fresh"]
+    repairs_left = counts["repair_budget"] - counts["repairs"]
+    print(f"concept panorama, revision {counts['revision']}: fresh renders "
+          f"{counts['fresh']}/{counts['fresh_budget']}, region repairs "
+          f"{counts['repairs']}/{counts['repair_budget']}")
+    if fresh_left > 0:
+        print(f"→ {fresh_left} fresh render(s) left: spend one only on a composition defect that a "
+              "crop, a re-export or a region repair cannot fix")
+    else:
+        print("→ no fresh renders left: choose the best candidate, fix what a crop, a re-export"
+              + (f" or a region repair ({repairs_left} left)" if repairs_left > 0 else "")
+              + " can, and publish it with --known-issue for anything still off")
     return 0
 
 
@@ -365,9 +479,17 @@ def main(argv: list[str] | None = None) -> int:
     pub.add_argument("--sample", required=True, help="crop of the panorama's gameplay sample")
     pub.add_argument("--sample-spec", required=True, help="gameplay-sample.md")
     pub.add_argument("--lead-kind", required=True, choices=("character", "object", "mechanic"))
-    pub.add_argument("--ledger", default="production/store-art/lineage.json")
+    pub.add_argument("--ledger", default=DEFAULT_LEDGER)
     pub.add_argument("--note", default=None)
+    pub.add_argument("--known-issue", action="append", default=[],
+                     help="one thing still off in this picture, in a plain sentence the user "
+                          f"reads on the card (repeatable, at most {MAX_KNOWN_ISSUES})")
     pub.set_defaults(handler=cmd_publish)
+
+    bud = sub.add_parser("budget", help="fresh renders and region repairs left in this revision")
+    bud.add_argument("--ledger", default=DEFAULT_LEDGER)
+    bud.add_argument("--json", action="store_true")
+    bud.set_defaults(handler=cmd_budget)
 
     rev = sub.add_parser("revise", help="archive the PENDING concept before a revision render")
     rev.add_argument("--feedback-file", default=None)

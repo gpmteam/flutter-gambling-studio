@@ -76,6 +76,110 @@ class LayoutDraftTests(unittest.TestCase):
             self.assertNotEqual(refused.returncode, 0)
 
 
+class CompositionGuideTests(unittest.TestCase):
+    """The guide's red bands are where `triptych --seam-snap off` really cuts the render."""
+
+    PANEL = (1320, 2868)
+
+    def run_cli(self, *args: str) -> subprocess.CompletedProcess:
+        return subprocess.run([sys.executable, str(SCRIPT), "composition-guide", *args],
+                              capture_output=True, text=True, timeout=120)
+
+    def test_a_line_on_the_guide_cut_is_hidden_by_the_export_and_one_beside_it_is_not(self) -> None:
+        for canvas in ((1536, 1024), (1672, 941), (3456, 2384)):
+            gutter = store_compose.parse_gutter("auto", self.PANEL[0])
+            geo = store_compose.guide_geometry(canvas, 3, *self.PANEL, gutter)
+            with tempfile.TemporaryDirectory() as tmp:
+                folder = Path(tmp)
+                for name, pick in (("hidden", lambda a, b, c: c),
+                                   ("shown", lambda a, b, c: a - 6)):
+                    render = Image.new("RGB", canvas, (90, 90, 90))
+                    draw = ImageDraw.Draw(render)
+                    for a, b, centre in geo["seams"]:
+                        x = round(pick(a, b, centre))
+                        draw.rectangle((x - 1, 0, x + 1, canvas[1]), fill=(255, 0, 255))
+                    src = folder / f"{name}.png"
+                    render.save(src)
+                    out = folder / name
+                    result = subprocess.run(
+                        [sys.executable, str(SCRIPT), "triptych", "--src", str(src),
+                         "--out", str(out), "--panels", "3", "--size", "1320x2868",
+                         "--seam-snap", "off", "--pop", "off", "--art-gate", "off"],
+                        capture_output=True, text=True, timeout=120)
+                    self.assertEqual(result.returncode, 0, result.stderr)
+                    magenta = 0
+                    for i in (1, 2, 3):
+                        px = np.asarray(Image.open(out / f"store-0{i}.png").convert("RGB"),
+                                        dtype=np.int16)
+                        magenta += int(((px[..., 0] > 180) & (px[..., 1] < 90)
+                                        & (px[..., 2] > 180)).sum())
+                    if name == "hidden":
+                        self.assertEqual(magenta, 0, f"{canvas}: the guide's cut is not the export's")
+                    else:
+                        self.assertGreater(magenta, 0, f"{canvas}: the band edge is not in a panel")
+
+    def test_five_balls_one_per_panel_none_on_a_cut_or_over_the_bust(self) -> None:
+        w, h = self.PANEL
+        gutter = store_compose.parse_gutter("auto", w)
+        safe = w * store_compose.GUIDE_SEAM_SAFE
+        for panels in (2, 3, 4, 5):
+            for lead_kind in ("character", "object", "mechanic"):
+                spots = store_compose.guide_ball_spots(panels, lead_kind)
+                label = f"{panels} panels, {lead_kind}"
+                self.assertEqual(sorted(s[4] for s in spots),
+                                 sorted(store_compose.GUIDE_BALL_LABELS), label)
+                self.assertEqual({s[0] for s in spots} >= set(range(panels)), True, label)
+                lead_panel, _ = store_compose.guide_roles(panels, lead_kind)
+                for panel, x, y, r, _ in spots:
+                    left, _ = store_compose.panel_span(panel, w, gutter)
+                    cx, rad = left + x * w, r * h
+                    self.assertGreater(cx - rad, left + safe, label)
+                    self.assertLess(cx + rad, left + w - safe, label)
+                    if panel == lead_panel and lead_kind == "character":
+                        self.assertLess(y + r, 0.19, f"{label}: the ball sits on the bust")
+
+    def test_the_cli_draws_a_guide_and_overlays_a_candidate(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            folder = Path(tmp)
+            hero = Image.new("RGBA", (200, 520), (0, 0, 0, 0))
+            ImageDraw.Draw(hero).rectangle((40, 0, 160, 520), fill=(30, 200, 60, 255))
+            hero.save(folder / "hero.png")
+            Image.new("RGBA", (700, 800), (40, 60, 120, 255)).save(folder / "draft.png")
+            ball = Image.new("RGBA", (120, 120), (0, 0, 0, 0))
+            ImageDraw.Draw(ball).ellipse((4, 4, 116, 116), fill=(60, 110, 230, 255))
+            ball.save(folder / "ball.png")
+
+            guide = folder / "guide.png"
+            result = self.run_cli("--out", str(guide), "--canvas", "1536x1024",
+                                  "--lead", str(folder / "hero.png"),
+                                  "--field", str(folder / "draft.png"),
+                                  "--ball", str(folder / "ball.png"))
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertIn("Context only", result.stdout)
+            self.assertIn("cut bands", result.stdout)
+            with Image.open(guide) as image:
+                self.assertGreaterEqual(image.width, store_compose.GUIDE_MIN_WIDTH)
+                self.assertAlmostEqual(image.width / image.height, 1536 / 1024, places=2)
+                # The bust rises from behind the lower-edge band rather than floating above it.
+                px = np.asarray(image.convert("RGB"), dtype=np.int16)
+                green = (px[..., 1] > 170) & (px[..., 0] < 80)
+                above_band = round(image.height * 0.72)
+                self.assertTrue(green[above_band].any(), "the bust does not reach the band")
+
+            wide = self.run_cli("--out", str(folder / "wide.png"), "--canvas", "1672x941")
+            self.assertEqual(wide.returncode, 0, wide.stderr)
+            self.assertIn("3:2 landscape", wide.stdout + wide.stderr)
+
+            Image.new("RGB", (1536, 1024), (90, 90, 90)).save(folder / "candidate.png")
+            over = self.run_cli("--out", str(folder / "cuts.png"),
+                                "--over", str(folder / "candidate.png"))
+            self.assertEqual(over.returncode, 0, over.stderr)
+            with Image.open(folder / "cuts.png") as image:
+                self.assertEqual(image.size, (1536, 1024))
+                red = np.asarray(image.convert("RGB"), dtype=np.int16)
+                self.assertTrue(((red[..., 0] - red[..., 1]) > 60).any(), "no cut drawn")
+
+
 class ReassemblyTests(unittest.TestCase):
     """Explicit zero gutter is lossless; carousel allowances hide source strips."""
 

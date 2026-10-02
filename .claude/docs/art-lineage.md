@@ -16,12 +16,16 @@ The result is soft, smeared texture, mushy faces and drifting colour that no exp
 remove, and whatever picture serves as world context passes it on to every picture rendered in its
 world. That picture is now the **concept panorama the user approved** before implementation
 (`tools/concept_gate.py`): the game background, the banner, the icon and the emblem are each
-rendered from the original references plus that one panorama — never from one another.
+rendered from the original references plus that one panorama — never from one another. Before
+approval, a panorama recorded under `production/store-art/concept/` also counts against its
+revision's render budget (three fresh renders, five region repairs): the ledger refuses the next
+one, and the best candidate is published with its remaining defects named.
 
 ## Rules
 
 1. **Changes start from the original references.** A fresh render attaches the shipped assets,
-   the reference sources and a real capture (or, before the game exists, the layout draft) — plus,
+   the reference sources and a real capture (or, before the game exists, the layout draft), with the
+composition guide for a panorama — plus,
    for any campaign picture *other than the panorama*, the approved concept panorama as world
    context. Never attach an earlier version of the picture being made, a rejected candidate, or a
    generated background, banner, icon, emblem or showcase.

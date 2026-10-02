@@ -343,11 +343,13 @@ Then continue to Phase 3.9 in this session.
 ## Phase 3.9 — the concept carousel
 
 Run [the concept panorama procedure](../store-screenshots/references/concept-panorama.md),
-Steps 1–7, in full: the layout draft from the real symbols, the `panorama-*` template rendered and
+Steps 1–7, in full: the layout draft from the real symbols and the composition guide that marks
+the panel cuts (`store_compose.py composition-guide`), the `panorama-*` template rendered and
 proved with `tools/prompt_template.py check`, one generation call with the identity asset, the
-multiplier reference, the draft and the field's own assets attached, the store's review and
-correction policy, the `triptych` export with the store's own flags, the gameplay sample and its
-spec, and `tools/concept_gate.py publish`.
+multiplier reference, the guide, the draft and the field's own assets attached, the bounded review
+(three fresh renders and five region repairs per revision — `concept_gate.py budget` — with what
+is still off published as known issues), the `triptych` export with the store's own flags, the
+gameplay sample and its spec, and `tools/concept_gate.py publish`.
 
 This is the store panorama, made now so the user can see the game before it is built. It obeys
 every `/store-screenshots` rule — torso-to-head character on the first panel (or a gameplay-led
@@ -373,6 +375,7 @@ Slides (production/store-art/concept/panels/):
   3. store-03.png — <…>
 Panorama: production/store-art/concept/panorama.png
 Gameplay sample: <topology, symbols, board housing, the moment shown> — the game is built to look like this
+Known issues: <each one, as published with --known-issue — or "none">
 Concept: <category, archetype, balance model, one-line pitch>
 
 Approve to build the game, or describe what to change.

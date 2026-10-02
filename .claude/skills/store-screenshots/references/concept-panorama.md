@@ -18,6 +18,12 @@ The approval is a contract, so this procedure is strict about one thing above al
 the user sees is the panorama everything is built from. `tools/concept_gate.py` pins the approval
 to its SHA-256, and the store kit's archive gate refuses a panorama that does not descend from it.
 
+Its own review, on the other hand, is **bounded**, because the user reviews the picture the moment
+it is published. Each revision has three fresh renders and five region repairs
+(`concept_gate.py budget`); crops and re-exports are free. Unbounded, one panorama took ten fresh
+renders and 42 minutes: the grid count and the cut placement were re-rolled together every time,
+because nothing told the image model where the cuts fall. The composition guide (Step 1) tells it.
+
 ## Callers
 
 | Caller | When | Gameplay reference |
@@ -28,7 +34,9 @@ to its SHA-256, and the store kit's archive gate refuses a panorama that does no
 
 The legacy store caller runs Steps 1–5 into `$ART_DIR/panorama.png` and returns to the store
 runbook: there is no carousel to present and nothing to approve, because the store run itself is
-the user's request.
+the user's request. It draws the composition guide from its capture (`--field`) like any caller,
+but the render budget is the concept callers' — with no user review to come, its panorama follows
+the store's correction policy.
 
 ## Files — `production/store-art/concept/`
 
@@ -37,6 +45,7 @@ the user's request.
 | `panorama.png` | the accepted panorama source (`3456x2384` headless; ~1.6 MP from the built-in tool) |
 | `panorama-prompt.txt` | the rendered `panorama-*` prompt; `prompt_template.py check` PASS |
 | `layout-draft.png` | the context-only sketch of the planned field |
+| `composition-guide.png` | the context-only placement sketch: the panel cuts, the lead, the field, the five balls, the lower band |
 | `panels/` | the triptych export: `store-01..03.png` at 1320×2868, `_panorama-preview.png`, `_carousel-preview.png` |
 | `export-flags.txt` | the exact `triptych` flags the carousel was exported with — the store run reuses them |
 | `gameplay-sample.png` | the crop of the panorama's gameplay: the field the game is built to look like |
@@ -76,10 +85,31 @@ python3 tools/store_compose.py layout-draft \
 # no board asset yet: --panel "#..." --tile "#..." --border "#..." from the art direction
 ```
 
-A mechanic without a grid (physics, reflex, drop merge) has no draft: describe its field in the
-`gameplay` value and attach the field's own sprites (pegs, bricks, targets, the player piece). The
-draft is **context only** — it tells the model the topology and the moment, and it is never
-pasted, warped or composited into the panorama.
+Choose the clearing cells (`--win`) in the left half of the board: the field spans the cut
+between its two panels, and the composition guide seats it so that cut crosses its right-hand
+columns. A mechanic without a grid (physics, reflex, drop merge) has no draft: describe its field
+in the `gameplay` value and attach the field's own sprites (pegs, bricks, targets, the player
+piece). The draft is **context only** — it tells the model the topology and the moment, and it is
+never pasted, warped or composited into the panorama.
+
+Then draw the **composition guide** — where the export will cut the picture, and where everything
+goes — for the size the image tool returns (`--canvas 1536x1024` for the built-in tool, which is
+asked for that landscape size; the default `3456x2384` headless):
+
+```bash
+"$STORE_PYTHON" tools/store_compose.py composition-guide --canvas 1536x1024 \
+  --lead-kind character --lead "$CHARACTER_ASSET" --ball "$MULTIPLIER_REF" \
+  --field production/store-art/concept/layout-draft.png \
+  --object "$SYMBOL_1" --object "$SYMBOL_2" ... \
+  --out production/store-art/concept/composition-guide.png
+```
+
+Red bands are the cuts (the hidden allowance plus a safety margin), darkened edges are what the
+cover crop trims, and the real assets sit where the panorama needs them: the torso-to-head bust on
+panel 1 (or the lead object on the last panel; a mechanic lead is the field itself), the field
+across the remaining panels, one ball per panel, two over the board, the lower-edge objects. Look
+at it once: a clearing cell under a red band means moving `--win` left, or the field with
+`--field-x`. It is context only, like the draft — attached, never composited into any art.
 
 ## Step 2 — the prompt
 
@@ -99,43 +129,83 @@ python3 tools/prompt_template.py check --template "$TPL" --id panorama-character
 
 The values name this game's subjects in plain words (see the template file's placeholder rules);
 `gameplay` states the topology, the symbols, the moment and where the field sits ("spanning the
-middle and right panels"). Never write or paraphrase the prompt yourself.
+middle and right panels"). Placement — which panel, how far from a cut, how large — is in the
+guide, not in a value: a value carrying it hits the 500-character limit, as four renders of one
+run did. Never write or paraphrase the prompt yourself.
 
 ## Step 3 — generate and record
 
-Use the built-in image tool, or headless `tools/gpt_image.py edit` with the prompt file and the
-attachments in the order the template table lists — identity asset first, then the multiplier
-reference, the layout draft, the symbols/board/tile assets, the original background, the
-reference sources:
+Use the built-in image tool — asking for the landscape `1536x1024` size the guide was drawn for —
+or headless `tools/gpt_image.py edit` with the prompt file and the attachments in the order the
+template table lists: identity asset first, then the multiplier reference, the composition guide,
+the layout draft, the symbols/board/tile assets, the original background, the reference sources:
 
 ```bash
 python3 tools/gpt_image.py edit --prompt-file production/store-art/concept/panorama-prompt.txt \
   --image "$CHARACTER_ASSET" --image "$MULTIPLIER_REF" \
+  --image production/store-art/concept/composition-guide.png \
   --image production/store-art/concept/layout-draft.png --image "$SYMBOL_1" ... \
-  --size 3456x2384 --fidelity high --out production/store-art/concept/panorama.png
-python3 tools/art_lineage.py record --file production/store-art/concept/panorama.png \
+  --size 3456x2384 --fidelity high --out production/store-art/concept/panorama-candidate-1.png
+python3 tools/art_lineage.py record --file production/store-art/concept/panorama-candidate-1.png \
   --role panorama --made fresh --ref "$CHARACTER_ASSET" --ref "$MULTIPLIER_REF" \
+  --ref production/store-art/concept/composition-guide.png \
   --ref production/store-art/concept/layout-draft.png --ref "$SYMBOL_1" ... \
   --prompt production/store-art/concept/panorama-prompt.txt
 ```
 
-## Step 4 — review and correct
+The record is also the budget: a fresh render beyond the revision's three is refused, and an
+unrecorded picture cannot be published.
 
-Review the panorama and its exported panels (Step 5) against `/store-screenshots` → Phase 2 —
+## Step 4 — review and correct, within the budget
+
+First see where the cuts fall on the candidate itself — the tool may return another aspect than
+the guide's (16:9 instead of 3:2 trims about 9% from each side), and the overlay is drawn for the
+candidate's real size:
+
+```bash
+"$STORE_PYTHON" tools/store_compose.py composition-guide \
+  --over production/store-art/concept/panorama-candidate-1.png \
+  --out production/store-art/concept/panorama-candidate-1-cuts.png
+```
+
+Then review the panorama and its exported panels (Step 5) against `/store-screenshots` → Phase 2 —
 balls, labels, character framing, lower edge, lighting, the world — and against the concept's own
-promises. Objective failures in addition to the store's list:
+promises:
 
-- the field is not the planned one: wrong topology, a symbol that is not in the asset set, a
-  board redrawn as reels or as a generic neon grid, housing or tiles that come from nowhere in the
-  game's assets or art direction;
+- the field reads as a different game: reels or a generic neon grid instead of the planned board,
+  a different mechanic or topology, housing or tiles from nowhere in the game's assets or art
+  direction, no clearing moment;
 - the gameplay is too small, too dark or too covered to read as a game a player would recognise —
   balls may cover part of it, the field as a whole must stay readable;
 - a reference game's world, character or symbol cast drifts from its sources.
 
-Correct with `/store-screenshots` → "Correcting a generated scene": crop first, local defects as
-region repairs (`tools/region_repair.py`), composition defects as a fresh render from the original
-references, at most one whole-frame edit of a fresh render. Every candidate goes into the lineage
-ledger. Keep correcting until it passes — an attempt count is never a blocker.
+**A field off by one row or one column is a note, not a defect.** The game takes its topology from
+the level data, not from the picture: write the painted count into `gameplay-sample.md`
+(`Painted:` line) and publish it as a known issue. It never justifies a fresh render. A symbol
+that is not in the asset set is a cell repair, not a re-render. Symbol order is not compared with
+the draft — there is no captured state to preserve before the game exists.
+
+Correct each defect with the cheapest fix that can work, in this order, and check
+`python3 tools/concept_gate.py budget` before spending a render:
+
+1. **Crop** — something in a red band or a trimmed edge: `--zoom` with `--offset` on the export,
+   recorded in `export-flags.txt` (the same flags on `composition-guide --over` show where the
+   cuts move). Free, and no new picture.
+2. **Region repair** — a misspelled or missing label, a hand or prop on a cut, a wrong cell, a ball
+   to add or move (`/store-screenshots` → "Correcting a generated scene"). Five per revision.
+3. **Fresh render** — a composition defect only: the field reads as a different game, the
+   character's identity drifted, the bust is in the wrong panel. Write what the review accepted and
+   what must change into the template values (and redraw the guide if placement is the problem).
+   Three per revision, the first render included.
+
+At most one whole-frame edit of a fresh render, as everywhere. Every candidate goes into the
+lineage ledger. When the budget is spent, stop correcting: choose the best candidate — identity
+and a readable field first, then the labels, then the framing — and publish it in Step 7 with a
+`--known-issue` sentence for each thing still off. The user sees the picture next and can ask for
+a revision; another render here only delays that.
+
+The accepted candidate is copied byte for byte to `production/store-art/concept/panorama.png`; the
+ledger knows a picture by its content, so the copy keeps its record.
 
 ## Step 5 — export the carousel exactly like the store kit
 
@@ -179,7 +249,9 @@ python3 tools/art_lineage.py record --file production/store-art/concept/gameplay
 ```markdown
 # Gameplay sample — the field the game is built to look like
 - Source: production/store-art/concept/panorama.png (revision N), box X0,Y0,X1,Y1
-- Mechanic and topology: [e.g. swap match-3, 7×8]
+- Mechanic and topology: [e.g. swap match-3, 7×8 — from assets/data, the game's own]
+- Painted: [the count the panorama shows, when it differs by a row or column — e.g. 6×8; the game
+  keeps the data's 7×8]
 - Symbols on the field: [asset ids from design/asset-manifest.md, in the order they appear]
 - Board housing / frame: [material, colour, ornament, thickness — asset id, or NEW: not in the asset set]
 - Cell and tile backing: [shape, colour, spacing — asset id, code-drawn, or NEW]
@@ -203,13 +275,15 @@ python3 tools/concept_gate.py publish \
   --panels production/store-art/concept/panels \
   --sample production/store-art/concept/gameplay-sample.png \
   --sample-spec production/store-art/concept/gameplay-sample.md \
-  --lead-kind character
+  --lead-kind character \
+  --known-issue "The painted board is 6×8; the game keeps the level data's 7×8."  # one per issue
 ```
 
 Publish once, after the review passes: a different panorama replacing a PENDING one is refused
-unless it went through `concept_gate.py revise`. Then present the carousel in the final report —
-the three panels in order with what each shows, the gameplay sample in one sentence, the revision
-number — and **end the session**. Do not write gameplay code, do not start
+unless it went through `concept_gate.py revise`. A known issue is one plain sentence for the user
+(at most eight), shown on the chat card beside the Approve button. Then present the carousel in the
+final report — the three panels in order with what each shows, the gameplay sample in one
+sentence, the revision number, the known issues — and **end the session**. Do not write gameplay code, do not start
 `/autocreate-implement`.
 
 Approval:
@@ -231,8 +305,8 @@ Approval:
    the Session 1 phase that owns it: update the concept and art direction, regenerate only the
    affected assets fresh from their original references (re-run their AR checks), and update the
    level/balance data and its simulation when topology or rules change.
-4. Re-run Steps 1–7. A change that moves the composition is a fresh render with the change written
-   into the template values. A purely local change ("the x100 ball in red", "a happier face") may
+4. Re-run Steps 1–7 with a fresh budget (`revise` starts the revision's count). A change that
+   moves the composition is a fresh render with the change written into the template values. A purely local change ("the x100 ball in red", "a happier face") may
    be a region repair of the archived picture: cut from `revisions/rN/panorama.png`, merge into a
    new `panorama.png`, record it `--made repair --parent revisions/rN/panorama.png`. Never attach
    the archived panorama to a fresh render.

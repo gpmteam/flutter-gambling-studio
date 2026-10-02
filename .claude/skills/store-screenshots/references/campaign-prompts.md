@@ -70,13 +70,18 @@ manifest, the reference contract (`design/reference-contract.md`) and the real g
   from the game's own objects and light (never a board, a character or a mascot).
 
 Values are descriptions, not instructions: no "ignore", no extra rules, no text for the image to
-letter. The renderer rejects a value over 500 characters.
+letter. Placement — which panel, how far from a cut, how large — is the composition guide's job,
+not a value's: "fits within the leftmost 26 percent" or "well inboard of the right edge" is an
+instruction, so redraw the guide instead. A value names only its own subject: the template's words
+around the placeholder are already there, so `ball_fx` is "water-ripple halo", never "a glowing
+water-ripple halo, and a short motion trail". The renderer rejects a value over 500 characters
+and a value that repeats the template's words beside it.
 
 ## Attachments and sizes
 
 | Template | Attach, in order | Size |
 |---|---|---|
-| `panorama-*` | the original character asset (identity authority; character lead only) or the lead object asset, the multiplier reference (ball model), the gameplay reference (context only: the layout draft before the game exists, a real capture afterwards), visible shipped sprites (symbols, board frame, tile backing), the game's original background, the reference sources from `design/reference-contract.md` or matching previews | `3456x2384` |
+| `panorama-*` | the original character asset (identity authority; character lead only) or the lead object asset, the multiplier reference (ball model), the composition guide (`store_compose.py composition-guide`: placement and the panel cuts, layout only), the gameplay reference (context only: the layout draft before the game exists, a real capture afterwards), visible shipped sprites (symbols, board frame, tile backing), the game's original background, the reference sources from `design/reference-contract.md` or matching previews | `3456x2384`; the built-in tool's `1536x1024` |
 | `background-*` | the original character asset or lead object asset (identity authority; not for mechanic), the approved panorama (world context — not a character reference), the game's original (pre-campaign) background — never an earlier campaign background, the reference sources | `1328x2880` |
 | `banner-*` | the original character asset (identity authority; character lead only), the approved panorama (world context — not a character reference), the multiplier reference (ball model), the real gameplay capture (context only), visible shipped sprites, the reference sources | `3840x1872` |
 
@@ -98,7 +103,12 @@ the planned topology.
 ```prompt panorama-character
 One continuous, fully illustrated horizontal game panorama for a mobile casual game with premium
 key-art visuals, composed to be cut into {{panels}} side-by-side portrait store screenshots that
-together read as one complete picture, set in the game's own world: {{environment}}. Reproduce
+together read as one complete picture, set in the game's own world: {{environment}}. Compose it
+on the attached composition guide, a layout diagram rather than art: its red bands mark where the
+picture is cut into the {{panels}} portrait panels and its darkened edges are cropped away, so keep
+every face, hand, held object, ball label and decisive symbol out of both, and place the
+character, the game field, the five balls and the lower-edge objects where the guide places them;
+never draw the guide's bands, outlines or flat background into the scene. Reproduce
 the supplied original character asset faithfully: it is the identity authority for the face,
 silhouette, costume and colors, and the other images are context. The main character,
 {{character}}, appears large on the first portrait panel at the left, framed as a torso-to-head
@@ -142,7 +152,12 @@ should look exciting and premium before compositor grading.
 ```prompt panorama-object
 One continuous, fully illustrated horizontal game panorama for a mobile casual game with premium
 key-art visuals, composed to be cut into {{panels}} side-by-side portrait store screenshots that
-together read as one complete picture, set in the game's own world: {{environment}}. There is no
+together read as one complete picture, set in the game's own world: {{environment}}. Compose it
+on the attached composition guide, a layout diagram rather than art: its red bands mark where the
+picture is cut into the {{panels}} portrait panels and its darkened edges are cropped away, so keep
+every ball label and decisive symbol out of both, and place the lead, the game field, the five
+balls and the lower-edge objects where the guide places them; never draw the guide's bands,
+outlines or flat background into the scene. There is no
 character in this game: do not add a person, hand, animal, mascot, deity or player silhouette
 anywhere. The lead, {{lead}}, reproduced faithfully from the attached shipped asset, frames the
 action. The game's real gameplay leads the first two portrait panels at a three-quarter/3D angle,

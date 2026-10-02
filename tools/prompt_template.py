@@ -109,12 +109,42 @@ def render(template: str, values: dict[str, str], max_fill: int = DEFAULT_MAX_FI
     if unknown:
         raise TemplateError("the template has no placeholder(s): " + ", ".join(unknown))
     clean = {n: validate_value(n, v, max_fill) for n, v in values.items()}
+    for name, value in clean.items():
+        refuse_echo(template, name, value)
     return PLACEHOLDER_RE.sub(lambda m: clean[m.group(1)], template)
 
 
 def _chunks(template: str) -> tuple[list[str], list[str]]:
     """Literal chunks and the placeholder names between them."""
     return PLACEHOLDER_RE.split(template)[0::2], PLACEHOLDER_RE.split(template)[1::2]
+
+
+def _words(text: str) -> list[str]:
+    return re.findall(r"[a-z0-9][a-z0-9'’-]*", text.lower())
+
+
+def refuse_echo(template: str, name: str, value: str) -> None:
+    """Refuse a value that repeats the words the template puts around its placeholder.
+
+    "a glowing {{ball_fx}}, and a short motion trail" filled with "a glowing water-ripple halo,
+    and a short motion trail" sends the image model "a glowing a glowing water-ripple halo, and a
+    short motion trail, and a short motion trail": the sentence passes the wording check and
+    still reads as a garbled prompt.
+    """
+    literals, names = _chunks(template)
+    said = _words(value)
+    for i, placeholder in enumerate(names):
+        if placeholder != name:
+            continue
+        before, after = _words(literals[i]), _words(literals[i + 1])
+        for k in range(min(len(said), 8), 1, -1):
+            echo = (said[:k] if len(before) >= k and said[:k] == before[-k:] else
+                    said[-k:] if len(after) >= k and said[-k:] == after[:k] else None)
+            if echo:
+                raise TemplateError(
+                    f"{{{{{name}}}}} repeats the template's own words {' '.join(echo)!r}; the "
+                    "template already says them around the placeholder — give only this game's "
+                    "subject")
 
 
 def _pattern(literals: list[str], names: list[str], upto: int | None = None) -> str:
@@ -139,6 +169,8 @@ def check(template: str, prompt: str, max_fill: int = DEFAULT_MAX_FILL) -> dict[
             if name in values and values[name] != value:
                 raise TemplateError(f"{{{{{name}}}}} is filled two different ways")
             values[name] = value
+        for name, value in values.items():
+            refuse_echo(template, name, value)
         return values
     # Find the first literal passage the prompt no longer carries verbatim.
     for upto in range(1, len(literals) + 1):

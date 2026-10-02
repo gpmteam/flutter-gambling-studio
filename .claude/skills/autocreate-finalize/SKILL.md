@@ -462,7 +462,10 @@ the spec together with `04-game-action.png` (and `03-game-idle.png`) at 390×844
 compare — the runtime field is the same board seen square-on; the camera angle, the flying balls,
 the lower-edge spill and the scenery are marketing-only:
 
-- **topology** — the same columns × rows (or the same field layout for a non-grid mechanic);
+- **topology** — the same columns × rows (or the same field layout for a non-grid mechanic). The
+  level data's count is the game's: when the spec's `Painted:` line records a panorama painted a
+  row or a column off (a known issue the user approved with), the live field keeps the data's
+  count and that difference is not a V23 defect;
 - **symbols** — the same cast, the same art, recognisably the same pieces;
 - **board housing and tile backing** — the same material, colour, ornament and plate shape;
 - **the clearing moment** — the active capture's match/merge/shot treatment reads like the sample's

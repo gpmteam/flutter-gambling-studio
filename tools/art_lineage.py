@@ -23,6 +23,10 @@ and the emblem — and any game asset aligned to its gameplay sample — are ren
 each from the original references plus that one picture, so nothing is ever rendered from a
 picture that was itself rendered from another generated picture.
 
+A concept panorama (recorded under production/store-art/concept/) also has a per-revision render
+budget, `tools/concept_gate.py budget`: the user reviews it next, so a record beyond the budget is
+refused and the agent publishes the best candidate it has, naming what is still off.
+
 Region repairs and detail merges (`tools/region_repair.py`) and deterministic derivations
 (resize, export, grade, upscale canvas) keep their parent's generation: they do not re-paint the
 picture. A file the ledger has never seen, edited or repaired, is treated as an edited one —
@@ -38,12 +42,16 @@ from __future__ import annotations
 import argparse
 import datetime as _dt
 import hashlib
+import importlib.util
 import json
 import sys
 from pathlib import Path
 
 SCHEMA_VERSION = 1
 DEFAULT_LEDGER = "production/store-art/lineage.json"
+# The concept carousel's directory: panoramas recorded under it count against the concept
+# render budget (`tools/concept_gate.py budget`).
+CONCEPT_DIR = "production/store-art/concept"
 ROLES = ("banner", "background", "panorama", "icon", "emblem", "showcase", "asset")
 MADE = ("fresh", "edit", "repair", "detail", "derive", "adopt")
 # A fresh render is generation 1; one whole-frame edit makes it 2, and that is the ceiling.
@@ -106,6 +114,32 @@ def reference_issue(ref: dict | None, role: str) -> str | None:
         return (f"it is a generated {ref['role']}; only the panorama (the approved concept) may "
                 "be world context for another campaign picture")
     return None
+
+
+def concept_budget_issue(data: dict, file: Path, role: str, made: str) -> str | None:
+    """Why a concept panorama render may not be recorded: its revision's budget is spent.
+
+    The concept panorama is reviewed by the user the moment it is published, so its own
+    correction loop is bounded (`tools/concept_gate.py`, FRESH_RENDER_BUDGET / REPAIR_BUDGET).
+    Refusing the record is what makes that a stop: an unrecorded picture cannot be published.
+    """
+    if role != "panorama" or made not in ("fresh", "repair"):
+        return None
+    concept = Path(CONCEPT_DIR)
+    if concept.resolve() not in file.resolve().parents:
+        return None
+    gate_path = Path(__file__).with_name("concept_gate.py")
+    if not gate_path.is_file():
+        return None
+    spec = importlib.util.spec_from_file_location("concept_gate", gate_path)
+    if spec is None or spec.loader is None:
+        return None
+    gate = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(gate)
+    try:
+        return gate.budget_refusal(concept, data["records"], made)
+    except gate.GateError:
+        return None  # an unreadable concept record is publish's problem, not the ledger's
 
 
 def plan_record(data: dict, file: Path, role: str, made: str, parent: Path | None,
@@ -179,6 +213,9 @@ def cmd_record(args: argparse.Namespace) -> int:
         print(f"= {args.file} is already recorded as generation {existing['generation']} "
               f"{existing['role']} ({existing['made']}); keeping that record")
         return 0
+    budget = concept_budget_issue(data, Path(args.file), args.role, args.made)
+    if budget:
+        raise LineageError(budget)
     record = plan_record(data, Path(args.file), args.role, args.made,
                          Path(args.parent) if args.parent else None,
                          [Path(r) for r in args.ref])

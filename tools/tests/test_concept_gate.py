@@ -170,6 +170,96 @@ class ConceptGateTests(unittest.TestCase):
         self.assertEqual(code, 1)
         self.assertIn("art_lineage.py record", message)
 
+    def lineage(self, *argv: str) -> tuple[int, str]:
+        out, err = io.StringIO(), io.StringIO()
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+            code = art_lineage.main(["--ledger", str(self.ledger), *argv])
+        return code, out.getvalue() + err.getvalue()
+
+    def candidate(self, name: str, folder: Path | None = None) -> Path:
+        self._shade += 7
+        path = (folder or self.root) / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        Image.new("RGB", (60, 40), (self._shade % 256, 30, self._shade // 256)).save(path)
+        return path
+
+    def test_the_concept_panorama_has_a_render_budget_per_revision(self) -> None:
+        for i in range(concept_gate.FRESH_RENDER_BUDGET):
+            path = self.candidate(f"panorama-candidate-{i + 1}.png")
+            code, out = self.lineage("record", "--file", str(path), "--role", "panorama",
+                                     "--made", "fresh")
+            self.assertEqual(code, 0, out)
+        code, out = self.lineage("record", "--file", str(self.candidate("one-more.png")),
+                                 "--role", "panorama", "--made", "fresh")
+        self.assertEqual(code, 1)
+        self.assertIn("fresh renders are spent", out)
+        self.assertIn("--known-issue", out)
+        status = json.loads(self.run_cli("budget", "--json")[1])
+        self.assertEqual((status["revision"], status["fresh"]), (1, concept_gate.FRESH_RENDER_BUDGET))
+        self.assertIn("no fresh renders left", self.run_cli("budget")[1])
+
+        # Region repairs are budgeted separately; a store run's panorama is not a concept render.
+        parent = self.root / "panorama-candidate-1.png"
+        for i in range(concept_gate.REPAIR_BUDGET):
+            code, out = self.lineage("record", "--file", str(self.candidate(f"repaired-{i}.png")),
+                                     "--role", "panorama", "--made", "repair",
+                                     "--parent", str(parent))
+            self.assertEqual(code, 0, out)
+        code, out = self.lineage("record", "--file", str(self.candidate("repaired-x.png")),
+                                 "--role", "panorama", "--made", "repair", "--parent", str(parent))
+        self.assertEqual(code, 1)
+        self.assertIn("region repairs are spent", out)
+        store = self.candidate("panorama.png", Path("production/store-art/art"))
+        self.assertEqual(self.lineage("record", "--file", str(store), "--role", "panorama",
+                                      "--made", "fresh")[0], 0)
+
+    def test_a_revision_gets_a_fresh_budget(self) -> None:
+        self.render()
+        self.assertEqual(self.publish()[0], 0)
+        for i in range(concept_gate.FRESH_RENDER_BUDGET - 1):
+            self.lineage("record", "--file", str(self.candidate(f"late-{i}.png")),
+                         "--role", "panorama", "--made", "fresh")
+        self.run_cli("revise")
+        # Earlier renders in the same second as `revise` would still count; step past it.
+        record = self.record()
+        record["drafting_since"] = "2999-01-01T00:00:00+00:00"
+        (self.root / "concept.json").write_text(json.dumps(record), "utf-8")
+        status = json.loads(self.run_cli("budget", "--json")[1])
+        self.assertEqual((status["revision"], status["fresh"]), (2, 0))
+
+    def test_known_issues_reach_the_record_and_the_status(self) -> None:
+        self.render()
+        code, out = self.run_cli("publish", "--panorama", str(self.root / "panorama.png"),
+                                 "--prompt", str(self.root / "panorama-prompt.txt"),
+                                 "--panels", str(self.root / "panels"),
+                                 "--sample", str(self.root / "gameplay-sample.png"),
+                                 "--sample-spec", str(self.root / "gameplay-sample.md"),
+                                 "--lead-kind", "character",
+                                 "--known-issue", "The painted board is 6x8;  the game is 7x8.",
+                                 "--known-issue", "The x25 label is soft at full size.")
+        self.assertEqual(code, 0, out)
+        self.assertIn("known issue: The painted board is 6x8; the game is 7x8.", out)
+        issues = ["The painted board is 6x8; the game is 7x8.", "The x25 label is soft at full size."]
+        self.assertEqual(self.record()["known_issues"], issues)
+        self.assertEqual(json.loads(self.run_cli("status", "--json")[1])["known_issues"], issues)
+
+    def test_known_issues_are_short_and_few(self) -> None:
+        self.render()
+        base = ["publish", "--panorama", str(self.root / "panorama.png"),
+                "--prompt", str(self.root / "panorama-prompt.txt"),
+                "--panels", str(self.root / "panels"),
+                "--sample", str(self.root / "gameplay-sample.png"),
+                "--sample-spec", str(self.root / "gameplay-sample.md"), "--lead-kind", "character"]
+        many = [arg for i in range(concept_gate.MAX_KNOWN_ISSUES + 1)
+                for arg in ("--known-issue", f"issue {i}")]
+        code, out = self.run_cli(*base, *many)
+        self.assertEqual(code, 1)
+        self.assertIn("at most", out)
+        code, out = self.run_cli(*base, "--known-issue", "x" * (concept_gate.MAX_KNOWN_ISSUE_CHARS + 1))
+        self.assertEqual(code, 1)
+        self.assertFalse((self.root / "concept.json").exists())
+        self.assertFalse((self.root / "preview").exists())
+
     def test_a_project_made_before_the_gate_is_legacy(self) -> None:
         Path(concept_gate.HANDOFF_1).write_text("# Handoff 1\n", encoding="utf-8")
         code, message = self.run_cli("check", "--for", "implement")

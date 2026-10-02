@@ -205,8 +205,9 @@ project (no concept record — `concept_gate.py check` said so).
    `bg_campaign_game.png` export. No screen exists yet, so nothing is rewired: they are simply the
    game's backgrounds from the first line of UI code. Record `production/store-art/campaign.md`
    (background ACCEPTED, `world_panorama_sha256`).
-4. **Write the field contract** into `lib/contracts.md` before Agent A starts: the topology and
-   cell geometry, the board housing and tile assets (or the code treatment) with their paths, the
+4. **Write the field contract** into `lib/contracts.md` before Agent A starts: the topology (from
+   the level data — a `Painted:` count in the spec is the picture's, not the game's) and cell
+   geometry, the board housing and tile assets (or the code treatment) with their paths, the
    symbols in the sample's order, the clearing-moment treatment for Agent C (colours, ring, lift,
    spill light), `bg_campaign_menu`/`bg_campaign_game` as the only backgrounds (menu, splash route,
    secondary screens and the wide-host phone-column surround on the first; the game screen on the

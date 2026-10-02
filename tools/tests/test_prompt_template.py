@@ -59,6 +59,36 @@ class TemplateFileTests(unittest.TestCase):
         self.assertIn("do not add a person, hand, animal, mascot", obj)
         self.assertIn("leads the first two portrait panels", obj)
 
+    def test_panorama_templates_are_composed_on_the_composition_guide(self) -> None:
+        # Placement and the panel cuts travel as a picture, so no value has to carry them.
+        templates = prompt_template.load_templates(TEMPLATES)
+        for tid in ("panorama-character", "panorama-object"):
+            with self.subTest(template=tid):
+                body = templates[tid]
+                self.assertIn("on the attached composition guide, a layout diagram rather than art",
+                              body)
+                self.assertIn("its red bands mark where the picture is cut", body)
+                self.assertIn("never draw the guide's bands, outlines or flat background", body)
+
+    def test_a_value_that_repeats_the_templates_own_words_is_refused(self) -> None:
+        # The values a real concept run sent: each prompt read "a glowing a glowing …".
+        template = prompt_template.load_templates(TEMPLATES)["panorama-character"]
+        values = {**BANNER_VALUES, "panels": "three"}
+        for name, echo in (("ball_fx", "a glowing water-ripple halo"),
+                           ("ball_fx", "water-ripple halo, and a short motion trail"),
+                           ("label_color", "warm pale gold with a dark outline and inner highlight")):
+            with self.subTest(name=name, value=echo):
+                with self.assertRaises(prompt_template.TemplateError) as raised:
+                    prompt_template.render(template, {**values, name: echo})
+                self.assertIn("repeats the template's own words", str(raised.exception))
+        clean = prompt_template.render(template, values)
+        self.assertEqual(prompt_template.check(template, clean)["ball_fx"], values["ball_fx"])
+        # A prompt saved before the check existed is caught by `check` too.
+        echoed = clean.replace("a glowing confetti sparkle ring",
+                               "a glowing a glowing confetti sparkle ring")
+        with self.assertRaises(prompt_template.TemplateError):
+            prompt_template.check(template, echoed)
+
     def test_banner_and_background_are_rendered_in_the_approved_panoramas_world(self) -> None:
         templates = prompt_template.load_templates(TEMPLATES)
         for tid in ("banner-character", "banner-object", "background-character",

@@ -43,7 +43,11 @@ once the concept, assets and data exist, slices it into the three carousel slide
 the user approves it (`tools/concept_gate.py`). The approved panorama then governs the rest: the
 game's field is built to look like its gameplay sample (finalization checks it as V23), the game
 background is rendered in its world, and `/store-screenshots` exports it unchanged and renders the
-banner from it. See `.claude/skills/store-screenshots/references/concept-panorama.md`.
+banner from it. Its own review is bounded, because the user reviews it next: a composition guide
+(`tools/store_compose.py composition-guide`) shows the image model where the carousel cuts the
+picture, each revision gets three fresh renders and five region repairs (`concept_gate.py budget`,
+enforced by the lineage ledger), and whatever is still off is published as a known issue on the
+approval card. See `.claude/skills/store-screenshots/references/concept-panorama.md`.
 
 **Generated art stays near its first generation.** Every image-model edit re-paints the whole
 frame and every reference is copied with its artifacts, so a picture edited again and again — or

@@ -363,8 +363,9 @@ For a game made before the approval gate, preflight made it with
 the torso-to-head character, scene-native gameplay at a three-quarter/3D view with the real
 capture as context only, the lower-edge band, all five labelled balls in flight with at least one
 in every panel, and the environment. Attach, in order: the original character asset (identity
-authority), the multiplier reference (ball model), the gameplay capture (context only), visible
-shipped sprites, matching previews. When the tool takes custom sizes, `3456x2384` (about 1.45:1)
+authority), the multiplier reference (ball model), the composition guide
+(`store_compose.py composition-guide --field <capture>`: placement and the panel cuts), the
+gameplay capture (context only), visible shipped sprites, matching previews. When the tool takes custom sizes, `3456x2384` (about 1.45:1)
 covers three 1320×2868 panels plus the default hidden seam allowance. No banner is attached: the
 banner is made from the panorama, never the other way round.
 
@@ -480,6 +481,13 @@ A failed visual review starts a correction loop; it does not end the pipeline. C
 all requested exports pass, without a fixed number of fresh retries, targeted edits, or crop
 adjustments. Reuse accepted artwork and correct only failed scenes. Never declare PASS or
 package rejected art to end the loop.
+
+The one exception is the **concept panorama before approval** (`/autocreate` Phase 3.9 and
+`--revise`): the user reviews it the moment it is published, so its loop is bounded — three fresh
+renders and five region repairs per revision (`tools/concept_gate.py budget`, enforced by the
+lineage ledger), after which the best candidate is published with its remaining defects named as
+known issues ([references/concept-panorama.md](references/concept-panorama.md) → Step 4). It never
+declares those defects fixed; it hands them to the user.
 
 The approved panorama is corrected only by crop, and by a region repair for an objective defect
 the concept review missed. A composition or taste note against it is not a defect: the user
