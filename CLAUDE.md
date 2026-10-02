@@ -38,6 +38,13 @@ kinds, flexible store composition, board topology, Joker tone, combo markers and
 store-only combo balls. The reference's visual language is authoritative; reject unrequested style
 substitutions.
 
+**Generated art stays near its first generation.** Every image-model edit re-paints the whole
+frame and every reference is copied with its artifacts, so a picture edited again and again — or
+re-rendered from its own previous version — turns smeared and mushy. A change to generated art
+starts from the original references; a picture gets at most one whole-frame edit; local fixes are
+region repairs (`tools/region_repair.py`). `tools/art_lineage.py` records every generated
+picture and refuses the compounding moves. See `.claude/docs/art-lineage.md`.
+
 **Reference requests are detected, not guessed.** `/autocreate` Phase 0 runs
 `tools/reference_detect.py` on the user's request: a named `examples-games/` family (English or
 Russian spelling), images the user attached (`design/references/user/`), or an explicit "same as /

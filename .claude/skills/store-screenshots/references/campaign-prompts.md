@@ -67,10 +67,12 @@ letter. The renderer rejects a value over 500 characters.
 | Template | Attach, in order | Size |
 |---|---|---|
 | `banner-*` | the original character asset (identity authority; character lead only), the multiplier reference (ball model), the real gameplay capture (context only), visible shipped sprites, the reference sources from `design/reference-contract.md` or matching previews | `3840x1872` |
-| `background-*` | the original character asset or lead object asset (identity authority; not for mechanic), the accepted banner (world context — not a character reference), the current game background, the reference sources | `1328x2880` |
+| `background-*` | the original character asset or lead object asset (identity authority; not for mechanic), the accepted banner (world context — not a character reference), the game's original (pre-campaign) background — never an earlier campaign background, the reference sources | `1328x2880` |
 
 The accepted banner is never the character reference: the character's identity comes only from
-the shipped asset. Respect the transport's image limit by the rules in
+the shipped asset. No call attaches an earlier version of the picture it makes — a banner is never
+rendered from the previous banner, a background never from the previous background
+([art-lineage.md](../../../docs/art-lineage.md)). Respect the transport's image limit by the rules in
 `.claude/docs/visual-context.md` → "Image reference transport preflight"; never drop the
 identity asset to make room.
 

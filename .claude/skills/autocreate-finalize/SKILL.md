@@ -122,6 +122,13 @@ plays against it. `/store-screenshots` later reuses the banner for the panorama,
 graphic, and the game background behind the phones — it does not regenerate either while the
 handoff is valid. Do not make a panorama or a store ZIP here.
 
+Both pictures stay near their first generation
+([art-lineage.md](../../docs/art-lineage.md)): a run that finds accepted campaign art reuses it,
+a changed template triggers one review rather than a remake, and any remake is a fresh render from
+the original references — never an edit of the previous banner or background, which is not
+attached either. Record each picture in `production/store-art/lineage.json` with
+`tools/art_lineage.py`; it refuses a second whole-frame edit.
+
 If image generation, the context capture, the integration or a review fails, record BLOCKED in
 `campaign.md`, keep the previous background wired, and continue only the independent checks.
 Runtime opt-outs do not waive the campaign art: without a current real frame it is BLOCKED. A
@@ -723,7 +730,7 @@ generation, integration and verification have passed. Otherwise use
 | Phase | Exit criterion | Max iterations |
 |-------|----------------|----------------|
 | 0. Preflight | The handoff exists + `dart analyze` 0 errors | 1 (fail-fast) |
-| 10.4. Campaign art | Banner and background prompts pass `prompt_template.py check`; accepted banner; background with the character whole in frame; wired; campaign.md complete; analyzer/tests pass | Banner: 1 retry + 1 targeted edit; background: 1 retry |
+| 10.4. Campaign art | Banner and background prompts pass `prompt_template.py check`; accepted banner; background with the character whole in frame; wired; campaign.md complete; analyzer/tests pass | Fresh renders from original references; at most one whole-frame edit per picture; region repairs for local defects (art-lineage.md) |
 | 10.5. Runtime Chrome / Android compile | Web: 0 CRITICAL/HIGH visual at every phone size, gameplay-screen contract PASS, no HIGH in the V18 asset-distortion, V19 menu-composition/role, V20 gameplay-centering or V22 campaign-background audits, wide host shows the phone column, 0 FATAL in flutter-run.log (+ soak: no leak). Android (`--platform android`): `flutter build apk --debug` exit 0 | 3 (Chrome is always available) / 2 (Android compile) |
 | 10.6. Playtest | PLAYTEST-REPORT.md, verdict ≠ NOT-PLAYABLE (P1–P10) | 2 |
 | 11. Session state | `active.md` updated | 1 |

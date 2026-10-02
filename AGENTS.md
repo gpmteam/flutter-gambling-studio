@@ -38,6 +38,13 @@ images into image generation when the tool supports it, and compare the runtime 
 references. See `.claude/docs/visual-context.md` and `.claude/docs/game-concept-examples.md` for
 the reference contract and limits.
 
+**Generated art stays near its first generation.** Every image-model edit re-paints the whole
+frame and every reference is copied with its artifacts, so a picture edited again and again — or
+re-rendered from its own previous version — turns smeared and mushy. A change to generated art
+starts from the original references; a picture gets at most one whole-frame edit; local fixes are
+region repairs (`tools/region_repair.py`). `tools/art_lineage.py` records every generated
+picture and refuses the compounding moves. See `.claude/docs/art-lineage.md`.
+
 All store screenshot sets use premium key-art marketing composition: lead with the decisive
 moment of play — the chain lighting up, the cascade, the merge, the clearing shot — with premium
 depth and tactility, controlled anticipation and reward focus, and real active gameplay large and

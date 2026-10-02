@@ -6,11 +6,51 @@ This is structural validation, not a replacement for visual or runtime review.
 from __future__ import annotations
 
 import argparse
+import hashlib
 from io import BytesIO
 import json
 from pathlib import Path, PurePosixPath
 import sys
 import zipfile
+
+
+# The kit's generated scenes, and the most generations each may be from a fresh render. A
+# whole-frame image edit re-paints every pixel, so a banner edited for a pose, then a ball, then
+# a new rule ships visibly degraded — and passes it on to everything that used it as a reference.
+# tools/art_lineage.py keeps the ledger; this checks the files actually shipped against it.
+LINEAGE_ART = ("art/long-banner.png", "art/panorama.png", "art/shared-background.png",
+               "art/multiplier-showcase-bg.png")
+MAX_ART_GENERATION = 2
+
+
+def lineage_errors(kit: zipfile.ZipFile, names: list[str], member) -> list[str]:
+    errors: list[str] = []
+    banner = member("art/long-banner.png")
+    if banner not in names:
+        errors.append("Missing art/long-banner.png, the accepted banner the kit is built on.")
+    present = [rel for rel in LINEAGE_ART if member(rel) in names]
+    ledger_name = member("art/lineage.json")
+    if ledger_name not in names:
+        errors.append("Missing art/lineage.json: copy production/store-art/lineage.json "
+                      "(tools/art_lineage.py) into the kit.")
+        return errors
+    try:
+        ledger = json.loads(kit.read(ledger_name))
+        records = {r["sha256"]: r for r in ledger["records"]}
+    except (ValueError, KeyError, TypeError) as exc:
+        return errors + [f"art/lineage.json is not a lineage ledger ({exc})."]
+    for rel in present:
+        digest = hashlib.sha256(kit.read(member(rel))).hexdigest()
+        record = records.get(digest)
+        if not isinstance(record, dict):
+            errors.append(f"{rel}: not recorded in art/lineage.json; record how it was made "
+                          "with tools/art_lineage.py.")
+        elif not isinstance(record.get("generation"), int) \
+                or not 1 <= record["generation"] <= MAX_ART_GENERATION:
+            errors.append(f"{rel}: generation {record.get('generation')!r}; at most "
+                          f"{MAX_ART_GENERATION} (one whole-frame edit of a fresh render). "
+                          "Render it fresh or repair regions instead.")
+    return errors
 
 
 def check(archive: Path, count: int = 8, play_set: bool = True) -> list[str]:
@@ -87,6 +127,7 @@ def check(archive: Path, count: int = 8, play_set: bool = True) -> list[str]:
                 errors.append(f"Delivery must name the {key} artifact.")
             else:
                 image(relative, size, kind)
+        errors.extend(lineage_errors(kit, names, member))
         for report in ("STORE_BRIEF.md", "STORE_INFO.md"):
             name = member(report)
             if name not in names or not kit.read(name).strip():

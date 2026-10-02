@@ -8,8 +8,9 @@ allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Agent
 
 # Context-based store kit
 
-Read `.claude/docs/visual-context.md`, `.claude/docs/game-concept-examples.md`, and the game's
-concept, art direction, asset manifest, math config and runtime evidence. Inspect matching
+Read `.claude/docs/visual-context.md`, `.claude/docs/game-concept-examples.md`,
+`.claude/docs/art-lineage.md`, and the game's concept, art direction, asset manifest, math config
+and runtime evidence. Inspect matching
 `examples-games/` previews by default, and every source in `design/reference-contract.md` when the
 game is a reference game — its store art is that reference's world. References guide composition; the shipped assets and
 mechanics govern identity. Never change a real game to match a preview's topology or palette.
@@ -410,6 +411,14 @@ the game's real palette and objects:
 
 Use the available built-in image tool; headless generation follows `generate-png-asset/SKILL.md`
 and `tools/gpt_image.py edit` with a prompt file and repeated `--image` inputs in the order above.
+Record every candidate as it lands, with each attached image — the ledger refuses a reference
+that is an earlier panorama or another generated store picture ([art-lineage.md](../../docs/art-lineage.md)):
+
+```bash
+python3 tools/art_lineage.py record --file "$ART_DIR/panorama.png" --role panorama --made fresh \
+  --ref "$CHARACTER_ASSET" --ref "$ART_DIR/long-banner.png" --ref "$MULTIPLIER_REF" \
+  --ref "$RAW_DIR/<capture>.png" ... --prompt "$ART_DIR/prompts/panorama.txt"
+```
 The compositor may grade and slice the finished panorama; it must not assemble its gameplay
 field or add anything to it. `boardplate` is retired for this workflow, and `triptych` refuses
 `--sprite` and `--sprite-dir`.
@@ -453,6 +462,8 @@ the correction from the defect, in this order:
   first-generation render as its input; never send a frame that is itself an edit, or contains a
   merged repair, to another whole-frame edit. Headless whole-frame edits keep the candidate's
   size: `tools/gpt_image.py edit ... --size like:<candidate.png>`, never the 1536x1024 default.
+  Run `tools/art_lineage.py check --file <candidate> --for edit` first; it answers from the
+  ledger, which remembers edits made in earlier runs too.
 
 ```bash
 "$STORE_PYTHON" tools/region_repair.py cut --src "$ART_DIR/panorama.png" \
@@ -484,8 +495,9 @@ paste, warp, repaint, or composite a board or chain locally.
 Never letter it with a script. Attach the original character asset first when present and the shipped multiplier reference
 when correcting a ball. Keep unrelated scene content unchanged.
 
-Record prompts, input/output paths, the observed defect, and the correction result, plus each
-candidate's parent and how it was made (fresh, whole-frame edit, region merge with its box).
+Record prompts, input/output paths, the observed defect, and the correction result. Record each
+candidate's lineage with `tools/art_lineage.py record` (`--made edit|repair --parent <candidate>`),
+and never attach a rejected candidate or an earlier panorama to a fresh render.
 Review the changed region and affected App Store, Play, or phone crops; verify previously
 accepted identity, labels, and gameplay remain valid. Reject repairs that introduce unrelated
 drift and retain the closest valid candidate. If a defect recurs, change the composition, pose,
@@ -593,7 +605,8 @@ Use at most four windows — the lead's head and shoulders first, then the ball 
 them with `--base`. Detail mode refuses a render whose content drifted from the region it
 replaces; still compare identity and every label in `proof.png`. Leave the board out unless you
 then verify every cell. Export both sets from the final canvas. Never feed a canvas or a detailed
-canvas to a whole-frame edit.
+canvas to a whole-frame edit. Record the canvas as `--made derive` and each merge as
+`--made detail`, each with its `--parent`.
 
 ## Phase 5 — showcases and feature graphic
 
@@ -706,7 +719,16 @@ phone-slide backdrop (`shared-background.png` and its SHA-256, or the fallback p
 bounds, numeric gate results or repeated visual verdicts.
 
 Before packaging, copy the finished icon master, listing icon, and transparent emblem into
-`$STORE_DIR/branding/` as `app_icon.png`, `store_icon_512.png`, and `emblem.png`. After actual
+`$STORE_DIR/branding/` as `app_icon.png`, `store_icon_512.png`, and `emblem.png`. Copy the
+lineage ledger in and prove the shipped art against it — the archive gate repeats this check:
+
+```bash
+cp production/store-art/lineage.json "$ART_DIR/lineage.json"
+python3 tools/art_lineage.py --ledger "$ART_DIR/lineage.json" verify \
+  --file "$ART_DIR/long-banner.png" --file "$ART_DIR/panorama.png" \
+  --file "$ART_DIR/shared-background.png"   # each file the kit ships
+```
+ After actual
 visual review confirms identity, framing, balls, and accurate gameplay, write
 `$STORE_DIR/STORE_DELIVERY.json` with the resolved request count and Play-set choice:
 

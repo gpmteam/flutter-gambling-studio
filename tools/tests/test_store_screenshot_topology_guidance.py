@@ -207,6 +207,35 @@ class CampaignArtGuidanceTest(unittest.TestCase):
         self.assertIn("tools/region_repair.py", self.art)
         self.assertNotIn("continue targeted image-tool edits", self.art)
 
+    def test_campaign_art_never_renders_from_its_previous_version(self) -> None:
+        # The banner and background were remade and re-edited run after run, each time from the
+        # last output; the artifacts compounded and spread to everything that used the banner.
+        repo = Path(__file__).resolve().parents[2]
+        refs = repo / ".claude/skills/store-screenshots/references"
+        prompts = " ".join((refs / "campaign-prompts.md").read_text(encoding="utf-8").split())
+        lineage = " ".join((repo / ".claude/docs/art-lineage.md")
+                           .read_text(encoding="utf-8").split())
+        for phrase in ("tools/art_lineage.py record", "--role banner", "--role background",
+                       "the game's **original** background", "$ORIGINAL_GAME_BACKGROUND",
+                       "A changed template alone does not remake it"):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, self.art)
+        self.assertNotIn("$CURRENT_GAME_BACKGROUND", self.art)
+        self.assertNotIn("the current game background", prompts)
+        self.assertIn("A template change alone triggers that one review, not a remake", self.handoff)
+        self.assertIn("never as edits of the stale picture", self.handoff)
+        self.assertIn("art-lineage.md", self.finalize)
+        self.assertIn("lineage.json", self.store)
+        for phrase in ("**At most one whole-frame edit per lineage, and only of a fresh render.**",
+                       "**Template drift is reviewed, not regenerated.**",
+                       "never `bg_campaign_*` or `shared-background.png`"):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, lineage)
+        for doc in ("CLAUDE.md", "AGENTS.md"):
+            with self.subTest(doc=doc):
+                self.assertIn(".claude/docs/art-lineage.md",
+                              (repo / doc).read_text(encoding="utf-8"))
+
 
 class MobileOnlyGuidanceTest(unittest.TestCase):
     """The studio designs portrait phone games; no rule may ask for a desktop/tablet layout."""

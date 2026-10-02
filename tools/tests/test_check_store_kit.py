@@ -1,3 +1,4 @@
+import hashlib
 from io import BytesIO
 import json
 from pathlib import Path
@@ -29,6 +30,14 @@ class StoreKitTests(unittest.TestCase):
         cls.master = png((1024, 1024))
         cls.listing = png((512, 512))
         cls.emblem = png((32, 32), "RGBA")
+        cls.banner = png((64, 32))
+        cls.panorama = png((96, 64))
+
+    @staticmethod
+    def ledger(*records):
+        return json.dumps({"schema_version": 1, "records": [
+            {"sha256": hashlib.sha256(data).hexdigest(), "role": role, "made": made,
+             "generation": generation} for data, role, made, generation in records]}).encode()
 
     def kit(self, count=2, play_set=True, changes=None, manifest_changes=None):
         tmp = tempfile.TemporaryDirectory()
@@ -42,7 +51,8 @@ class StoreKitTests(unittest.TestCase):
         files = {"STORE_DELIVERY.json": json.dumps(manifest).encode(), "STORE_BRIEF.md": b"Brief",
                  "STORE_INFO.md": b"Reviewed", "feature-graphic-1024x500.png": self.feature,
                  "branding/app_icon.png": self.master, "branding/store_icon_512.png": self.listing,
-                 "branding/emblem.png": self.emblem}
+                 "branding/emblem.png": self.emblem, "art/long-banner.png": self.banner,
+                 "art/lineage.json": self.ledger((self.banner, "banner", "fresh", 1))}
         for i in range(1, count + 1):
             files[f"store/store-{i:02d}.png"] = self.app
             if play_set:
@@ -89,6 +99,20 @@ class StoreKitTests(unittest.TestCase):
                         {"store/store-03.png": self.app},
                         {"store/store-01.png": b"not a PNG"},
                         {"branding/app_icon.png": png((1024, 1024), "RGBA")}):
+            with self.subTest(changes=list(changes)):
+                self.assertTrue(check(self.kit(changes=changes), 2))
+
+    def test_shipped_art_must_be_recorded_at_most_one_edit_from_fresh(self):
+        edited_once = self.ledger((self.banner, "banner", "edit", 2),
+                                  (self.panorama, "panorama", "fresh", 1))
+        self.assertEqual(check(self.kit(changes={"art/panorama.png": self.panorama,
+                                                 "art/lineage.json": edited_once}), 2), [])
+        for changes in ({"art/lineage.json": None},
+                        {"art/long-banner.png": None},
+                        {"art/lineage.json": b"not json"},
+                        {"art/lineage.json": self.ledger((self.banner, "banner", "edit", 3))},
+                        {"art/panorama.png": self.panorama},
+                        {"art/lineage.json": self.ledger((self.panorama, "panorama", "fresh", 1))}):
             with self.subTest(changes=list(changes)):
                 self.assertTrue(check(self.kit(changes=changes), 2))
 

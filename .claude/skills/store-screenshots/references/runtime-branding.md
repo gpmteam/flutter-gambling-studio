@@ -36,8 +36,10 @@ references that select them.
 
 **Campaign context.** The accepted banner (`art/long-banner.png`) is the world context for
 icon/emblem generation, alongside the original shipped identity assets, which remain the identity
-authority. Validate any existing icon against this campaign before reuse. The background guard
-protects the campaign background already integrated in the game.
+authority. Validate any existing icon against this campaign before reuse. A new icon or emblem
+is rendered from those references, never from an earlier icon or emblem, and recorded with
+`tools/art_lineage.py` (roles `icon`, `emblem`; [art-lineage.md](../../../docs/art-lineage.md)). The
+background guard protects the campaign background already integrated in the game.
 
 **Launcher icon.** If no suitable square icon art exists yet (`assets/branding/app_icon.png` or a
 game-world emblem crop from `art/long-banner.png`), generate one with the same Codex GPT

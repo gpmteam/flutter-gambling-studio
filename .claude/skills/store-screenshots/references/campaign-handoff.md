@@ -33,19 +33,26 @@ The handoff is **valid** only when all of these hold:
 
 1. `campaign.md` says ACCEPTED and every listed file exists with its recorded SHA-256.
 2. Both prompt files still pass `python3 tools/prompt_template.py check` against the current
-   `campaign-prompts.md` for their recorded template ids. A banner made from an older prompt is
-   stale: the banner rules changed, so the banner is remade under the new ones.
+   `campaign-prompts.md` for their recorded template ids — or `campaign.md` records a passing
+   review of the accepted picture against the current template (its SHA-256 and the verdict). A
+   template change alone triggers that one review, not a remake; only a picture that breaks a
+   current rule is stale.
 3. The original character asset, the multiplier reference and the game's topology/symbols are
    unchanged (hashes and the math config agree with the record).
 4. `bg_campaign_menu.png` and `bg_campaign_game.png` exist with their recorded hashes and are
    still selected from `lib/`.
+5. `production/store-art/lineage.json` records both pictures at generation 2 or less
+   (`python3 tools/art_lineage.py verify --file ... --file ...`). A picture made before the ledger
+   existed is adopted (`--made adopt`) when its review finds no generation artifacts (smeared
+   texture, mushy detail, colour drift), and remade fresh otherwise.
 
 **Valid** → copy `long-banner.png` and `shared-background.png` unchanged into the run's `art/`
 directory and record their provenance in `STORE_BRIEF.md` and `STORE_INFO.md`. Do not regenerate
 either.
 
 **Missing or stale** → run [campaign-art.md](campaign-art.md) now, before the store kit —
-reusing whatever part still validates — and record in `STORE_INFO.md` why reuse was unavailable
+reusing whatever part still validates, and remaking the rest as fresh renders from the original
+references, never as edits of the stale picture — and record in `STORE_INFO.md` why reuse was unavailable
 and which runtime files changed. The store run then continues exactly as if finalization had
 made the art. The single exception is an explicit `--keep-runtime-background`: the banner is
 still generated through the banner step of campaign-art.md (same template, same check), but the
