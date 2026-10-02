@@ -1,7 +1,7 @@
 ---
 name: autocreate-finalize
-description: "Session 3 of the /autocreate pipeline (Phases 10.4 → 10.5 → 10.6 → 11 → 11.5 → 12): campaign art — the store banner (the exact store-screenshots banner prompt) and the game background with the main character whole in frame, wired into the game and reused behind the store's phone slides — runtime + soak verification (Chrome CDP, auto-fix), playtest (a real gameplay session, P1–P10), session state, release-engineering PREP (icons/splash/version/store-metadata/CI — WITHOUT building the AAB/APK and without a keystore) and the final report. Leaves the project release-ready. It does NOT build artifacts and does NOT call /release-package — that is an explicit user action. Started automatically through the Agent tool at the end of Session 2 (autocreate-implement), or manually in a new conversation."
-argument-hint: "[--skip-emulator | --no-fix]"
+description: "Session 3 of the /autocreate pipeline (Phases 10.4 → 10.5 → 10.6 → 11 → 11.5 → 12 → 13): the campaign check (the game background rendered in the approved concept panorama's world is wired into every screen), runtime + soak verification (Chrome CDP, auto-fix) including V22 (campaign background) and V23 (the live field against the approved gameplay sample), playtest (a real gameplay session, P1–P10), session state, release-engineering PREP (icons/splash/version/store-metadata/CI — WITHOUT building the AAB/APK and without a keystore), the final report and a machine-readable verdict, then the handoff to /store-screenshots, which exports the approved panorama and makes the banner from it. It does NOT build artifacts and does NOT call /release-package — that is an explicit user action. Started automatically through the Agent tool at the end of Session 2 (autocreate-implement), or manually in a new conversation."
+argument-hint: "[--skip-emulator | --no-fix | --no-store-kit]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Agent, Skill
 ---
@@ -10,13 +10,19 @@ allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Agent, Skill
 
 **Purpose**: finish `/autocreate` after Session 2 (`autocreate-implement`) has brought the
 project to `dart analyze` 0 errors + `flutter test` green. In this session:
-- **campaign art** (Phase 10.4): the store banner and the game background (character whole in the
-  portrait frame), wired into the game and later reused by `/store-screenshots`;
+- **campaign check** (Phase 10.4): the game background Session 2 rendered in the approved concept
+  panorama's world (character whole in the portrait frame) is wired into every screen; it is
+  rendered here only when a resumed project lacks it. No banner is made here — the store kit makes
+  it from the approved panorama;
 - runtime verification: Chrome/CDP (screenshots + console + auto-fix) plus a soak probe for leaks;
   Android (`--platform android`) is a Gradle compile-only check, with no emulator and no APK
 - **playtest** (Phase 10.6): a real gameplay session — the P1–P10 checks from
   `.claude/skills/playtest/SKILL.md` (the score changes, clear/fail paths, a responsive board, progression)
-- updating the session state + the final report
+- **V23**: the live field, side by side with the approved concept's gameplay sample, is the same
+  field — the user approved the game by that picture
+- updating the session state + the final report + `production/session-state/finalize-verdict.json`
+- **the store kit handoff** (Phase 13): a production-ready game goes straight on to
+  `/store-screenshots`
 - **release-engineering PREP** (`/release-engineering --prep-only --no-keystore`): icons, native
   splash, versioning, store metadata, CI — **WITHOUT building the AAB/APK and without a keystore**
 
@@ -31,8 +37,10 @@ project to `dart analyze` 0 errors + `flutter test` green. In this session:
   crashed, or to repeat the runtime check after edits
 
 **What it does NOT do:**
-- It does NOT rewrite game logic or change balance; Phase 10.4's background export/wiring is the
-  one sanctioned art change, recorded in the manifest and art direction
+- It does NOT rewrite game logic or change balance; Phase 10.4's background export/wiring (only
+  for a project that lacks it) is the one sanctioned art change, recorded in the manifest and art
+  direction
+- It does NOT generate a banner or a panorama, and never touches `production/store-art/concept/`
 - It does NOT create new screens
 - It does NOT run Phases 1–10 — Session 2 already did those
 
@@ -45,9 +53,10 @@ project to `dart analyze` 0 errors + `flutter test` green. In this session:
    `dart analyze` still 0 errors)
 3. ✅ Reads `.claude/docs/mobile-first-contract.md` (portrait phone only — no desktop, tablet
    or landscape design) and `.claude/docs/gameplay-screen-contract.md` before runtime capture and
-   treats every V13–V22 defect as a HIGH release blocker
-4. ✅ Runs Phases 10.4 → 10.5 → 10.6 → 11 → 11.5 → 12 in that order
-5. ✅ Returns the final report to the parent session (or prints it for the user)
+   treats every V13–V23 defect as a HIGH release blocker
+4. ✅ Runs Phases 10.4 → 10.5 → 10.6 → 11 → 11.5 → 12 → 13 in that order
+5. ✅ Returns the final report to the parent session (or prints it for the user) and writes
+   `production/session-state/finalize-verdict.json`
 
 **Forbidden:**
 - ❌ Changing `lib/game/game_config.dart`, `design/balance/*.json` or `assets/data/*.json` —
@@ -58,6 +67,7 @@ project to `dart analyze` 0 errors + `flutter test` green. In this session:
 - ❌ Generating a release upload keystore — Phase 11.5 runs ONLY with `--no-keystore`;
   a signed AAB is the user's explicit `/release-engineering`
 - ❌ Calling `/release-package` — packaging is a separate, explicit run
+- ❌ Changing, regenerating or re-exporting the approved concept panorama or its carousel
 
 ---
 
@@ -87,52 +97,42 @@ Read the handoff file and extract:
 - The game's name → for the archive's name
 - The category (G1–G6), the balance model (B1–B6) and the reference-gameplay/translation decision → for the final report
 - The path to the main game class → for emulator-test navigation
+- The approved concept revision and `production/store-art/concept/gameplay-sample.md` → for V23
+  (`python3 tools/concept_gate.py status`; LEGACY projects have none)
 
 ---
 
-## Phase 10.4 — campaign art: the store banner and the game background
+## Phase 10.4 — campaign check: the game runs on the approved world
 
-Run [the campaign-art procedure](../store-screenshots/references/campaign-art.md) in full. It is
-the same procedure `/store-screenshots` runs when a game has no campaign art, so the two can never
-disagree:
+Session 2 Phase 4.0 rendered the game background in the approved concept panorama's world
+([campaign-art.md](../store-screenshots/references/campaign-art.md) Steps 1–3) and built every
+screen on `bg_campaign_menu.png` / `bg_campaign_game.png`. Confirm it before runtime capture:
 
-1. **Banner** — `production/store-art/long-banner.png`, from the `banner-character` or
-   `banner-object` template in
-   [campaign-prompts.md](../store-screenshots/references/campaign-prompts.md). This is the
-   `/store-screenshots` banner prompt, word for word: render it with this game's values and run
-   `tools/prompt_template.py check` before the image call. Never write or paraphrase a banner
-   prompt yourself; a prompt that fails `check` is not sent.
-2. **Game background** — `production/store-art/shared-background.png`, a portrait phone picture
-   in the banner's world with the main character **whole inside the frame** (head, headwear,
-   shoulders, hands and held props clear of every edge, torso-to-head, no legs), like the
-   backdrop behind the phones on the store slides — because it *is* that backdrop. No multiplier
-   balls, lettering, board or UI in it. Object/mechanic games use their own templates and never
-   gain a character.
-3. **Into the game** — export `bg_campaign_menu.png` / `bg_campaign_game.png`, wire them as the
-   menu, splash-route, secondary-screen and game-screen background, and make them the phone
-   column's surround on wide hosts. This is the explicitly required background change of
-   `/autocreate`; it needs no further opt-in. Then `dart format`, `dart analyze lib/`,
-   `flutter test`, and record everything in `production/store-art/campaign.md`.
+```bash
+python3 tools/concept_gate.py check --for implement   # the approved concept (or LEGACY)
+rg -n 'bg_campaign' lib                              # menu, splash route, secondary screens, game screen
+python3 tools/art_lineage.py verify --file production/store-art/shared-background.png
+```
 
-A reference game (`design/reference-contract.md`) attaches its reference sources to both image
-calls: the campaign art is that reference's world.
+`production/store-art/campaign.md` records the background ACCEPTED with the approved panorama's
+SHA-256 as its `world_panorama_sha256`. When a resumed project lacks it — campaign.md missing, the
+background BLOCKED, or a screen still selecting the original background — run campaign-art.md
+Steps 1–3 now (render in the approved panorama's world, review the phone crops, export, retarget
+the selectors with targeted edits, `dart format`, `dart analyze lib/`, `flutter test`). A LEGACY
+project (no concept record) keeps the background it has.
 
-Phase 10.5 then verifies the integrated background at the phone matrix as **V22**; Phase 10.6
-plays against it. `/store-screenshots` later reuses the banner for the panorama, icon and feature
-graphic, and the game background behind the phones — it does not regenerate either while the
-handoff is valid. Do not make a panorama or a store ZIP here.
+This phase never makes a banner or a panorama: the store kit renders the banner from the approved
+panorama and exports the panorama itself unchanged. Every picture stays near its first
+generation ([art-lineage.md](../../docs/art-lineage.md)): a remade background is a fresh render
+from the original references plus the approved panorama, never an edit of the previous one, and
+`tools/art_lineage.py` refuses a second whole-frame edit.
 
-Both pictures stay near their first generation
-([art-lineage.md](../../docs/art-lineage.md)): a run that finds accepted campaign art reuses it,
-a changed template triggers one review rather than a remake, and any remake is a fresh render from
-the original references — never an edit of the previous banner or background, which is not
-attached either. Record each picture in `production/store-art/lineage.json` with
-`tools/art_lineage.py`; it refuses a second whole-frame edit.
-
-If image generation, the context capture, the integration or a review fails, record BLOCKED in
-`campaign.md`, keep the previous background wired, and continue only the independent checks.
-Runtime opt-outs do not waive the campaign art: without a current real frame it is BLOCKED. A
-BLOCKED campaign art is never production-ready.
+Phase 10.5 verifies the integrated background at the phone matrix as **V22** and the live field
+against the approved gameplay sample as **V23**; Phase 10.6 plays against both. If image
+generation, the integration or a review fails, record BLOCKED in `campaign.md`, keep the previous
+background wired, and continue only the independent checks. Runtime opt-outs do not waive the
+campaign background: without a current real frame it is BLOCKED. A BLOCKED campaign is never
+production-ready.
 
 ---
 
@@ -253,7 +253,7 @@ kill "$(cat .claude/runtime-logs/flutter.pid 2>/dev/null)" 2>/dev/null || true
 ```
 
 Then:
-- **Visual analysis** of each `$SHOT_DIR/*.png` through Read (vision) against the V1–V22 checklist,
+- **Visual analysis** of each `$SHOT_DIR/*.png` through Read (vision) against the V1–V23 checklist,
   `.claude/docs/mobile-first-contract.md`, and `.claude/docs/gameplay-screen-contract.md`.
   For a named `examples-games/` game, compare the mapped source files beside the menu and
   idle/active gameplay captures. Record wrong character, symbol, background, palette, topology,
@@ -266,7 +266,8 @@ Then:
 - **Error parsing**: inspect every `manifest.json` and `webconsole.log` under `$SHOT_DIR`,
   and `.claude/runtime-logs/flutter-run.log` (EXCEPTION CAUGHT, RenderFlex overflowed, Unable to load asset).
 - **Asset distortion (V18)**, **menu composition/role (V19)**, **gameplay-field centering (V20)**
-  and the **campaign background (V22)**: run steps 10.5.2d–10.5.2g below. A screenshot that "has
+  the **campaign background (V22)** and the **approved gameplay sample (V23)**: run steps
+  10.5.2d–10.5.2h below. A screenshot that "has
   the sprite in it" is not proof the sprite kept its shape, a menu that renders is not proof it
   shows the game, a field that is on-screen is not proof it is centered, and a background that
   loads is not proof it is the campaign's.
@@ -435,7 +436,8 @@ when the composition genuinely calls for an offset — record the reason in
 
 ### 10.5.2g — campaign background audit (V22) [~1 min]
 
-Phase 10.4 put the campaign background into the game; this proves it arrived. Read
+Session 2 built the game on the campaign background (Phase 10.4 confirmed it); this proves it
+arrived. Read
 `production/store-art/campaign.md`, `shared-background.png` and `background-crops.png`, then the
 menu and game captures at all four phone sizes:
 
@@ -449,13 +451,36 @@ menu and game captures at all four phone sizes:
 - the wide-host capture uses the campaign picture as the column's surround.
 
 A confirmed failure is **V22, HIGH** and enters the 10.5.3 loop as a targeted wiring edit. A
-background that cannot fit its character is not a wiring defect: it goes back to Phase 10.4's
-review, and campaign art stays BLOCKED until it passes.
+background that cannot fit its character is not a wiring defect: it goes back to campaign-art.md's
+review, and the campaign stays BLOCKED until it passes.
+
+### 10.5.2h — approved gameplay sample audit (V23) [~1 min]
+
+The user approved the game by its concept carousel, and the carousel's gameplay is the field the
+game promised (`production/store-art/concept/gameplay-sample.md`). Read `gameplay-sample.png` and
+the spec together with `04-game-action.png` (and `03-game-idle.png`) at 390×844 and 360×640, and
+compare — the runtime field is the same board seen square-on; the camera angle, the flying balls,
+the lower-edge spill and the scenery are marketing-only:
+
+- **topology** — the same columns × rows (or the same field layout for a non-grid mechanic);
+- **symbols** — the same cast, the same art, recognisably the same pieces;
+- **board housing and tile backing** — the same material, colour, ornament and plate shape;
+- **the clearing moment** — the active capture's match/merge/shot treatment reads like the sample's
+  (its glow colour, ring, lift or spill light);
+- **palette and light** on the field — the same family, no re-themed field.
+
+A field that would make the user say "that is not the game I approved" is **V23, HIGH**: a
+generic grid where the sample had an ornate housing, different tile plates, missing symbols, a
+different board size, a flat clear where the sample promised a lit one. It enters the 10.5.3 loop.
+Skip V23 only for a LEGACY project (no concept record); say so in REPORT.md.
 
 ### 10.5.3 — the auto-fix loop (up to 3 iterations)
 
 Consolidate the problems, mark their severity (CRITICAL/HIGH/MEDIUM) and assign agents:
 - V2/V3/V5/V7/V8/V9/V10/V11/V13/V14/V15/V16/V17/V18/V19/V20/V22 → **ui-programmer**
+- V23 → **ui-programmer** for housing, plates, spacing and layout; **juice-artist** for the
+  clearing moment; **art-director** when the asset itself does not match the sample (generate the
+  missing piece from `gameplay-sample.png` as in implement Phase 4.0 — never a crop of the panorama)
 - V4/V12 → **mechanics-programmer**
 - V18 on a Flame component `size:` → **juice-artist** or **mechanics-programmer**, whoever owns
   the component
@@ -479,6 +504,7 @@ Consolidate the problems, mark their severity (CRITICAL/HIGH/MEDIUM) and assign 
 | The documented menu role or composition is not realized (V19) | The runtime menu contradicts its M/O/P recipe, attention order, or `menu_role` | A targeted menu-screen edit that restores the documented relationship — never invent a character or force a storefront lead into an `absent` role |
 | The play field sits off-center (V20) | An unexplained `Padding`/`Align`/`Positioned` offset on an ancestor of `Key('gameplaySurface')` | Remove the offset so the field's horizontal center returns to the viewport's, or record and verify the state recipe/mechanic reason in `design/art-direction.md` |
 | A screen still shows the old background, or the campaign picture is stretched/letterboxed (V22) | A missed selector, or a fit/alignment other than `BoxFit.cover` + top | Point the selector at `bg_campaign_menu`/`bg_campaign_game`, set `BoxFit.cover` + `Alignment.topCenter` |
+| The live field does not read as the approved gameplay sample (V23) | A board drawn in code where the sample shows a housing asset, wrong tile plates or spacing, a missing clear treatment | Targeted edits to the field's frame/tile widgets and the clear effect so they follow `gameplay-sample.md`; a missing asset is generated from the sample crop (art-director) — topology and rules stay as the frozen data define them |
 | A desktop/tablet/landscape layout branch, or a wide host that stretches the game (V17) | A width breakpoint or a missing phone column | Delete the branch so every width renders the phone composition; wrap `MaterialApp.builder` in the phone column from `mobile-first-contract.md` |
 
 **Forbidden "auto-fixes":**
@@ -497,7 +523,7 @@ or downgrade the defect. Mark finalization FAIL and route it back to `/ui-audit 
 **The web path (the default):**
 - **Success**: 0 CRITICAL + 0 HIGH visual problems, 0 FATAL exceptions, the asset-distortion,
   menu-lead and gameplay-centering audits report no HIGH finding (`STRETCH_EXIT=0`,
-  `MENU_LEAD_EXIT=0`, `GAMEPLAY_CENTER_EXIT=0`, and the vision confirmations agree), V22 passes,
+  `MENU_LEAD_EXIT=0`, `GAMEPLAY_CENTER_EXIT=0`, and the vision confirmations agree), V22 and V23 pass,
   and the gameplay-screen contract passes in idle and active states at every phone size
 - **Partial success**: CRITICAL/HIGH are cleared but MEDIUMs remain — go on to Phase 11 with CONCERNS
 - **Failure**: after 3 iterations any CRITICAL/HIGH remains — save
@@ -568,21 +594,23 @@ Task: Production-ready
 <!-- /STATUS -->
 
 ## Status
-[If campaign art/background and runtime/playtest/layout pass: The game is fully implemented and verified. To get the APK and
-the archive, run /release-package.]
-[If campaign art/background is incomplete or any CRITICAL/HIGH or NOT-PLAYABLE remains: RELEASE BLOCKED. Return to /ui-audit --fix or
-/autocreate-implement --resume; do not run /release-package yet.]
+[If the campaign background, the approved gameplay sample (V23) and runtime/playtest/layout pass: The game is fully
+implemented and verified. The store kit (/store-screenshots) follows. To get the APK and the archive, run /release-package.]
+[If the campaign background is incomplete or any CRITICAL/HIGH or NOT-PLAYABLE remains: RELEASE BLOCKED. Return to /ui-audit --fix or
+/autocreate-implement --resume; do not run /release-package or /store-screenshots yet.]
 
 ## Runtime verification
 - Verdict: [PASS / CONCERNS / FAIL / SKIPPED]
 - Screenshots: production/runtime-screenshots/<ts>/
 - Report: production/runtime-screenshots/<ts>/REPORT.md
 
-## Campaign art
+## Campaign
+- Approved concept: production/store-art/concept/concept.json (revision [N], approved [date])
+- Gameplay sample (V23): [PASS / FAIL / LEGACY, evidence paths]
 - Handoff: production/store-art/campaign.md
-- Banner: production/store-art/long-banner.png
-- Shared background: production/store-art/shared-background.png
-- Integration and visual verdict: [PASS / BLOCKED, evidence paths]
+- Shared background: production/store-art/shared-background.png (in the approved panorama's world)
+- Integration and visual verdict (V22): [PASS / BLOCKED, evidence paths]
+- Banner: made by the store kit from the approved panorama
 
 ## Session 2's tests
 - Unit: [N] green
@@ -596,6 +624,27 @@ the archive, run /release-package.]
 Also mark the handoff file as finished: append a final
 `## Session 3 finished` section to `production/session-state/autocreate-handoff.md`, with an
 ISO timestamp and the verdict.
+
+Write the verdict the web service reads to decide whether the store kit follows:
+
+```bash
+cat > production/session-state/finalize-verdict.json <<'JSON'
+{
+  "schema_version": 1,
+  "verdict": "PRODUCTION_READY",
+  "runtime": "PASS",
+  "playtest": "PLAYABLE",
+  "campaign_background": "PASS",
+  "gameplay_sample": "PASS",
+  "blockers": [],
+  "finished_at": "<ISO timestamp>"
+}
+JSON
+```
+
+`verdict` is `PRODUCTION_READY` exactly when Phase 12's report says
+`AUTOCREATE COMPLETE — PRODUCTION READY`, and `BLOCKED` otherwise, with every blocker listed in
+one line each. Write it from the evidence, never optimistically.
 
 ---
 
@@ -633,9 +682,10 @@ flutter pub get >/dev/null 2>&1 || true
 
 Print to the user (or, when invoked as a sub-agent, return it to the parent session). Use
 `AUTOCREATE COMPLETE — PRODUCTION READY` only when runtime has 0 CRITICAL/HIGH issues, the
-gameplay-screen contract passes, playtest is not NOT-PLAYABLE, and Phase 10.4 banner/background
-generation, integration and verification have passed. Otherwise use
-`AUTOCREATE BLOCKED — UI/GAMEPLAY REWORK REQUIRED` and put the blocking rerun command first.
+gameplay-screen contract passes, playtest is not NOT-PLAYABLE, the campaign background is
+integrated and verified (V22), and the live field matches the approved gameplay sample (V23).
+Otherwise use `AUTOCREATE BLOCKED — UI/GAMEPLAY REWORK REQUIRED` and put the blocking rerun
+command first.
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -674,6 +724,7 @@ generation, integration and verification have passed. Otherwise use
    [PASS / CONCERNS / FAIL / SKIPPED] — [N] CRITICAL, [N] HIGH issues
    Gameplay composition: [PASS / FAIL / UNVERIFIED] — portrait phone screen, dominant field + integrated controls, centered by default (V20)
    Campaign background in game (V22): [PASS / FAIL / BLOCKED]
+   Field vs. the approved gameplay sample (V23): [PASS / FAIL / LEGACY]
    Screenshots: production/runtime-screenshots/<ts>/
    Report: production/runtime-screenshots/<ts>/REPORT.md
 
@@ -686,12 +737,12 @@ generation, integration and verification have passed. Otherwise use
    [Model B1–B6: e.g. "L1–3 ≥ 92%, hardest 31%, ramp +58 pp" — PASS/CONCERNS/FAIL]
    [The report is in design/balance/simulation-report.md]
 
-🎨 Campaign art (Phase 10.4):
-   [PASS / BLOCKED] — production/store-art/campaign.md
-   Banner: production/store-art/long-banner.png (template [id], prompt check PASS)
+🎨 Campaign (approved concept → game → store):
+   Approved concept: revision [N] — production/store-art/concept/ (the carousel the user approved)
    Game background: production/store-art/shared-background.png → assets/images/backgrounds/bg_campaign_*.png
-   /store-screenshots builds the panorama, icon and feature graphic on the banner and puts the
-   phone slides on this same game background
+   (rendered in the approved panorama's world) — [PASS / BLOCKED]
+   Next: /store-screenshots exports the approved panorama unchanged as the carousel, renders the
+   banner in its world, and puts the phone slides on this same game background
 
 🚀 Release-ready (Phase 11.5, PREP — no build):
    ✅ Icons (Android adaptive + iOS + web) + a native splash (colour from the DNA)
@@ -725,24 +776,54 @@ generation, integration and verification have passed. Otherwise use
 
 ---
 
+## Phase 13 — the store kit
+
+A production-ready game goes straight on to its store listing, built from the same approved
+panorama: `/store-screenshots` exports it unchanged as the carousel slides (crops, grading and the
+detail pass only), renders the banner in its world, puts real captures of this game on its
+background, and packages the kit.
+
+```bash
+echo "store kit: ${AUTOCREATE_STORE_KIT:-agent}"
+```
+
+- `AUTOCREATE_STORE_KIT=service` (the web service sets it) or `--no-store-kit` → do not start it:
+  the service runs `/store-screenshots` as its own run after reading `finalize-verdict.json`. End
+  here.
+- Otherwise, when the verdict is `PRODUCTION_READY`, spawn a clean-context agent:
+
+```text
+You are the store-kit session of /autocreate. Read .claude/skills/store-screenshots/SKILL.md and
+run it with its defaults. The concept panorama the user approved is production/store-art/concept/
+— export it unchanged (its recorded export flags; crops, grading and the detail pass only) and
+render the banner in its world. Return the ZIP path, the check_store_kit.py result and any blocker.
+```
+
+- When the verdict is `BLOCKED`, do not start the store kit: the listing would show a game that
+  fails its own gates. The report names the blockers and says the store kit follows their fix
+  (`/store-screenshots`).
+
+---
+
 ## Quality gates
 
 | Phase | Exit criterion | Max iterations |
 |-------|----------------|----------------|
 | 0. Preflight | The handoff exists + `dart analyze` 0 errors | 1 (fail-fast) |
-| 10.4. Campaign art | Banner and background prompts pass `prompt_template.py check`; accepted banner; background with the character whole in frame; wired; campaign.md complete; analyzer/tests pass | Fresh renders from original references; at most one whole-frame edit per picture; region repairs for local defects (art-lineage.md) |
-| 10.5. Runtime Chrome / Android compile | Web: 0 CRITICAL/HIGH visual at every phone size, gameplay-screen contract PASS, no HIGH in the V18 asset-distortion, V19 menu-composition/role, V20 gameplay-centering or V22 campaign-background audits, wide host shows the phone column, 0 FATAL in flutter-run.log (+ soak: no leak). Android (`--platform android`): `flutter build apk --debug` exit 0 | 3 (Chrome is always available) / 2 (Android compile) |
+| 10.4. Campaign check | The approved concept passes `concept_gate.py check`; the background (rendered in the approved panorama's world, character whole in frame) is ACCEPTED and selected by every screen; campaign.md complete; analyzer/tests pass | Only when missing: fresh renders from original references + the approved panorama; at most one whole-frame edit; region repairs for local defects (art-lineage.md) |
+| 10.5. Runtime Chrome / Android compile | Web: 0 CRITICAL/HIGH visual at every phone size, gameplay-screen contract PASS, no HIGH in the V18 asset-distortion, V19 menu-composition/role, V20 gameplay-centering, V22 campaign-background or V23 approved-gameplay-sample audits, wide host shows the phone column, 0 FATAL in flutter-run.log (+ soak: no leak). Android (`--platform android`): `flutter build apk --debug` exit 0 | 3 (Chrome is always available) / 2 (Android compile) |
 | 10.6. Playtest | PLAYTEST-REPORT.md, verdict ≠ NOT-PLAYABLE (P1–P10) | 2 |
 | 11. Session state | `active.md` updated | 1 |
 | 11.5. Release-eng prep | Icons/splash generated, `store/` created (AAB best-effort) | 1 |
-| 12. Final report | The report was printed / returned | 1 |
+| 12. Final report | The report was printed / returned; `finalize-verdict.json` written | 1 |
+| 13. Store kit | PRODUCTION_READY → `/store-screenshots` started (or left to the web service); BLOCKED → not started, and the report says why | 1 |
 
 **THE ABSOLUTE MINIMUM to finish Session 3:**
 - `production/session-state/active.md` is updated
 - The final report is printed, with the runtime verification verdict
 
 This minimum permits an honest blocked report; it does not permit a production-ready claim. Any
-remaining V13–V22/HIGH defect, BLOCKED campaign art, or a failed mobile-phone/gameplay-screen contract keeps the project blocked.
+remaining V13–V23/HIGH defect, a BLOCKED campaign background, or a failed mobile-phone/gameplay-screen contract keeps the project blocked.
 
 ---
 
@@ -752,8 +833,8 @@ remaining V13–V22/HIGH defect, BLOCKED campaign art, or a failed mobile-phone/
 conversation. The skill:
 1. Reads `autocreate-handoff.md` and `active.md`
 2. Works out which phase to continue from (by which artifacts exist):
-   - `production/store-art/campaign.md` missing, not ACCEPTED, or `bg_campaign_*` not wired →
-     start at 10.4 (reusing every campaign file that still validates)
+   - `production/store-art/campaign.md` missing, the background not ACCEPTED, or `bg_campaign_*`
+     not wired → start at 10.4 (reusing every campaign file that still validates)
    - No `production/runtime-screenshots/<ts>/` and no `.claude/runtime-logs/android-build.log` → start at 10.5
    - There are shots (or, on the Android path, an `android-build.log` with exit 0) but no
      `production/playtest/<ts>/PLAYTEST-REPORT.md` → start at 10.6 (on the Android path this step

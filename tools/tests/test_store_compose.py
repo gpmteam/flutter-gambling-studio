@@ -41,6 +41,41 @@ class StoreScreenshotRunbookSafetyTests(unittest.TestCase):
         self.assertNotIn("Unless `--no-backdrop`", runbook)
 
 
+class LayoutDraftTests(unittest.TestCase):
+    """Before the game exists, the concept panorama is shown the planned field, not a guess."""
+
+    def test_the_draft_lays_the_real_symbols_on_the_planned_grid(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            folder = Path(tmp)
+            symbols = []
+            for index, colour in enumerate(((220, 40, 40), (40, 200, 60), (40, 80, 230))):
+                symbol = Image.new("RGBA", (90, 90), (0, 0, 0, 0))
+                ImageDraw.Draw(symbol).ellipse((12, 12, 78, 78), fill=colour + (255,))
+                path = folder / f"symbol-{index}.png"
+                symbol.save(path)
+                symbols += ["--symbol", str(path)]
+            out = folder / "draft.png"
+            result = subprocess.run(
+                [sys.executable, str(SCRIPT), "layout-draft", *symbols, "--grid", "7x8",
+                 "--panel", "#2A1450", "--tile", "#3B2470", "--win", "2x3,3x3,4x3",
+                 "--cell", "64", "--out", str(out)],
+                capture_output=True, text=True, timeout=60)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertIn("Context only", result.stdout)
+            # Store-panorama advice from the legacy plate is not repeated for a draft.
+            self.assertNotIn("pasted on", result.stdout)
+            with Image.open(out) as draft:
+                # Flat (no perspective): 7 columns and 8 rows of 64 px cells plus gaps/padding.
+                self.assertGreater(draft.height, draft.width)
+                self.assertLess(abs(draft.width / draft.height - 7 / 8), 0.05)
+
+            refused = subprocess.run(
+                [sys.executable, str(SCRIPT), "layout-draft", *symbols, "--grid", "9x9",
+                 "--out", str(folder / "too-big.png")],
+                capture_output=True, text=True, timeout=60)
+            self.assertNotEqual(refused.returncode, 0)
+
+
 class ReassemblyTests(unittest.TestCase):
     """Explicit zero gutter is lossless; carousel allowances hide source strips."""
 

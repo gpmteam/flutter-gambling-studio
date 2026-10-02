@@ -11,7 +11,7 @@ class StoreScreenshotTopologyGuidanceTest(unittest.TestCase):
         ).read_text(encoding="utf-8")
         cls.guidance_flat = " ".join(cls.guidance.split())
         cls.phase1 = " ".join(
-            cls.guidance.split("## Phase 1 — banner first, then the complete panorama", 1)[1]
+            cls.guidance.split("## Phase 1 — the approved panorama, then the banner", 1)[1]
             .split("## Phase 2 — visual review criteria", 1)[0]
             .split()
         )
@@ -31,15 +31,17 @@ class StoreScreenshotTopologyGuidanceTest(unittest.TestCase):
         self.assertNotIn("tools/store_compose.py boardplate", self.phase1)
         self.assertNotIn("--from-shot", self.phase1)
 
-    def test_banner_is_generated_first_and_is_world_context_for_the_panorama(self) -> None:
-        banner = self.phase1.index("### 1a — Banner (the first generation call)")
-        panorama = self.phase1.index("### 1b — Panorama (banner as world context)")
-        self.assertLess(banner, panorama)
+    def test_the_approved_panorama_comes_first_and_is_world_context_for_the_banner(self) -> None:
+        panorama = self.phase1.index("### 1a — Panorama (the approved concept)")
+        banner = self.phase1.index("### 1b — Banner (panorama as world context)")
+        self.assertLess(panorama, banner)
         for phrase in (
-            "Generation order: banner first, then panorama.",
-            "the accepted banner (world context — not a character reference)",
-            "not an edit, outpaint or crop of the banner",
+            "Generation order: the approved panorama first, then the banner.",
+            "the approved panorama (world context — not a character reference)",
+            "not an edit, outpaint or crop of the panorama",
             "The character may take a different pose, expression, crop or panel",
+            "**The approved panorama is a contract.**",
+            "Do not render, edit, outpaint or re-letter it.",
         ):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, self.guidance_flat)
@@ -72,7 +74,7 @@ class StoreScreenshotTopologyGuidanceTest(unittest.TestCase):
         ):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, self.guidance_flat)
-        banner = self.phase1.split("### 1a", 1)[1].split("### 1b", 1)[0]
+        banner = self.phase1.split("### 1b", 1)[1].split("### First-prompt", 1)[0]
         self.assertIn("framed from torso to head", banner)
         self.assertIn("neither standing full length nor flying", banner)
         self.assertIn("frame it as a torso-to-head bust", self.phase1)
@@ -88,7 +90,7 @@ class StoreScreenshotTopologyGuidanceTest(unittest.TestCase):
         ):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, self.guidance_flat)
-        banner = self.phase1.split("### 1a", 1)[1].split("### 1b", 1)[0]
+        banner = self.phase1.split("### 1b", 1)[1].split("### First-prompt", 1)[0]
         self.assertIn("Include all five labelled multiplier balls", banner)
         for retired in ("slide 1 may have none", "at least two labelled multiplier balls",
                         "all five when `--panels 0`"):
@@ -158,17 +160,29 @@ class CampaignArtGuidanceTest(unittest.TestCase):
                                 .read_text(encoding="utf-8").split())
         cls.art = " ".join((refs / "campaign-art.md").read_text(encoding="utf-8").split())
         cls.handoff = " ".join((refs / "campaign-handoff.md").read_text(encoding="utf-8").split())
+        cls.concept = " ".join((refs / "concept-panorama.md").read_text(encoding="utf-8").split())
+        cls.implement = " ".join((repo / ".claude/skills/autocreate-implement/SKILL.md")
+                                 .read_text(encoding="utf-8").split())
 
-    def test_both_runbooks_render_the_banner_from_the_shared_template(self) -> None:
-        for name, text in (("store-screenshots", self.store), ("autocreate-finalize", self.finalize)):
+    def test_every_campaign_picture_is_rendered_from_the_shared_templates(self) -> None:
+        # The store kit renders the banner; the concept stage renders the panorama.
+        for name, text in (("store-screenshots", self.store), ("concept-panorama", self.concept)):
             with self.subTest(runbook=name):
                 self.assertIn("campaign-prompts.md", text)
                 self.assertIn("tools/prompt_template.py check", text)
+        self.assertIn("`banner-character` or `banner-object`", self.store)
+        self.assertIn("`panorama-character`", self.concept)
+        for name, text in (("store-screenshots", self.store), ("autocreate-finalize", self.finalize),
+                           ("autocreate-implement", self.implement)):
+            with self.subTest(runbook=name):
                 self.assertIn("campaign-art.md", text)
-        self.assertIn("`banner-character` or `banner-object`", self.finalize)
+        # Finalization no longer makes a banner: the store kit makes it from the approved panorama.
+        self.assertNotIn("banner-character", self.finalize)
+        self.assertIn("No banner is made here", self.finalize)
 
     def test_the_game_background_keeps_the_character_whole_and_is_wired_into_the_game(self) -> None:
-        self.assertIn("with the main character **whole inside the frame**", self.finalize)
+        self.assertIn("with the main character whole inside the portrait frame", self.art)
+        self.assertIn("in the approved panorama's world", self.implement)
         for phrase in ("--confirm-game-background-replacement",
                        "bg_campaign_menu.png",
                        "bg_campaign_game.png",
@@ -181,12 +195,15 @@ class CampaignArtGuidanceTest(unittest.TestCase):
                          self.finalize)
 
     def test_the_store_kit_reuses_a_valid_handoff_and_otherwise_makes_campaign_art(self) -> None:
-        for phrase in ("**Valid** → copy `long-banner.png` and `shared-background.png` unchanged",
-                       "**Missing or stale** → run [campaign-art.md](campaign-art.md) now",
+        for phrase in ("**Valid** → copy the approved panorama, `shared-background.png` and a valid "
+                       "`long-banner.png` unchanged",
+                       "**Missing or stale** → run the matching step of [campaign-art.md](campaign-art.md) now",
+                       "PENDING or DRAFTING** → the user has not approved the concept carousel yet",
                        "prompt_template.py check`"):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, self.handoff)
-        self.assertIn("**Campaign art comes first.**", self.store)
+        self.assertIn("**Campaign art comes first — the approved panorama before everything.**",
+                      self.store)
         self.assertIn("V22", self.finalize)
 
     def test_repairs_do_not_compound_generation_loss(self) -> None:
@@ -235,6 +252,82 @@ class CampaignArtGuidanceTest(unittest.TestCase):
             with self.subTest(doc=doc):
                 self.assertIn(".claude/docs/art-lineage.md",
                               (repo / doc).read_text(encoding="utf-8"))
+
+
+class ConceptApprovalGuidanceTest(unittest.TestCase):
+    """The user approves the concept carousel before any code; it then governs game and store."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        repo = Path(__file__).resolve().parents[2]
+        skills = repo / ".claude/skills"
+
+        def read(path: Path) -> str:
+            return " ".join(path.read_text(encoding="utf-8").split())
+
+        cls.autocreate = read(skills / "autocreate/SKILL.md")
+        cls.implement = read(skills / "autocreate-implement/SKILL.md")
+        cls.finalize = read(skills / "autocreate-finalize/SKILL.md")
+        cls.store = read(skills / "store-screenshots/SKILL.md")
+        cls.concept = read(skills / "store-screenshots/references/concept-panorama.md")
+        cls.emulator = read(skills / "emulator-test/SKILL.md")
+
+    def test_session_one_ends_at_the_approval_gate(self) -> None:
+        for phrase in ("## Phase 3.9 — the concept carousel",
+                       "## Phase 3.10 — the approval gate",
+                       "Then **stop**. Do not start Session 2 and do not approve the carousel yourself.",
+                       "`Concept gate: required`",
+                       '## `--revise "<feedback>"` — the user asked for changes',
+                       "concept-panorama.md"):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, self.autocreate)
+        # Session 2 is only described as what follows an approval.
+        self.assertLess(self.autocreate.index("## Phase 3.10 — the approval gate"),
+                        self.autocreate.index("You are Session 2 of /autocreate."))
+        self.assertIn("The user approved the concept carousel.", self.autocreate)
+
+    def test_the_carousel_is_the_store_panorama_exported_like_the_store_kit(self) -> None:
+        for phrase in ("store_compose.py layout-draft",
+                       "--id panorama-character",
+                       "tools/prompt_template.py check",
+                       "--role panorama --made fresh",
+                       "store_compose.py triptych",
+                       "export-flags.txt",
+                       "gameplay-sample.md",
+                       "tools/concept_gate.py publish",
+                       "concept_gate.py revise",
+                       "**stops**"):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, self.concept)
+        self.assertIn("never pasted, warped or composited into the panorama", self.concept)
+
+    def test_implementation_waits_for_approval_and_builds_to_the_sample(self) -> None:
+        for phrase in ("python3 tools/concept_gate.py check --for implement",
+                       "## Phase 4.0 — approved concept intake",
+                       "the approved panorama as world context",
+                       "the live field, seen square-on, reads as the approved gameplay sample",
+                       "Never crop, paste or trace pixels of the panorama into the game"):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, self.implement)
+
+    def test_finalization_checks_the_sample_and_hands_off_to_the_store_kit(self) -> None:
+        for phrase in ("### 10.5.2h — approved gameplay sample audit (V23)",
+                       "production/session-state/finalize-verdict.json",
+                       "## Phase 13 — the store kit",
+                       "AUTOCREATE_STORE_KIT=service",
+                       "V13–V23"):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, self.finalize)
+        self.assertIn("| V23 | **Field is not the approved gameplay sample**", self.emulator)
+
+    def test_the_store_kit_exports_the_approved_panorama_unchanged(self) -> None:
+        for phrase in ("python3 tools/concept_gate.py status",
+                       "$(cat production/store-art/concept/export-flags.txt)",
+                       "--concept production/store-art/concept/concept.json",
+                       "The detail pass adds resolution, never content",
+                       "A composition or taste note against it is not a defect"):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, self.store)
 
 
 class MobileOnlyGuidanceTest(unittest.TestCase):

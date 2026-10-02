@@ -1,51 +1,61 @@
-# Campaign art — the banner and the game background
+# Campaign art — the game background and the store banner
 
-One procedure, two callers:
+The whole campaign lives in the world of one picture: the **concept panorama the user approved**
+before implementation ([concept-panorama.md](concept-panorama.md),
+`production/store-art/concept/panorama.png`, `tools/concept_gate.py status` → APPROVED). Two more
+pictures are rendered in that world, each fresh from the original references plus the panorama:
 
-- `/autocreate-finalize` Phase 10.4 runs it for every new game, before runtime verification.
-- `/store-screenshots` runs it in preflight when [the campaign handoff](campaign-handoff.md) is
-  missing or stale — a game built before finalization made campaign art.
+- the **game background** — the picture the game itself runs on and the backdrop behind every
+  phone on the store's real-capture slides, with the main character whole inside the portrait
+  frame. Made by `/autocreate-implement` Phase 4.0, right after approval and before any screen is
+  built; made by `/store-screenshots` only when its handoff is missing or stale.
+- the **banner** — the store's horizontal key art: the lead large on the left, the real gameplay,
+  the five flying `x5`–`x100` balls. Made by `/store-screenshots`; it is the base of the feature
+  graphic. Finalization no longer makes a banner.
 
-It produces two pictures from one world. The **banner** is the store's key art: the lead large on
-the left, the real gameplay, the five flying `x5`–`x100` balls. The **game background** is the
-same world composed for a phone held upright, with the main character whole inside the frame. It
-becomes the background of the game itself and the background behind every phone on the store's
-real-capture slides — one picture, so the listing and the app cannot disagree.
+One world, so the listing and the app cannot disagree: the carousel the user approved, the
+background the game runs on and the banner that sells it are three views of the same scene.
 
 Everything persists in `production/store-art/`, outside timestamped store exports:
 
-| File | What it is |
-|---|---|
-| `long-banner.png` | accepted device-free banner, `3840x1872` source |
-| `banner-prompt.txt` | the rendered banner prompt; `prompt_template.py check` PASS |
-| `shared-background.png` | accepted game background, `1328x2880` source |
-| `background-prompt.txt` | the rendered background prompt; `check` PASS |
-| `background-crops.png` | the background at the four phone sizes, as wired |
-| `context-capture.png` | the real gameplay frame used as context |
-| `campaign.md` | the handoff record ([campaign-handoff.md](campaign-handoff.md)) |
+| File | What it is | Made by |
+|---|---|---|
+| `concept/` | the approved concept panorama and its carousel ([concept-panorama.md](concept-panorama.md)) | `/autocreate` |
+| `shared-background.png` | accepted game background, `1328x2880` source | implement Phase 4.0 |
+| `background-prompt.txt` | the rendered background prompt; `prompt_template.py check` PASS | implement Phase 4.0 |
+| `background-crops.png` | the background at the four phone sizes, as wired | implement Phase 4.0 |
+| `long-banner.png` | accepted device-free banner, `3840x1872` source | `/store-screenshots` |
+| `banner-prompt.txt` | the rendered banner prompt; `check` PASS | `/store-screenshots` |
+| `context-capture.png` | the real gameplay frame the banner was shown as context | `/store-screenshots` |
+| `campaign.md` | the handoff record ([campaign-handoff.md](campaign-handoff.md)) | both |
+| `lineage.json` | every generated picture's lineage (`tools/art_lineage.py`) | every caller |
 
 The game uses `assets/images/backgrounds/bg_campaign_menu.png` and `bg_campaign_game.png`,
 both exported from `shared-background.png`.
 
-**Both pictures stay near their first generation** ([art-lineage.md](../../../docs/art-lineage.md)):
-every remake is a fresh render from the original references, never from the previous banner or
-background; at most one whole-frame edit of a fresh render; everything else is a region repair.
-`production/store-art/lineage.json` records each picture (`tools/art_lineage.py`), and it
-persists into every later run with the rest of `production/store-art/`.
+**Every picture stays near its first generation** ([art-lineage.md](../../../docs/art-lineage.md)):
+each remake is a fresh render from the original references plus the approved panorama, never from
+the previous background or banner; at most one whole-frame edit of a fresh render; everything else
+is a region repair. The approved panorama is the only generated picture these calls attach.
 
 ## Step 1 — inputs
 
 Select `STORE_PYTHON` exactly as `/store-screenshots` Phase 0 does, then collect:
 
+- The approved panorama: `python3 tools/concept_gate.py check --for implement` passes and
+  `production/store-art/concept/panorama.png` is the file it names. A game made before the
+  approval gate has none: the store run makes its panorama first (concept-panorama.md, legacy
+  caller) and uses that.
 - `lead_kind`, the lead's shipped asset (`Lead asset:` in the concept or art direction) and, for a
   character lead, the **original** character file — never a crop, preview or generated scene.
-- The multiplier reference: one shipped round asset (ball, coin, token, orb) confirmed in the
-  asset registry or `pubspec.yaml`. No such asset → report the missing source; do not invent one.
-- The visible gameplay sprites, the game's **original** background — the one campaign art
+- Session 1's background asset: the game's **original** background, the one campaign art
   replaces, recorded in `campaign.md` once it has been replaced; never `bg_campaign_*` or
-  `shared-background.png` — and, when `design/reference-contract.md` exists, every source it lists. A reference game's campaign art
-  is that reference's world: its sources ride along on every call below.
-- A real, current gameplay frame. Serve the web build and capture at the canonical phone size:
+  `shared-background.png` — and, when `design/reference-contract.md` exists, every source it
+  lists. A reference game's campaign art is that reference's world: its sources ride along on
+  every call below.
+- For the banner only: the multiplier reference (one shipped round asset confirmed in the asset
+  registry or `pubspec.yaml`), the visible gameplay sprites, and a real, current gameplay frame —
+  the store run's own capture, or serve the web build and capture at the canonical phone size:
 
 ```bash
 mkdir -p production/store-art .claude/runtime-logs
@@ -62,82 +72,37 @@ Pick the active or resolving gameplay frame (not the menu) and copy it to
 `production/store-art/context-capture.png`. Record its topology and outcome. It is context only:
 it is attached so the model draws the real mechanic, and it never becomes a layer of the art.
 
-## Step 2 — the banner
+## Step 2 — the game background
 
-**Reuse first.** If `campaign.md` records the banner ACCEPTED, and the character asset,
-multiplier reference and topology hashes still match, keep it. A changed template alone does not
-remake it: when its prompt no longer passes `check`, review the accepted banner once against the
-current template's requirements and keep it unless it breaks one, recording the template's
-SHA-256 and the verdict in `campaign.md`. A remake is a **fresh** render from the original
-references: never an edit of the old banner, and the old banner is not attached. A banner with
-no lineage record is adopted (`tools/art_lineage.py record --made adopt`) only when its review
-finds no generation artifacts; otherwise it is remade fresh.
+**Reuse first.** If `campaign.md` records the background ACCEPTED in the world of the current
+approved panorama (its `world_panorama_sha256`), and the character asset and both `bg_campaign_*`
+hashes still match, keep it. A changed template alone does not remake it: when its prompt no
+longer passes `check`, review the accepted picture once against the current template's
+requirements and keep it unless it breaks one, recording the template's SHA-256 and the verdict
+in `campaign.md`. A remake is a **fresh** render: never an edit of the old background, and the
+old background is not attached.
 
-Render and check the prompt. Use `banner-character` for a character lead and `banner-object` for
-an object or mechanic lead (see [campaign-prompts.md](campaign-prompts.md)):
+Render `background-character`, `background-object` or `background-mechanic` from
+[campaign-prompts.md](campaign-prompts.md), `check` it, and generate at `1328x2880` with, in
+order: the original character asset (or the lead object asset; none for a mechanic lead), the
+approved panorama as world context, the game's original background, and the reference sources.
+The panorama is never the character reference.
 
 ```bash
 TPL=.claude/skills/store-screenshots/references/campaign-prompts.md
-python3 tools/prompt_template.py render --template "$TPL" --id banner-character \
-  --set environment="..." --set character="..." --set gameplay="..." --set label_color="..." \
-  --set accent="..." --set ball_fx="..." --set objects="..." --set foreground_pieces="..." \
-  --set palette="..." --out production/store-art/banner-prompt.txt
-python3 tools/prompt_template.py check --template "$TPL" --id banner-character \
-  --prompt production/store-art/banner-prompt.txt || exit 1
-```
-
-Generate with the built-in image tool, or headless with the same prompt file and attachments in
-the order the template table lists:
-
-```bash
-python3 tools/gpt_image.py edit --prompt-file production/store-art/banner-prompt.txt \
-  --image "$CHARACTER_ASSET" --image "$MULTIPLIER_REF" \
-  --image production/store-art/context-capture.png --image "$SPRITE_1" ... \
-  --size 3840x1872 --fidelity high --out production/store-art/long-banner.png
-python3 tools/art_lineage.py record --file production/store-art/long-banner.png --role banner \
-  --made fresh --ref "$CHARACTER_ASSET" --ref "$MULTIPLIER_REF" \
-  --ref production/store-art/context-capture.png --ref "$SPRITE_1" ... \
-  --prompt production/store-art/banner-prompt.txt
-```
-
-Review it once at full size and once at 1024×500. Each of these is an objective failure: a
-misspelled, missing, duplicated or extra ball label; a missing ball or a ball resting on an object;
-a ball on the character; character drift from its asset; a character shown full length, standing,
-flying or floating, or with legs, knees, hips or feet visible; any title, logo, copy or blank copy
-space; a pasted-screenshot boundary; a world that is not the game's (or not the reference's).
-
-Correction follows `/store-screenshots` → "Correcting a generated scene": crop, region repairs
-(`tools/region_repair.py`) or fresh compositions until the banner passes — never a whole-frame
-edit of a banner that is already an edit, which only stacks generation loss. A new pose that
-fits the character's area is a region repair of that area (the character and its held props); one
-that needs different space is a fresh render. Record every candidate with
-`tools/art_lineage.py`; it refuses a second whole-frame edit. Use the original identity
-references, authentic capture and exact runtime facts for board corrections. Verify identity,
-composition, balls and gameplay after changes. No local board compositing. Failed review or
-attempt count alone does not make the campaign BLOCKED.
-
-## Step 3 — the game background
-
-Render `background-character`, `background-object` or `background-mechanic`, `check` it, and
-generate at `1328x2880` with, in order: the original character asset (or the lead object asset;
-none for a mechanic lead), the accepted `long-banner.png` as world context, the game's original
-background, and the reference sources. The banner is never the character reference, and no earlier
-campaign background is attached: a background rendered from the previous one inherits its
-artifacts.
-
-```bash
+PANORAMA=production/store-art/concept/panorama.png
 python3 tools/prompt_template.py render --template "$TPL" --id background-character \
   --set environment="..." --set character="..." --set foreground_pieces="..." --set objects="..." \
   --set palette="..." --out production/store-art/background-prompt.txt
 python3 tools/prompt_template.py check --template "$TPL" --id background-character \
   --prompt production/store-art/background-prompt.txt || exit 1
 python3 tools/gpt_image.py edit --prompt-file production/store-art/background-prompt.txt \
-  --image "$CHARACTER_ASSET" --image production/store-art/long-banner.png \
+  --image "$CHARACTER_ASSET" --image "$PANORAMA" \
   --image "$ORIGINAL_GAME_BACKGROUND" ... \
   --size 1328x2880 --fidelity high --out production/store-art/shared-background.png
 python3 tools/art_lineage.py record --file production/store-art/shared-background.png \
   --role background --made fresh --ref "$CHARACTER_ASSET" \
-  --ref production/store-art/long-banner.png --ref "$ORIGINAL_GAME_BACKGROUND" ... \
+  --ref "$PANORAMA" --ref "$ORIGINAL_GAME_BACKGROUND" ... \
   --prompt production/store-art/background-prompt.txt
 ```
 
@@ -170,26 +135,25 @@ Review `shared-background.png` and `background-crops.png` once. Objective failur
 - character drift from its asset (face, silhouette, costume, colours);
 - any text, letters, numbers or logo; any multiplier ball or labelled coin;
 - a painted board, reels, grid, cards, table, buttons, HUD, frame, phone or device;
-- a different world from the accepted banner (environment, palette, light, materials);
+- a different world from the approved panorama (environment, palette, light, materials);
 - for an object/mechanic game, an invented person, hand, animal or mascot.
 
-For a failed background, follow the same correction loop until all four phone crops pass. Use
-region repairs for local defects (a hand, a held prop, a pose that fits the character's area) or a
-fresh composition with the original references and accepted banner; never re-edit a background
-that is already an edit, and never chain "compact", "repair" and "final" edits of one
-another. Refine the template variables or append concrete crop/pose/margin correction directions
-without removing the template requirements; keep the base prompt passing `check` and save the
-correction prompt separately. Rebuild and review the affected crop sheet after each change.
-Repeated clipping requires a more compact pose or safer placement, not the same unchanged prompt.
-Do not crop, pad, repaint or composite the character locally to make it fit. Do not report
-BLOCKED merely because a retry or edit count has been reached.
+For a failed background, follow `/store-screenshots` → "Correcting a generated scene" until all
+four phone crops pass. Use region repairs (`tools/region_repair.py`) for local defects (a hand, a
+held prop, a pose that fits the character's area) or a fresh composition with the original
+references and the approved panorama; never re-edit a background that is already an edit, and
+never chain "compact", "repair" and "final" edits of one another. Refine the template variables or
+append concrete crop/pose/margin correction directions without removing the template
+requirements; keep the base prompt passing `check` and save the correction prompt separately.
+Rebuild and review the affected crop sheet after each change. Repeated clipping requires a more
+compact pose or safer placement, not the same unchanged prompt. Do not crop, pad, repaint or
+composite the character locally to make it fit. Do not report BLOCKED merely because a retry or
+edit count has been reached.
 
-## Step 4 — put it in the game
+## Step 3 — put it in the game
 
 This is the one sanctioned change to a game's background; it needs no further opt-in when this
-procedure runs. First record the background guard's "before" state (the commands in
-[runtime-branding.md](runtime-branding.md), writing into `production/store-art/` with the suffix
-`-before-campaign`), then export the runtime pictures:
+procedure runs. Export the runtime pictures:
 
 ```bash
 "$STORE_PYTHON" tools/store_compose.py backdrop \
@@ -205,13 +169,22 @@ recognizable. Never calm it harder to rescue a busy screen — give the HUD and 
 backing plates instead (`anti-slop-design.md` §7). The size warning for a heavy PNG is expected at
 1080×2340; do not trade the aspect for a smaller file, that crops the character.
 
-Wire them (targeted edits only; screens keep their hierarchy):
+**In implement Phase 4.0 (a new game)** no screen exists yet, so nothing is rewired: register both
+pictures in `design/asset-manifest.md` and `design/art-direction.md`, put them in `lib/contracts.md`
+as the only backgrounds, and Agent B builds every screen on them from the start.
 
-- Add constants to the asset registry (`lib/assets.dart` or the project's equivalent) and confirm
-  `assets/images/backgrounds/` is in `pubspec.yaml`.
-- The main menu, the Flutter splash route and the secondary screens that showed the game's shared
+**In a store run (a stale or missing handoff)** the screens exist: first record the background
+guard's "before" state (the commands in [runtime-branding.md](runtime-branding.md), writing into
+`production/store-art/` with the suffix `-before-campaign`), then retarget the existing selectors
+with targeted edits only — screens keep their hierarchy.
+
+Either way the wiring is the same:
+
+- Constants in the asset registry (`lib/assets.dart` or the project's equivalent) and
+  `assets/images/backgrounds/` in `pubspec.yaml`.
+- The main menu, the Flutter splash route and the secondary screens that show the game's shared
   scene use `bg_campaign_menu.png`; the game screen uses `bg_campaign_game.png`.
-- Draw it full-bleed under the safe area:
+- Drawn full-bleed under the safe area:
   `Positioned.fill(child: Image.asset(GameAssets.bgCampaignGame, fit: BoxFit.cover,
   alignment: Alignment.topCenter))`. Top alignment is what `background-crops.png` reviewed: short
   phones lose the bottom of the mound, never the head.
@@ -221,23 +194,71 @@ Wire them (targeted edits only; screens keep their hierarchy):
   On the game screen the field keeps its size and position from the gameplay-screen contract; where
   the layout leaves the upper band open, the character's head shows above the field. Do not shrink
   or move the field to reveal more of the character.
-- Keep the old background files on disk (unselected) so the change can be reverted; keep every
+- Keep the original background file on disk (unselected) so the change can be reverted; keep every
   character, symbol and UI asset, all math and content data, and every screen's structure.
 
-Then `dart format` the changed files, `dart analyze lib/` (0 errors) and `flutter test` (update a
-test that pinned the old background constant; never delete a test to pass). Record:
+After a store-run rewiring, `dart format` the changed files, `dart analyze lib/` (0 errors) and
+`flutter test` (update a test that pinned the old background constant; never delete a test to
+pass). Record:
 
 - `design/asset-manifest.md`: rows for `bg_campaign_menu` / `bg_campaign_game` — class `derive`,
   source `production/store-art/shared-background.png`, SHA-256, and the replaced files;
-- `design/art-direction.md` → "Campaign background": source, template id, alignment, what the
-  menu and the game screen show of the character;
+- `design/art-direction.md` → "Campaign background": source, template id, the approved panorama's
+  SHA-256, alignment, what the menu and the game screen show of the character;
 - `production/store-art/campaign.md` per [campaign-handoff.md](campaign-handoff.md).
+
+## Step 4 — the banner (store run)
+
+**Reuse first.** If `campaign.md` records the banner ACCEPTED with `world_panorama_sha256` equal
+to the current approved panorama, and the character asset, multiplier reference and topology
+hashes still match, keep it. A changed template alone does not remake it (one review, as for the
+background). A banner made in an older world — before the approval gate, from no panorama or
+another panorama — is stale and remade. A remake is a **fresh** render from the original
+references and the approved panorama: never an edit of the old banner, and the old banner is not
+attached.
+
+Render and check the prompt. Use `banner-character` for a character lead and `banner-object` for
+an object or mechanic lead (see [campaign-prompts.md](campaign-prompts.md)):
+
+```bash
+python3 tools/prompt_template.py render --template "$TPL" --id banner-character \
+  --set environment="..." --set character="..." --set gameplay="..." --set label_color="..." \
+  --set accent="..." --set ball_fx="..." --set objects="..." --set foreground_pieces="..." \
+  --set palette="..." --out production/store-art/banner-prompt.txt
+python3 tools/prompt_template.py check --template "$TPL" --id banner-character \
+  --prompt production/store-art/banner-prompt.txt || exit 1
+python3 tools/gpt_image.py edit --prompt-file production/store-art/banner-prompt.txt \
+  --image "$CHARACTER_ASSET" --image "$PANORAMA" --image "$MULTIPLIER_REF" \
+  --image production/store-art/context-capture.png --image "$SPRITE_1" ... \
+  --size 3840x1872 --fidelity high --out production/store-art/long-banner.png
+python3 tools/art_lineage.py record --file production/store-art/long-banner.png --role banner \
+  --made fresh --ref "$CHARACTER_ASSET" --ref "$PANORAMA" --ref "$MULTIPLIER_REF" \
+  --ref production/store-art/context-capture.png --ref "$SPRITE_1" ... \
+  --prompt production/store-art/banner-prompt.txt
+```
+
+Review it once at full size and once at 1024×500. Each of these is an objective failure: a
+misspelled, missing, duplicated or extra ball label; a missing ball or a ball resting on an object;
+a ball on the character; character drift from its asset; a character shown full length, standing,
+flying or floating, or with legs, knees, hips or feet visible; any title, logo, copy or blank copy
+space; a pasted-screenshot boundary; a world that is not the approved panorama's (or not the
+reference's).
+
+Correction follows `/store-screenshots` → "Correcting a generated scene": crop, region repairs
+(`tools/region_repair.py`) or fresh compositions until the banner passes — never a whole-frame
+edit of a banner that is already an edit, which only stacks generation loss. A new pose that
+fits the character's area is a region repair of that area (the character and its held props); one
+that needs different space is a fresh render. Record every candidate with
+`tools/art_lineage.py`; it refuses a second whole-frame edit. Use the original identity
+references, authentic capture and exact runtime facts for board corrections. Verify identity,
+composition, balls and gameplay after changes. No local board compositing. Failed review or
+attempt count alone does not make the campaign BLOCKED.
 
 ## Step 5 — verify
 
 The caller's runtime pass (finalize Phase 10.5, or the store kit's Phase 3 captures) checks the
-integrated result at the four phone sizes as **V22**: the menu shows the whole character with
-nothing over its face; every screen that used the shared scene now uses the campaign picture; the
+integrated background at the four phone sizes as **V22**: the menu shows the whole character with
+nothing over its face; every screen that shows the shared scene uses the campaign picture; the
 game screen uses `bg_campaign_game.png`; nothing is stretched (V18); the wide-host smoke capture
 shows the campaign picture as the column's surround.
 

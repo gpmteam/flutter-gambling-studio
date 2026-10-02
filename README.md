@@ -70,15 +70,21 @@ Restart the client after changing skill discovery. Manual hooks run through
 
 ## Creation pipeline
 
-`/autocreate` runs three sessions and saves file-based handoffs for interrupted work:
+`/autocreate` runs three sessions around one approval gate and saves file-based handoffs for
+interrupted work:
 
 1. Concept, reference/mechanic detection, production plan, Flutter scaffold, assets, audio and
-   JSON level/progression/balance data.
-2. `/autocreate-implement`: rules, Flame presentation, all UI screens, save/progression/meta
-   systems, integration, analysis, tests, feel pass, UI/no-gambling audit, full-curve balance
-   and crash prevention.
-3. `/autocreate-finalize`: campaign art and game background, Chrome runtime and soak tests,
-   actual gameplay playtest, session state, release preparation and the final report.
+   JSON level/progression/balance data — then the **concept carousel**: the store panorama,
+   rendered from the real assets and sliced into the three store slides. The pipeline stops here
+   until you approve it; `/autocreate --revise "<feedback>"` reworks it first.
+2. `/autocreate-implement` (after approval): the game background rendered in the approved
+   panorama's world, rules, Flame presentation with the field built to look like the panorama's
+   gameplay sample, all UI screens, save/progression/meta systems, integration, analysis, tests,
+   feel pass, UI/no-gambling audit, full-curve balance and crash prevention.
+3. `/autocreate-finalize`: Chrome runtime and soak tests (including the field against the
+   approved gameplay sample), actual gameplay playtest, session state, release preparation, the
+   final report — then `/store-screenshots`, which exports the approved panorama unchanged and
+   renders the banner from it.
 
 The result is release-ready. Native build and downloadable archive creation are explicit user
 runs of `/release-package`, which writes
@@ -99,7 +105,7 @@ requested otherwise.
 | `/start` | Studio overview and routing |
 | `/brainstorm [theme]` | Interactive casual concept |
 | `/auto-idea [--list / --archetype A-AB / --category G1-G6]` | Autonomous complete concept |
-| `/autocreate [--from-concept / --idea-only]` | Full creation pipeline |
+| `/autocreate [--from-concept / --idea-only / --revise "<feedback>"]` | Full creation pipeline, with a concept-carousel approval gate before implementation |
 | `/autocreate-implement`, `/autocreate-finalize` | Resume pipeline sessions 2 and 3 |
 | `/map-systems` | Dependency graph and implementation plan |
 | `/design-system [board-rules / tier-chain / tempo-ramp / …]` | One system's GDD and balance |
@@ -115,7 +121,7 @@ requested otherwise.
 | `/perf-profile`, `/tech-debt`, `/hotfix`, `/architecture-decision` | Maintenance and decisions |
 | `/release-checklist` | Final GO / NO-GO, including the no-gambling gate |
 | `/release-engineering`, `/release-package` | Native release preparation/build/package |
-| `/store-screenshots` | Campaign panorama, authentic phone slides, icon and feature graphic |
+| `/store-screenshots` | The approved panorama as the carousel, authentic phone slides, banner, icon and feature graphic |
 | `/auto-learn` | Evidence-based framework proposals on isolated learning branches |
 
 ## Agents and rules

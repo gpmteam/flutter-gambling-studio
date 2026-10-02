@@ -14,9 +14,9 @@ touch only, with no tablet, desktop or landscape layout.
 | `/start` | `.claude/skills/start/SKILL.md` | Onboarding, routing, choosing the next step |
 | `/brainstorm` | `.claude/skills/brainstorm/SKILL.md` | Interactive casual game concept |
 | `/auto-idea` | `.claude/skills/auto-idea/SKILL.md` | Auto-generate an idea from the 28 archetypes A–AB across 6 categories (incl. Classification, Reference Bar, Design DNA, Production Plan) |
-| `/autocreate` | `.claude/skills/autocreate/SKILL.md` | Three sessions: pre-production, implementation and finalization (including campaign art at Phase 10.4). Follow the runbook's fresh-context handoffs and file checkpoints; use inline persona passes only where delegation is unavailable. PNG through the built-in image tool or `tools/gpt_image.py`; native packaging remains an explicit run. |
-| `/autocreate-implement` | `.claude/skills/autocreate-implement/SKILL.md` | Session 2 (implementation, Phases 4–10.7) — also the manual restart after a failure (`--resume`) |
-| `/autocreate-finalize` | `.claude/skills/autocreate-finalize/SKILL.md` | Session 3 (runtime + soak, playtest, release-eng PREP, report) — also a manual restart |
+| `/autocreate` | `.claude/skills/autocreate/SKILL.md` | Pre-production ending at the concept carousel (the store panorama in three slides) and an approval gate; after approval, implementation (campaign background in the approved panorama's world, the field built to its gameplay sample), finalization and the store kit. `--revise "<feedback>"` reworks a pending carousel. Follow the runbook's fresh-context handoffs and file checkpoints; use inline persona passes only where delegation is unavailable. PNG through the built-in image tool or `tools/gpt_image.py`; native packaging remains an explicit run. |
+| `/autocreate-implement` | `.claude/skills/autocreate-implement/SKILL.md` | Session 2 (implementation, Phases 4.0–10.7), only on an approved concept carousel — also the manual restart after a failure (`--resume`) |
+| `/autocreate-finalize` | `.claude/skills/autocreate-finalize/SKILL.md` | Session 3 (campaign check, runtime + soak incl. V22/V23, playtest, release-eng PREP, report, store-kit handoff) — also a manual restart |
 | `/continue-project` | `.claude/skills/continue-project/SKILL.md` | Resume work from the current state |
 | `/map-systems` | `.claude/skills/map-systems/SKILL.md` | Decompose the concept into systems |
 | `/design-system` | `.claude/skills/design-system/SKILL.md` | A GDD for one individual mechanic |
@@ -57,7 +57,7 @@ touch only, with no tablet, desktop or landscape layout.
 | `/release-checklist` | `.claude/skills/release-checklist/SKILL.md` | GO/NO-GO checklist (release-manager persona; no-gambling gate; takes the playtest and asset-review verdicts into account) |
 | `/release-engineering` | `.claude/skills/release-engineering/SKILL.md` | Icons/splash/version/signed AAB/store metadata/CI. Inside the pipeline: only `--prep-only --no-keystore` |
 | `/release-package` | `.claude/skills/release-package/SKILL.md` | Screenshots + release APK/AAB + `flutter clean` + an archive in `project_zip/`. **An explicit user action**, NOT an automatic call from the pipeline |
-| `/store-screenshots` | `.claude/skills/store-screenshots/SKILL.md` | Context-based store kit with character/object/mechanic lead, flexible gameplay, real captures, feature graphic and ZIP, built on the finalization campaign art (banner and game background). |
+| `/store-screenshots` | `.claude/skills/store-screenshots/SKILL.md` | Store kit built on the approved concept panorama (exported unchanged) and the campaign game background; renders the banner, icon and emblem in the panorama's world; real captures, feature graphic and ZIP. |
 
 ## Execution rule
 

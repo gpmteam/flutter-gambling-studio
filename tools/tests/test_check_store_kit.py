@@ -116,6 +116,42 @@ class StoreKitTests(unittest.TestCase):
             with self.subTest(changes=list(changes)):
                 self.assertTrue(check(self.kit(changes=changes), 2))
 
+    def test_the_kit_exports_the_panorama_the_user_approved(self):
+        approved, canvas, detailed, rerendered = (png((97, 64)), png((194, 128)),
+                                                  png((194, 129)), png((97, 65)))
+        sha = lambda data: hashlib.sha256(data).hexdigest()  # noqa: E731
+        records = [
+            {"sha256": sha(self.banner), "role": "banner", "made": "fresh", "generation": 1},
+            {"sha256": sha(approved), "role": "panorama", "made": "fresh", "generation": 1},
+            {"sha256": sha(canvas), "role": "panorama", "made": "derive", "generation": 1,
+             "parent_sha256": sha(approved)},
+            {"sha256": sha(detailed), "role": "panorama", "made": "detail", "generation": 1,
+             "parent_sha256": sha(canvas)},
+            {"sha256": sha(rerendered), "role": "panorama", "made": "edit", "generation": 2,
+             "parent_sha256": sha(approved)},
+        ]
+        ledger = json.dumps({"schema_version": 1, "records": records}).encode()
+        with tempfile.TemporaryDirectory() as tmp:
+            concept = Path(tmp) / "concept.json"
+            concept.write_text(json.dumps({"status": "APPROVED",
+                                           "panorama": {"sha256": sha(approved)}}))
+            for shipped in (approved, detailed):
+                with self.subTest(shipped="approved" if shipped is approved else "detailed"):
+                    kit = self.kit(changes={"art/panorama.png": shipped, "art/lineage.json": ledger})
+                    self.assertEqual(check(kit, 2, concept=concept), [])
+            edited = self.kit(changes={"art/panorama.png": rerendered, "art/lineage.json": ledger})
+            self.assertTrue(any("'edit' step after approval" in e
+                                for e in check(edited, 2, concept=concept)))
+            missing = self.kit(changes={"art/lineage.json": ledger})
+            self.assertTrue(any("Missing art/panorama.png" in e
+                                for e in check(missing, 2, concept=concept)))
+            concept.write_text(json.dumps({"status": "PENDING",
+                                           "panorama": {"sha256": sha(approved)}}))
+            pending = self.kit(changes={"art/panorama.png": approved, "art/lineage.json": ledger})
+            self.assertTrue(any("not APPROVED" in e for e in check(pending, 2, concept=concept)))
+            # Without --concept (a game made before the gate) the kit is checked as before.
+            self.assertEqual(check(edited, 2), [])
+
     def test_cli_returns_failure_for_invalid_zip(self):
         with tempfile.TemporaryDirectory() as tmp:
             archive = Path(tmp) / "bad.zip"

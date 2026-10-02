@@ -1,7 +1,7 @@
 ---
 name: autocreate
-description: "Zero-to-Production factory for complete G1-G6 casual games with casino-grade or reference-matched looks and never-gambling gameplay. Produces an English game concept and production plan, reference-matched or concept-derived 2D/2.5D PNG assets in Codex, synthesized WAV audio, structured level/progression data, complete Flutter/Flame implementation, tests, the no-gambling gate, balance verification, runtime verification, and release preparation. The result is a complete publishable game, not a mini-demo."
-argument-hint: "[--from-concept | --idea-only]"
+description: "Zero-to-Production factory for complete G1-G6 casual games with casino-grade or reference-matched looks and never-gambling gameplay. Session 1 produces an English game concept and production plan, reference-matched or concept-derived 2D/2.5D PNG assets, synthesized WAV audio and structured level/progression data, then renders the concept carousel — the store panorama sliced into three slides, with the gameplay sample the game will be built to match — and stops for the user's approval. After approval the pipeline builds the complete Flutter/Flame game to match it (tests, no-gambling gate, balance, runtime verification, release preparation) and finishes with the store kit. --revise applies the user's feedback to a pending carousel."
+argument-hint: "[--from-concept | --idea-only | --revise \"<feedback>\"]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Agent
 ---
@@ -34,13 +34,33 @@ All conversation, design documents, reports, prompts, code comments, generated g
 
 ## Mandatory execution contract
 
-The pipeline is split into three context sessions:
+The pipeline does not rush from assets into code. It stops once, for the user:
 
-1. **Session 1 — pre-production (this skill, Phases 0–3.8):** reference/mechanic detection, concept, project bootstrap, structure and layout, assets, audio, level/progression data, then a handoff to Session 2.
-2. **Session 2 — implementation (`autocreate-implement`, Phases 4–10):** game code, meta systems, content wiring, integration, build fixes, feel pass, tests, UI/no-gambling audit, balance, and crash prevention.
-3. **Session 3 — finalize (`autocreate-finalize`, Phases 10.4–12):** campaign art — the store banner (the exact `/store-screenshots` banner prompt) and the game background with the main character whole in frame, wired into the game — then runtime/soak verification, playtest, session state, release-engineering preparation, and final report.
+1. **Session 1 — pre-production and the concept carousel (this skill, Phases 0–3.10):**
+   reference/mechanic detection, concept, project bootstrap, structure and layout, assets, audio,
+   level/progression data, the handoff, then the **concept carousel** — the store panorama,
+   rendered from the real assets under the store's own rules and sliced into the same three
+   carousel slides `/store-screenshots` exports — and **stop at the approval gate**.
+2. **The user approves the carousel** (the web service's Approve button, or "approve" in a
+   standalone session) — or asks for changes, which `--revise` applies and presents again.
+3. **Session 2 — implementation (`autocreate-implement`, Phases 4.0–10):** only on an approved
+   concept. It first renders the game background in the approved panorama's world and aligns the
+   field's assets to the panorama's gameplay sample, then writes the game code, meta systems,
+   content wiring, integration, build fixes, feel pass, tests, UI/no-gambling audit, balance and
+   crash prevention — with the field built to look like the gameplay sample.
+4. **Session 3 — finalize (`autocreate-finalize`, Phases 10.4–13):** runtime/soak verification
+   (including V22, the game on its campaign background, and V23, the field against the approved
+   gameplay sample), playtest, session state, release-engineering preparation, the final report,
+   and the handoff to the store kit.
+5. **Store kit (`/store-screenshots`):** exports the approved panorama unchanged — crops, grading
+   and a detail pass only — as the carousel, renders the banner in its world, and packages the kit.
+   The web service starts it as its own run after a production-ready finalization; standalone,
+   finalization starts it.
 
-Every session must hand control to the next one with the Agent tool. If Agent is unavailable, write the handoff and continue in the same session by reading the next skill. Do not copy full history into a phase agent; give it only the handoff path, skill path, and exit criterion.
+Session 2 hands control to Session 3, and Session 3 to the store kit, with the Agent tool. If Agent
+is unavailable, write the handoff and continue in the same session by reading the next skill. Do
+not copy full history into a phase agent; give it only the handoff path, skill path, and exit
+criterion. Session 1 hands control to nobody: it ends at the gate.
 
 The product is a **portrait phone game** for Android and iOS, played by touch
 (`.claude/docs/mobile-first-contract.md`). Every concept, recipe, asset and screen is designed for
@@ -62,9 +82,12 @@ Session 1 must produce:
 - Eight real sound-effect WAV files created by `tools/synth_sfx.py` (no background music).
 - `design/asset-review.md` with an asset-cohesion verdict.
 - Category-appropriate JSON level/progression data under `assets/data/` and the balance config in `design/balance/`.
-- `production/session-state/autocreate-handoff-1.md`, followed by Session 2.
+- `production/session-state/autocreate-handoff-1.md` with the `Concept gate: required` line.
+- The concept carousel in `production/store-art/concept/` — panorama, three exported slides,
+  gameplay sample and its spec — published PENDING with `tools/concept_gate.py publish`.
 
-Session 1 must not write gameplay code, screens, services, stubs, or TODO implementations. It must not claim that the game is complete.
+Session 1 must not write gameplay code, screens, services, stubs, or TODO implementations, must
+not start Session 2 or approve its own carousel, and must not claim that the game is complete.
 
 ## Asset policy
 
@@ -223,6 +246,14 @@ In PNG mode:
   No text except verified combo-marker inscriptions from `.claude/docs/visual-context.md`.
 - Keep the full set consistent in light direction, materials, palette, perspective, and detail.
 - Use one game background by default; derive menu variants locally unless a genuinely different world/composition is required.
+  It is the game's **original** background: the campaign background is rendered from it in the
+  approved panorama's world after approval, and both the carousel and that call attach it.
+- Include at least one round game object — a gem, orb, bubble, ball or token from the game's own
+  cast — that can model the store's five flying multiplier balls. Most casts already have one;
+  name it in the manifest as the multiplier reference. The concept carousel needs it.
+- When the field has a framed board or tile backing in the art direction, generate it now as a UI
+  asset (`ui_board_frame`, `ui_tile`), so the carousel's gameplay sample is rendered from the
+  same pieces the game will draw.
 - Build ordinary controls, panels, icons, typography, shadows, glows, and VFX in code.
 - Remove backgrounds only with `python3 tools/cutout.py`; never use fuzz-based global color transparency.
 - Before Phase 3.6, compare the source with the generated asset set and documented board/layout
@@ -290,43 +321,116 @@ random rewards (`.claude/rules/no-gambling.md`).
 Parse every JSON file before exit. Do not duplicate these values as inline constants in the future
 game code.
 
-## Phase 3.8 — handoff to Session 2
+## Phase 3.8 — handoff for Session 2
 
 Write `production/session-state/autocreate-handoff-1.md` with:
 
+- `Concept gate: required` on its own line — `tools/concept_gate.py` keys on it: implementation of
+  this project waits for an approved concept carousel.
 - Timestamp, game name, category, archetype, balance model, package ID, structure variant, Design Signature, per-screen recipe codes, audio mood, game language, and the reference-gameplay/translation decision.
 - Links to the concept, production plan, structure, art direction, asset format/prompts/manifest/review, balance config, and level/progression data.
 - Counts and paths for generated/derived assets, WAV files, levels/worlds or ramp stages, achievements/album pages, and modes.
+- The lead kind and lead asset, the multiplier reference, the original game background, and the
+  board/tile assets the carousel's gameplay sample is rendered from.
 - A checklist confirming that Session 1 is complete and that gameplay implementation has not started.
-- Session 2's required exit criteria: `dart analyze` with zero errors, green tests, complete content wiring, passed UI/no-gambling audit, a passed full-screen portrait gameplay-screen gate at the four phone sizes, verified balance, and 20/20 crash-prevention checks.
+- Session 2's required exit criteria: an approved concept (`concept_gate.py check --for implement`), the campaign background rendered in its world, `dart analyze` with zero errors, green tests, complete content wiring, a field that matches the approved gameplay sample, passed UI/no-gambling audit, a passed full-screen portrait gameplay-screen gate at the four phone sizes, verified balance, and 20/20 crash-prevention checks.
 - A portrait-phone checklist: portrait lock, phone column, touch-only input, one composition per
   screen verified at 360×640, 360×800, 390×844 and 430×932 — and no desktop/tablet/landscape layout.
 - The reference contract path and its binding (`exact`, `description` or none).
 
-Then start a clean-context agent with this instruction:
+Then continue to Phase 3.9 in this session.
+
+## Phase 3.9 — the concept carousel
+
+Run [the concept panorama procedure](../store-screenshots/references/concept-panorama.md),
+Steps 1–7, in full: the layout draft from the real symbols, the `panorama-*` template rendered and
+proved with `tools/prompt_template.py check`, one generation call with the identity asset, the
+multiplier reference, the draft and the field's own assets attached, the store's review and
+correction policy, the `triptych` export with the store's own flags, the gameplay sample and its
+spec, and `tools/concept_gate.py publish`.
+
+This is the store panorama, made now so the user can see the game before it is built. It obeys
+every `/store-screenshots` rule — torso-to-head character on the first panel (or a gameplay-led
+opening for an object/mechanic game, never an invented character), the field at a
+three-quarter/3D angle caught mid-clear, all five labelled `x5`–`x100` balls in flight with at
+least one per panel, the close-up lower-edge band, vivid key-art lighting — because after
+approval it is exported unchanged. Its gameplay is also a promise: Session 2 builds the field to
+look like it, so render it from the assets the game will draw, in the topology the data defines.
+
+A reference game's carousel is the reference's world: attach its sources, and the AR11 identity
+bar applies to the panorama too.
+
+## Phase 3.10 — the approval gate
+
+End Session 1 with a final report that presents the carousel and asks for a decision:
 
 ```text
-You are Session 2 of /autocreate. First read:
-1. production/session-state/autocreate-handoff-1.md
-2. .claude/skills/autocreate-implement/SKILL.md
-3. design/structure.md, design/art-direction.md, and design/gdd/game-concept.md
+CONCEPT READY FOR APPROVAL — <game name> (revision N)
 
-Execute Phases 4–10 exactly as specified by autocreate-implement. Preserve Session 1's concept, assets, audio, balance, and level data. Exit only with zero analyzer errors, green tests, completed content wiring, a passed UI/no-gambling audit, verified full-curve balance, and 20/20 crash prevention. Then write autocreate-handoff.md and start Session 3 with autocreate-finalize.
+Slides (production/store-art/concept/panels/):
+  1. store-01.png — <what the first slide shows>
+  2. store-02.png — <…>
+  3. store-03.png — <…>
+Panorama: production/store-art/concept/panorama.png
+Gameplay sample: <topology, symbols, board housing, the moment shown> — the game is built to look like this
+Concept: <category, archetype, balance model, one-line pitch>
+
+Approve to build the game, or describe what to change.
 ```
 
-If Agent is unavailable, continue locally by reading `autocreate-implement/SKILL.md`. If Session 2 fails, report the exact failure and the manual restart command `/autocreate-implement`; never claim the game is ready.
+Then **stop**. Do not start Session 2 and do not approve the carousel yourself.
+
+- **Web service** — the chat shows the three slides and the panorama with an Approve button. The
+  service records the approval and starts `/autocreate-implement` in a new run; a typed message is
+  revision feedback and arrives as `/autocreate --revise "<feedback>"`.
+- **Standalone** — when the user approves, run `python3 tools/concept_gate.py approve --by user`,
+  then start a clean-context agent with the instruction below. When the user asks for changes,
+  follow `--revise`.
+
+```text
+You are Session 2 of /autocreate. The user approved the concept carousel. First read:
+1. production/session-state/autocreate-handoff-1.md
+2. .claude/skills/autocreate-implement/SKILL.md
+3. production/store-art/concept/gameplay-sample.md, design/structure.md, design/art-direction.md, and design/gdd/game-concept.md
+
+Execute Phases 4.0–10 exactly as specified by autocreate-implement: render the campaign background in the approved panorama's world, align the field's assets to the gameplay sample, then build the game to match it. Preserve Session 1's concept, assets, audio, balance, and level data. Exit only with zero analyzer errors, green tests, completed content wiring, a passed UI/no-gambling audit, verified full-curve balance, and 20/20 crash prevention. Then write autocreate-handoff.md and start Session 3 with autocreate-finalize.
+```
+
+If Agent is unavailable, continue locally by reading `autocreate-implement/SKILL.md`. If Session 2
+fails, report the exact failure and the manual restart command `/autocreate-implement --resume`;
+never claim the game is ready.
+
+## `--revise "<feedback>"` — the user asked for changes
+
+Follow concept-panorama.md → "Revisions". In short: an approval-only message changes nothing; a
+change to the game itself goes through the Session 1 phase that owns it (concept, assets, data) and
+regenerates only what it affects, fresh from the original references; `concept_gate.py revise`
+archives the shown revision; the panorama is rendered again (fresh, or a region repair for a purely
+local change) and published as the next revision; and the session ends at the approval gate again,
+reporting what changed against the feedback.
+
+If no concept was ever published (`concept_gate.py status` → NONE or DRAFTING after an interrupted
+first run), treat the message as additional direction: resume Session 1 from the first phase
+whose artifacts are missing or incomplete, then Phases 3.8–3.10. Never repeat completed asset
+generation.
+
+An approved concept is not revised — the game, its background and its store kit are built from it.
+A look change after approval is an ordinary follow-up request against the built game.
 
 ## Final pipeline quality gates
 
 The full pipeline succeeds only when:
 
+- The user approved the concept carousel before implementation, and the store kit exports that
+  approved panorama unchanged (`tools/check_store_kit.py --concept`).
 - The complete game is playable in English and all screens, buttons, navigation, data, modes, progression, audio, animation, and edge states work.
 - The no-gambling gate holds: no wager, currency, chance-based reward, casino control or gambling copy, and no age gate.
 - `dart analyze` reports zero errors and `flutter test` is green.
 - The declared B1–B6 balance model passes `tools/simulate_balance.py` over the complete content curve.
 - Runtime verification and playtest produce at least five screenshots plus `REPORT.md`, with no exceptions or severe layout defects. The four portrait phones (360×640, 360×800, 390×844, 430×932) must pass `.claude/docs/mobile-first-contract.md`; idle and active gameplay captures must pass `.claude/docs/gameplay-screen-contract.md`: dominant integrated field, core controls visible without scrolling, usable buttons.
+- The live field reads as the approved gameplay sample, side by side (V23): topology, symbols, board housing, tile backing, the clearing moment and palette.
 - A reference game's art reads as the same world as its sources, side by side (AR11, V21), on the casual mechanic.
-- Campaign art is ACCEPTED and the game runs on the campaign background (V22).
+- The campaign background is ACCEPTED, rendered in the approved panorama's world, and the game runs on it (V22).
 - `production/session-state/active.md` contains the current runtime verdict.
 - Icons, splash, version, store metadata, and CI preparation are complete.
 

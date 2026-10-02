@@ -96,28 +96,37 @@ class ArtLineageTests(unittest.TestCase):
         self.assertEqual(self.run_cli("check", "--file", str(legacy), "--for", "edit")[0], 1)
 
     def test_a_picture_never_renders_from_its_previous_version(self) -> None:
-        banner = self.picture("banner.png")
-        self.record(banner, "banner", "fresh")
+        # The approved concept panorama is the campaign's one world authority.
+        panorama = self.picture("panorama.png")
+        self.record(panorama, "panorama", "fresh")
         background = self.picture("background.png")
         character = self.picture("hero.png")  # shipped asset: not in the ledger
         self.assertEqual(self.record(background, "background", "fresh",
-                                     refs=(character, banner))[0], 0)
+                                     refs=(character, panorama))[0], 0)
+        banner = self.picture("banner.png")
+        self.assertEqual(self.record(banner, "banner", "fresh",
+                                     refs=(character, panorama))[0], 0)
 
-        code, message = self.record(self.picture("banner-v2.png"), "banner", "fresh",
+        code, message = self.record(self.picture("panorama-v2.png"), "panorama", "fresh",
+                                    refs=(character, panorama))
+        self.assertEqual(code, 1)
+        self.assertIn("earlier panorama", message)
+        code, _ = self.record(self.picture("background-v2.png"), "background", "fresh",
+                              refs=(character, panorama, background))
+        self.assertEqual(code, 1)
+        # The banner is made last, from the panorama; nothing renders in the banner's world.
+        code, message = self.record(self.picture("icon-from-banner.png"), "icon", "fresh",
                                     refs=(character, banner))
         self.assertEqual(code, 1)
-        self.assertIn("earlier banner", message)
-        code, _ = self.record(self.picture("background-v2.png"), "background", "fresh",
-                              refs=(character, banner, background))
-        self.assertEqual(code, 1)
-        code, message = self.record(self.picture("panorama.png"), "panorama", "fresh",
-                                    refs=(character, banner, background))
-        self.assertEqual(code, 1)
-        self.assertIn("only the accepted banner", message)
+        self.assertIn("only the panorama", message)
         self.assertEqual(self.record(self.picture("icon.png"), "icon", "fresh",
-                                     refs=(character, banner))[0], 0)
+                                     refs=(character, panorama))[0], 0)
+        self.assertEqual(self.record(self.picture("frame.png"), "asset", "fresh",
+                                     refs=(character, panorama))[0], 0)
+        self.assertEqual(self.run_cli("check", "--file", str(panorama), "--for", "reference",
+                                      "--role", "banner")[0], 0)
         self.assertEqual(self.run_cli("check", "--file", str(banner), "--for", "reference",
-                                      "--role", "panorama")[0], 0)
+                                      "--role", "background")[0], 1)
         self.assertEqual(self.run_cli("check", "--file", str(background), "--for", "reference",
                                       "--role", "background")[0], 1)
 

@@ -7,8 +7,8 @@ follows art verification and precedes final runtime capture.
 
 The reference-only context frame from preflight remains an input to the artwork and is never part
 of the upload set. The game's background is the campaign game background, and the only procedure
-that changes it is [campaign-art.md](campaign-art.md) (finalization, or this run's preflight when
-the handoff was missing or stale). After that, the icon and emblem may be applied before final
+that changes it is [campaign-art.md](campaign-art.md) (implement Phase 4.0, or this run's preflight
+when the handoff was missing or stale). After that, the icon and emblem may be applied before final
 capture, but nothing in the store kit replaces, rewires, recolours, blurs, or regenerates a menu,
 gameplay, splash, or shared runtime background.
 
@@ -34,15 +34,16 @@ rg -n -i 'background|backdrop|bg_' lib pubspec.yaml 2>/dev/null \
 These files establish both halves of the invariant: the existing image bytes and the code/config
 references that select them.
 
-**Campaign context.** The accepted banner (`art/long-banner.png`) is the world context for
+**Campaign context.** The approved concept panorama (`art/panorama.png`) is the world context for
 icon/emblem generation, alongside the original shipped identity assets, which remain the identity
-authority. Validate any existing icon against this campaign before reuse. A new icon or emblem
+authority. The banner is not attached: it is itself rendered from the panorama, and the ledger
+refuses a picture rendered from a picture rendered from another. Validate any existing icon against this campaign before reuse. A new icon or emblem
 is rendered from those references, never from an earlier icon or emblem, and recorded with
 `tools/art_lineage.py` (roles `icon`, `emblem`; [art-lineage.md](../../../docs/art-lineage.md)). The
 background guard protects the campaign background already integrated in the game.
 
 **Launcher icon.** If no suitable square icon art exists yet (`assets/branding/app_icon.png` or a
-game-world emblem crop from `art/long-banner.png`), generate one with the same Codex GPT
+game-world emblem crop from `art/panorama.png`), generate one with the same Codex GPT
 Images 2.0 path as the rest of the asset set (`generate-png-asset/SKILL.md`); follow the
 store skill's correction loop until the icon passes: a full-bleed square composition of the game's hero character/object/emblem
 on its own themed background, matching the Design DNA.

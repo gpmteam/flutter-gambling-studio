@@ -144,13 +144,18 @@ full-width active peg field, an object-led jewel board across all three, or a co
 any panel.
 The middle panel has no privileged role. Multiple play fields are allowed when they depict
 real, coherent states and each remains readable; one continuous field is often stronger.
-Generate the feature banner first, then the panorama with that banner attached as world context.
+The panorama comes first, and it comes before the game: `/autocreate` renders it once the assets
+exist, slices it into the carousel and stops until the user approves it
+(`.claude/skills/store-screenshots/references/concept-panorama.md`). The game's field is then built
+to look like its gameplay sample, the game background is rendered in its world, and the store kit
+exports it unchanged and renders the banner with it attached as world context.
 Each scene is one image that already contains the character, gameplay, foreground and the five
 labelled multiplier balls: attach a shipped ball/coin/orb asset as the ball model and write the
 exact labels into the prompt, so the image model paints and letters the balls in the scene.
 Nothing is pasted or lettered onto generated art by script. Give the image generator the real
-active gameplay capture as context for the mechanic, symbols, topology and scoring moment; have it
-render gameplay naturally at a three-quarter/3D angle within the same image as the environment and
+active gameplay capture — or, before the game exists, the layout draft built from its real
+symbols — as context for the mechanic, symbols, topology and scoring moment; have it render
+gameplay naturally at a three-quarter/3D angle within the same image as the environment and
 foreground.
 Do not paste the capture or a derived board plate into the panorama, or leave a placeholder
 opening for a later gameplay insert. Reject generated gameplay that changes the real mechanic —

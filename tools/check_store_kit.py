@@ -21,6 +21,10 @@ import zipfile
 LINEAGE_ART = ("art/long-banner.png", "art/panorama.png", "art/shared-background.png",
                "art/multiplier-showcase-bg.png")
 MAX_ART_GENERATION = 2
+# After the user approves the concept carousel (tools/concept_gate.py) the panorama is a
+# contract: the store kit crops, grades and detail-passes it, and may repair an objective defect
+# as a region, but never re-renders or whole-frame edits it.
+APPROVED_PANORAMA_STEPS = ("derive", "detail", "repair")
 
 
 def lineage_errors(kit: zipfile.ZipFile, names: list[str], member) -> list[str]:
@@ -53,7 +57,44 @@ def lineage_errors(kit: zipfile.ZipFile, names: list[str], member) -> list[str]:
     return errors
 
 
-def check(archive: Path, count: int = 8, play_set: bool = True) -> list[str]:
+def concept_errors(kit: zipfile.ZipFile, names: list[str], member, concept: Path) -> list[str]:
+    """`art/panorama.png` must be the approved concept panorama, or descend from it only by
+    crops, grading, detail passes and region repairs recorded in `art/lineage.json`."""
+    try:
+        record = json.loads(concept.read_text(encoding="utf-8"))
+        approved = record["panorama"]["sha256"]
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        return [f"{concept} is not a concept record ({exc})."]
+    if record.get("status") != "APPROVED":
+        return [f"The concept carousel is {record.get('status')!r}, not APPROVED; the store kit "
+                "is built from the panorama the user approved."]
+    name = member("art/panorama.png")
+    if name not in names:
+        return ["Missing art/panorama.png, the approved concept panorama the kit exports."]
+    try:
+        ledger = json.loads(kit.read(member("art/lineage.json")))
+        records = {r["sha256"]: r for r in ledger["records"]}
+    except (KeyError, ValueError, TypeError):
+        return []  # lineage_errors() already reports a missing or broken ledger
+    digest = hashlib.sha256(kit.read(name)).hexdigest()
+    seen: set[str] = set()
+    while digest != approved:
+        step = records.get(digest)
+        if digest in seen or not isinstance(step, dict):
+            return ["art/panorama.png does not descend from the approved concept panorama "
+                    f"({approved[:12]}…): record every crop, canvas and detail merge with "
+                    "tools/art_lineage.py --parent, or export the approved file unchanged."]
+        if step.get("made") not in APPROVED_PANORAMA_STEPS:
+            return [f"art/panorama.png went through a {step.get('made')!r} step after approval; "
+                    "the approved panorama is only cropped, graded, detail-passed or "
+                    "region-repaired, never re-rendered or whole-frame edited."]
+        seen.add(digest)
+        digest = step.get("parent_sha256")
+    return []
+
+
+def check(archive: Path, count: int = 8, play_set: bool = True,
+          concept: Path | None = None) -> list[str]:
     from PIL import Image
 
     if count < 1:
@@ -128,6 +169,8 @@ def check(archive: Path, count: int = 8, play_set: bool = True) -> list[str]:
             else:
                 image(relative, size, kind)
         errors.extend(lineage_errors(kit, names, member))
+        if concept is not None:
+            errors.extend(concept_errors(kit, names, member, concept))
         for report in ("STORE_BRIEF.md", "STORE_INFO.md"):
             name = member(report)
             if name not in names or not kit.read(name).strip():
@@ -143,9 +186,12 @@ def main() -> int:
     parser.add_argument("--archive", type=Path, required=True)
     parser.add_argument("--count", type=int, default=8)
     parser.add_argument("--no-play-set", action="store_true")
+    parser.add_argument("--concept", type=Path, default=None,
+                        help="production/store-art/concept/concept.json: require the kit's "
+                             "panorama to be the user-approved concept panorama")
     args = parser.parse_args()
     try:
-        errors = check(args.archive, args.count, not args.no_play_set)
+        errors = check(args.archive, args.count, not args.no_play_set, args.concept)
     except (OSError, ValueError, KeyError, zipfile.BadZipFile, ImportError) as exc:
         errors = [str(exc)]
     if errors:

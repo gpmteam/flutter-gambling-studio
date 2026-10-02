@@ -89,14 +89,16 @@ record what is borrowed and keep the actual game's assets, mechanics and Design 
 Store-screenshot generation preserves the actual game's existing menu, gameplay, splash, and shared
 background assets and wiring. A runtime-background redesign is a separate, explicit opt-in; never
 replace the game's background merely to make it match newly generated marketing art. The one
-exception is campaign art (`.claude/skills/store-screenshots/references/campaign-art.md`), run by
-`/autocreate-finalize` Phase 10.4: it renders the banner from the shared template (the exact
-store-screenshots banner prompt, proven with `tools/prompt_template.py check`), generates a
-portrait game background in the banner's world with the main character whole inside the frame
-(no combo balls, lettering, board or UI), and wires that background into the game before
-runtime verification. `/store-screenshots` then builds the panorama, icon and feature graphic on
-the banner and puts the phone slides on the same game background; it runs campaign art itself only
-when the handoff is missing or stale.
+exception is campaign art, which starts from the concept carousel: `/autocreate` renders the store
+panorama from the shared template once the assets exist
+(`.claude/skills/store-screenshots/references/concept-panorama.md`), slices it into the three
+carousel slides and stops until the user approves it. After approval, `/autocreate-implement`
+Phase 4.0 renders a portrait game background in the approved panorama's world with the main
+character whole inside the frame (no combo balls, lettering, board or UI) and builds every screen
+on it (`.claude/skills/store-screenshots/references/campaign-art.md`). `/store-screenshots` then
+exports the approved panorama unchanged, renders the banner, icon and emblem in its world, and
+puts the phone slides on the same game background; it makes the background itself only when the
+handoff is missing or stale.
 
 An unspecified match game uses a 7×8 board; reference families use the "Build as" topology in
 `.claude/docs/game-concept-examples.md` (Zeus keeps its 7×6 grid). Preserve explicit or existing
@@ -119,11 +121,11 @@ The generated game ships in English too: every player-facing string (menus, butt
 
 Treat slash commands as manual runbooks. When a user types `/brainstorm`, `/autocreate`, `/team-dev`, `/code-review`, `/ui-audit`, `/emulator-test`, `/balance-check`, `/release-package`, `/release-checklist`, or another studio command, open the matching file in `.claude/skills/*/SKILL.md` and follow it. For specialized roles, use the persona briefs in `.claude/agents/*.md`. If needed, run helper checks with `bash tools/codex-hooks.sh <hook-name>`.
 
-Note on `/autocreate`: it is the full Zero-to-Production pipeline, split across three sessions. It MUST run every phase without skipping:
+Note on `/autocreate`: it is the full Zero-to-Production pipeline, split across three sessions with one approval gate. It MUST run every phase without skipping:
 
-1. Session 1 — pre-production: reference/mechanic detection, concept, classification (category G1-G6 + balance model B1-B6), Production Plan, `flutter create --platforms android,ios,web`, assets and audio, level/balance data.
-2. Session 2 (`autocreate-implement`, Phases 4 → 10) — implementation: code plus meta systems, content wiring, integration, `dart analyze lib/` looped until 0 errors, `flutter test` all green, feel pass, UI audit, curve-based balancing, crash prevention.
-3. Session 3 (`autocreate-finalize`, Phases 10.4 → 12) — campaign art (store banner + game background with the character whole in frame, wired into the game), runtime and soak verification via Chrome CDP with auto-fix, `/playtest`, session state, release-engineering PREP (icons, splash, versioning, store metadata, CI — WITHOUT building the AAB/APK and without a keystore) and the final report.
+1. Session 1 — pre-production: reference/mechanic detection, concept, classification (category G1-G6 + balance model B1-B6), Production Plan, `flutter create --platforms android,ios,web`, assets and audio, level/balance data, then the concept carousel — the store panorama rendered from the real assets and sliced into three slides — published with `tools/concept_gate.py publish`. Session 1 then STOPS: the user approves the carousel (or asks for changes, handled by `/autocreate --revise "<feedback>"`).
+2. Session 2 (`autocreate-implement`, Phases 4.0 → 10), only on an approved carousel — the campaign background in the approved panorama's world and the field's assets aligned to its gameplay sample, then implementation: code plus meta systems, content wiring, integration, `dart analyze lib/` looped until 0 errors, `flutter test` all green, feel pass, UI audit, curve-based balancing, crash prevention — with the field built to look like the gameplay sample.
+3. Session 3 (`autocreate-finalize`, Phases 10.4 → 13) — the campaign check, runtime and soak verification via Chrome CDP with auto-fix (including V22, the campaign background, and V23, the field against the approved gameplay sample), `/playtest`, session state, release-engineering PREP (icons, splash, versioning, store metadata, CI — WITHOUT building the AAB/APK and without a keystore), the final report, `finalize-verdict.json`, and the store-kit handoff: a production-ready game goes on to `/store-screenshots`, which exports the approved panorama unchanged and renders the banner from it.
 
 `/autocreate` leaves the project release-ready but does NOT produce the downloadable archive. Building the release artifact is an explicit user action: `/release-package` takes the screenshots, runs `flutter build apk --release`, runs `flutter clean` and archives the whole project into a **`.zip`** in `project_zip/`.
 

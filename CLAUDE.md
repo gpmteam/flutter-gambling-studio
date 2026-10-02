@@ -38,6 +38,13 @@ kinds, flexible store composition, board topology, Joker tone, combo markers and
 store-only combo balls. The reference's visual language is authoritative; reject unrequested style
 substitutions.
 
+**The concept carousel is approved before any code.** `/autocreate` renders the store panorama
+once the concept, assets and data exist, slices it into the three carousel slides and stops until
+the user approves it (`tools/concept_gate.py`). The approved panorama then governs the rest: the
+game's field is built to look like its gameplay sample (finalization checks it as V23), the game
+background is rendered in its world, and `/store-screenshots` exports it unchanged and renders the
+banner from it. See `.claude/skills/store-screenshots/references/concept-panorama.md`.
+
 **Generated art stays near its first generation.** Every image-model edit re-paints the whole
 frame and every reference is copied with its artifacts, so a picture edited again and again — or
 re-rendered from its own previous version — turns smeared and mushy. A change to generated art
@@ -120,7 +127,8 @@ archetypes — plus the table that translates a gambling ask into a casual mecha
 /brainstorm        — Interactive casual game concept generation
 /auto-idea         — Autonomous generation of a finished idea (no questions)
 /autocreate        — Zero-to-Production: a complete working game from one command
-                     (concept + balance model + assets + code + tests + audit + balancing)
+                     (concept + balance model + assets → concept carousel for YOUR approval →
+                      code + tests + audit + balancing → store kit)
 ```
 
 ## The full path to a finished game
@@ -144,7 +152,8 @@ Idea → Concept → Balance → Design → Gate → Code → UI audit → Runti
 | `/auto-idea --list` | Show every archetype A–AB by category | Choosing an archetype by hand |
 | `/auto-idea --archetype [A-AB]` | Expand one specific archetype | You already have a preference |
 | `/auto-idea --category [G1-G6]` | A random archetype inside one category | You know the category, not the mechanic |
-| `/autocreate` | Zero-to-Production: a complete working game, no questions | You want a fully working game |
+| `/autocreate` | Zero-to-Production: concept, assets and data, then the concept carousel (the store panorama in three slides) for approval; after approval the game is built to match it and the store kit follows | You want a fully working game |
+| `/autocreate --revise "<feedback>"` | Apply your feedback to the pending concept carousel and present it again | The carousel needs changes before you approve it |
 | `/autocreate --from-concept` | Implement a saved idea | After `/auto-idea` |
 | `/map-systems` | Decompose into technical systems | After the concept |
 | `/design-system [system]` | A GDD for one game system | One system at a time |
@@ -179,7 +188,7 @@ Idea → Concept → Balance → Design → Gate → Code → UI audit → Runti
 | `/release-checklist` | Final GO/NO-GO checklist before release, including the no-gambling gate (release-manager agent) |
 | `/release-engineering` | Ship engineering: app icons (adaptive + iOS) + native splash + versioning + **signed AAB** + iOS scaffold + store metadata (casual category, "simulated gambling: no") + CI |
 | `/release-package` | Release packaging: screenshots of every screen + release APK/AAB + `flutter clean` + a `.zip` in `project_zip/` |
-| `/store-screenshots` | Context-based store kit with character/object/mechanic lead, flexible gameplay spans, real captures, feature graphic and ZIP. Built on the campaign art from `/autocreate-finalize` (banner → panorama, icon, feature graphic; the game background behind the phones). Read `.claude/skills/store-screenshots/SKILL.md`. |
+| `/store-screenshots` | Context-based store kit, started after `/autocreate-finalize`: exports the concept panorama the user approved before implementation unchanged as the carousel, renders the banner (→ feature graphic), icon and emblem in its world, puts real captures on the game background, and packages the ZIP. Read `.claude/skills/store-screenshots/SKILL.md`. |
 
 ### Diagnostics and debt
 
@@ -274,7 +283,8 @@ Explicitly requested framework fixes remain the primary task. See `.claude/docs/
 The pattern: **Question → Options → Decision → Draft → Approval**
 
 - Agents MUST ask "May I write this to [path]?" before Write/Edit
-- Exception: `/autocreate` and `/auto-idea` run autonomously — that is deliberate
+- Exception: `/autocreate` and `/auto-idea` run autonomously — that is deliberate. `/autocreate`
+  stops exactly once, for the user to approve the concept carousel before implementation
 
 ## Contextual Design (human-crafted UI)
 

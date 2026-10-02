@@ -15,7 +15,13 @@ later run) records how each generated picture was made and refuses the two moves
 
   * a whole-frame `edit` of anything but a fresh render (at most one edit per lineage);
   * a reference that is an earlier generated version of the same picture, or any generated
-    campaign/marketing picture other than the accepted banner used as world context.
+    campaign/marketing picture other than the panorama used as world context.
+
+The panorama is the campaign's one world authority: the concept carousel the user approves
+before implementation (`tools/concept_gate.py`). The game background, the store banner, the icon
+and the emblem — and any game asset aligned to its gameplay sample — are rendered in its world,
+each from the original references plus that one picture, so nothing is ever rendered from a
+picture that was itself rendered from another generated picture.
 
 Region repairs and detail merges (`tools/region_repair.py`) and deterministic derivations
 (resize, export, grade, upscale canvas) keep their parent's generation: they do not re-paint the
@@ -42,10 +48,10 @@ ROLES = ("banner", "background", "panorama", "icon", "emblem", "showcase", "asse
 MADE = ("fresh", "edit", "repair", "detail", "derive", "adopt")
 # A fresh render is generation 1; one whole-frame edit makes it 2, and that is the ceiling.
 MAX_GENERATION = 2
-# Generated pictures that may never feed another generation as a reference. The accepted banner
-# is the one exception (world context for the other campaign pictures); shipped game assets are
-# the identity authority however they were made.
-NO_REFERENCE_ROLES = {"background", "panorama", "icon", "emblem", "showcase"}
+# Generated pictures that may never feed another generation as a reference. The panorama is the
+# one exception (the approved concept: world context for every other campaign picture); shipped
+# game assets are the identity authority however they were made.
+NO_REFERENCE_ROLES = {"background", "banner", "icon", "emblem", "showcase"}
 
 
 class LineageError(RuntimeError):
@@ -97,8 +103,8 @@ def reference_issue(ref: dict | None, role: str) -> str | None:
         return (f"it is an earlier {role} — a new {role} renders from the original references, "
                 "never from its previous version (that copies its artifacts forward)")
     if ref["role"] in NO_REFERENCE_ROLES:
-        return (f"it is a generated {ref['role']}; only the accepted banner may be world context "
-                "for another campaign picture")
+        return (f"it is a generated {ref['role']}; only the panorama (the approved concept) may "
+                "be world context for another campaign picture")
     return None
 
 

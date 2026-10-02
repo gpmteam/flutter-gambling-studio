@@ -33,8 +33,43 @@ class TemplateFileTests(unittest.TestCase):
         templates = prompt_template.load_templates(TEMPLATES)
         self.assertEqual(
             set(templates),
-            {"banner-character", "banner-object", "background-character",
-             "background-object", "background-mechanic"})
+            {"panorama-character", "panorama-object", "banner-character", "banner-object",
+             "background-character", "background-object", "background-mechanic"})
+
+    def test_panorama_templates_carry_the_store_panorama_contract(self) -> None:
+        # The concept carousel the user approves is the store's panorama: same rules, same words.
+        templates = prompt_template.load_templates(TEMPLATES)
+        for tid in ("panorama-character", "panorama-object"):
+            body = templates[tid]
+            for phrase in ('"x5", "x10", "x25", "x50", "x100"',
+                           "with at least one ball in each of the {{panels}} portrait panels",
+                           "At least two balls fly in front of the board and cover part of it",
+                           "three-quarter/3D angle",
+                           "never appears as a flat pasted picture",
+                           "this is the game's field as players will see it",
+                           "cropped by the bottom edge",
+                           "No floor, fabric, tabletop, podium or drape"):
+                with self.subTest(template=tid, phrase=phrase):
+                    self.assertIn(phrase, body)
+        character = templates["panorama-character"]
+        self.assertIn("torso-to-head bust", character)
+        self.assertIn("no legs, knees, hips or feet are visible", character)
+        self.assertIn("keep every ball clear of the character's silhouette", character)
+        obj = templates["panorama-object"]
+        self.assertIn("do not add a person, hand, animal, mascot", obj)
+        self.assertIn("leads the first two portrait panels", obj)
+
+    def test_banner_and_background_are_rendered_in_the_approved_panoramas_world(self) -> None:
+        templates = prompt_template.load_templates(TEMPLATES)
+        for tid in ("banner-character", "banner-object", "background-character",
+                    "background-object", "background-mechanic"):
+            with self.subTest(template=tid):
+                self.assertIn("the world of the attached panorama", templates[tid])
+                self.assertNotIn("attached banner", templates[tid])
+        for tid in ("banner-character", "background-character"):
+            with self.subTest(template=tid):
+                self.assertIn("the panorama is world context, not the character reference",
+                              templates[tid])
 
     def test_banner_templates_carry_the_store_banner_contract(self) -> None:
         templates = prompt_template.load_templates(TEMPLATES)

@@ -1,6 +1,6 @@
 ---
 name: store-screenshots
-description: "Create a store kit from the campaign art: reuse the autocreate-finalize banner and game background (or make them first with references/campaign-art.md), then a complete panorama with the torso-to-head character (never standing, flying or showing legs), gameplay and mandatory flying x5/x10/x25/x50/x100 multiplier balls in every panel, rendered in one image-generation call from the banner and a shipped ball asset as references. Phone slides put real captures on the game background — the same picture the game uses, character whole in frame. Add feature graphic, icon/emblem from the banner, and ZIP. Match game assets and topology."
+description: "Create a store kit from the campaign: export the concept panorama the user approved before implementation unchanged (crops, grading and a detail pass only) as the carousel panels — torso-to-head character, the gameplay the game was built to match, mandatory flying x5/x10/x25/x50/x100 balls in every panel — then render the banner in its world from the template and a shipped ball asset. Phone slides put real captures on the game background — the same picture the game uses, character whole in frame. Add feature graphic from the banner, icon/emblem in the panorama's world, and ZIP. Started automatically after /autocreate-finalize; legacy games without an approved concept get a panorama first."
 argument-hint: "[--count 8] [--panels 3] [--lead-kind character|object|mechanic] [--character-framing bust|mascot] [--banner-layout free|left-heavy] [--size 1320x2868|play] [--no-play-set] [--frame ios|android|none] [--no-apply] [--no-wire-logo] [--no-captions] [--keep-runtime-background]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Agent
@@ -9,33 +9,38 @@ allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Agent
 # Context-based store kit
 
 Read `.claude/docs/visual-context.md`, `.claude/docs/game-concept-examples.md`,
-`.claude/docs/art-lineage.md`, and the game's concept, art direction, asset manifest, math config
-and runtime evidence. Inspect matching
+`.claude/docs/art-lineage.md`, and the game's concept, art direction, asset manifest, math config,
+the approved concept (`production/store-art/concept/`) and runtime evidence. Inspect matching
 `examples-games/` previews by default, and every source in `design/reference-contract.md` when the
 game is a reference game — its store art is that reference's world. References guide composition; the shipped assets and
 mechanics govern identity. Never change a real game to match a preview's topology or palette.
 
-**Generation order: banner first, then panorama.** The banner and the game background are the
-campaign art that `/autocreate-finalize` makes before runtime verification
-([references/campaign-art.md](references/campaign-art.md)). Read
-[references/campaign-handoff.md](references/campaign-handoff.md) in preflight: reuse both when the
-handoff is valid; otherwise run campaign-art.md first, in this run, and then continue. Nobody
-writes the banner prompt by hand: it is rendered from
+**Generation order: the approved panorama first, then the banner.** The panorama is not made
+here. `/autocreate` rendered it before any game code existed, sliced it into these same carousel
+panels and stopped until the user approved it ([references/concept-panorama.md](references/concept-panorama.md));
+the game's field was then built to look like its gameplay sample, and the game background was
+rendered in its world ([references/campaign-art.md](references/campaign-art.md)). This run exports
+that panorama **unchanged** — crops, grading and the detail pass only — so the listing shows
+exactly what the user approved, and renders the banner in its world. Read
+[references/campaign-handoff.md](references/campaign-handoff.md) in preflight: reuse the approved
+panorama and a valid game background; make the banner (or reuse one already made in this
+panorama's world). A game made before the approval gate has no approved panorama: preflight makes
+one first with concept-panorama.md, then the run continues identically. Nobody writes a campaign
+prompt by hand: the panorama, background and banner are rendered from
 [references/campaign-prompts.md](references/campaign-prompts.md) and proved with
-`tools/prompt_template.py check`, so a banner made here and one made by finalization come from the
-same words.
+`tools/prompt_template.py check`, so a picture made here and one made by the pipeline come from
+the same words.
 
-The horizontal feature banner, with the
-character on the left, is the first image generated. It establishes the campaign's world:
-environment, palette, lighting, board housing, lower-edge band and multiplier-ball look. The
-accepted banner is then attached as **world context** to the panorama call (and to the
-`--panels 0` showcase background), so the carousel and the feature graphic read as one campaign.
+The horizontal feature banner, with the character on the left, is the last campaign picture: it is
+rendered with the approved panorama attached as **world context**, so the carousel, the feature
+graphic and the game read as one campaign — environment, palette, lighting, board housing,
+lower-edge band and multiplier-ball look all come from the panorama.
 
 For a character-led kit, the shipped character asset is the canonical player reference in
 **every** image-generation call and is always attached first. Supply the original asset file
-again for a retry or a separate icon render. The accepted banner is the only generated image a
+again for a retry or a separate icon render. The approved panorama is the only generated image a
 later call may receive, and only as world context: it is never the character reference, and the
-panorama is a new composition, not an edit, outpaint or crop of the banner. The generated scene
+banner is a new horizontal composition, not an edit, outpaint or crop of the panorama. The generated scene
 may establish pose and composition, but it cannot redefine the character's face, silhouette,
 costume or colors. If the character has multiple shipped layers, use the original layers or a
 lossless assembly of them.
@@ -90,10 +95,21 @@ background is the campaign game background, changed only by campaign-art.md (whi
 invokes when the handoff is missing or stale, unless `--keep-runtime-background`), and never
 replaced with the panorama. All copy is English unless another game language was requested.
 
+**The approved panorama is a contract.** The user approved it before a line of game code was
+written, and the game was built to match it. Never regenerate, re-render, whole-frame edit,
+outpaint or re-letter it to suit a review, and never change its composition, pose, palette or
+content. It may only be cropped (`--seam-snap`, `--offset`, `--offset-y`, `--zoom`), graded by the
+compositor and detail-passed for export resolution; an objective defect the concept review missed
+(a misspelled label, a broken hand) is a region repair of that defect alone. The archive gate
+proves it: `tools/check_store_kit.py --concept production/store-art/concept/concept.json` refuses a
+kit whose `art/panorama.png` does not descend from the approved file through recorded `derive`,
+`detail` and `repair` steps.
+
 ## Outputs
 
-Default N=8 screenshots: P=3 adjacent concept panels sliced from one complete panorama followed by
-N−P actual gameplay/meta captures with optional device frames and captions, set on the
+Default N=8 screenshots: P=3 adjacent concept panels sliced from the approved panorama — the
+carousel the user approved, exported with its recorded flags — followed by N−P actual
+gameplay/meta captures with optional device frames and captions, set on the
 game background from the campaign art — the same picture the captured game shows (see Phase 5).
 With `--keep-runtime-background` they sit on the panorama's opening panel instead. Produce `store/`
 at 1320×2868 and `store-play/` at 1080×1920 independently, not by resizing one set into the other.
@@ -158,15 +174,26 @@ PLAY_DIR="$STORE_DIR/store-play"
 mkdir -p "$ART_DIR" "$RAW_DIR" "$OUT_DIR" "$PLAY_DIR"
 ```
 
-**Campaign art comes first.** Validate `production/store-art/` by
-[references/campaign-handoff.md](references/campaign-handoff.md). Valid → copy the accepted art in
-unchanged. Missing or stale → run [references/campaign-art.md](references/campaign-art.md) now
-(context capture, banner, game background, wiring, analyzer and tests), then copy. With
-`--keep-runtime-background`, run only its banner step.
+**Campaign art comes first — the approved panorama before everything.** Validate
+`production/store-art/` by [references/campaign-handoff.md](references/campaign-handoff.md):
+
+1. **Panorama.** `python3 tools/concept_gate.py status`. APPROVED → copy
+   `production/store-art/concept/panorama.png` unchanged and read
+   `production/store-art/concept/export-flags.txt` (the crop the user approved) and
+   `gameplay-sample.md`. PENDING or DRAFTING → stop and report BLOCKED: the concept carousel is
+   waiting for the user's approval. NONE (a game made before the approval gate) → make the
+   panorama now with [references/concept-panorama.md](references/concept-panorama.md), legacy
+   caller, a real gameplay capture as context, written to `$ART_DIR/panorama.png`.
+2. **Game background.** Valid → copy it. Missing or stale → run
+   [references/campaign-art.md](references/campaign-art.md) Steps 2–3 now (background in the
+   panorama's world, export, wiring, analyzer and tests). Skipped with `--keep-runtime-background`.
+3. **Banner.** Valid for this panorama → copy it. Otherwise run campaign-art.md Step 4 after the
+   current captures exist (Phase 3), with the approved panorama as world context.
 
 ```bash
-cp production/store-art/long-banner.png "$ART_DIR/long-banner.png"
+cp production/store-art/concept/panorama.png "$ART_DIR/panorama.png"   # approved: byte-identical
 cp production/store-art/shared-background.png "$ART_DIR/shared-background.png"  # not with --keep-runtime-background
+cp production/store-art/long-banner.png "$ART_DIR/long-banner.png"     # only when valid for this panorama
 ```
 
 Write `STORE_BRIEF.md` before any generation call:
@@ -175,12 +202,16 @@ Write `STORE_BRIEF.md` before any generation call:
 - `lead_kind: character | object | mechanic`, exact subject and in-game role. A chicken is a
   character; a crown/coin/board is not. No invented mascot or character-only opening for objects.
 - Inspected references, borrowed traits and original adaptations.
+- Panorama provenance: the approved concept revision, its SHA-256 and approval time from
+  `concept.json`, the recorded export flags, and the gameplay sample it promised — or, for a
+  legacy game, that this run made the panorama and it was not user-approved.
+- Panel map read from the approved panorama: what each panel shows, where the gameplay sits and
+  spans. Any panel, the right two, or all three may carry gameplay. There is no required middle
+  field or final reward-only panel.
 - Banner plan: lead on the left, where the character's torso is cut (bottom edge or foreground
   band), gameplay placement, lower-edge band, where each of the five flying balls sits, and what
-  continues under the phone on the right.
-- Panel map with anchors and gameplay positions/spans. Any panel, the right two, or all three
-  may carry gameplay. There is no required middle field or final reward-only panel. Note where
-  the character's pose, crop or panel differs from the banner.
+  continues under the phone on the right — the panorama's world in a horizontal composition. Note
+  where the character's pose, crop or placement differs from the panorama.
 - Lower-edge plan (see Phase 1): the game's own objects chosen for the close-up foreground band,
   their left-to-right order, which ones cross seams, and the real game objects used for the foreground layer.
   Record the game's warm/cool light sources and polished materials.
@@ -222,17 +253,17 @@ Write `STORE_BRIEF.md` before any generation call:
 - Independent feature layout: `free` by default or justified `left-heavy`; no reserved device zone.
   The feature graphic is text-free: record the chosen capture for its right-side phone, not a
   title or tagline.
-- One initial attempt per required scene (banner, panorama, any `--panels 0` showcase background
-  and any icon), followed by correction until the required exports pass. Fresh renders restart
-  from the original assets, plus the accepted banner for later scenes; local defects are
-  repaired region by region on the current candidate, never by re-editing an edited frame.
-  Follow the correction policy below. Reuse accepted art and preserve evidence of failed
-  attempts.
+- One initial attempt per scene this run makes (the banner, a legacy game's panorama, any
+  `--panels 0` showcase background and any icon), followed by correction until the required
+  exports pass. Fresh renders restart from the original assets, plus the approved panorama for
+  later scenes; local defects are repaired region by region on the current candidate, never by
+  re-editing an edited frame. The approved panorama itself is never one of these scenes. Follow
+  the correction policy below. Reuse accepted art and preserve evidence of failed attempts.
 
 Collect the original character asset and the gameplay sprites that will be visible in the art.
 Exclude UI chrome, fonts, backgrounds and store outputs. Preserve originals; convert non-PNG
 sources to lossless PNG references only when the image tool needs PNG. If reference slots are
-limited, prioritize the original character asset, then the accepted banner (for later scenes),
+limited, prioritize the original character asset, then the approved panorama (for later scenes),
 the multiplier reference, the gameplay capture and visible sprites.
 Written descriptions and generated previews never replace the character asset.
 For the multiplier reference, choose a shipped round asset such as a ball, coin, orb or token.
@@ -247,7 +278,7 @@ art and before any other edit, record all runtime-background files, hashes and s
 code/config references, including registered splash/shared backgrounds outside conventional
 directories. See [references/runtime-branding.md](references/runtime-branding.md).
 
-## Phase 1 — banner first, then the complete panorama
+## Phase 1 — the approved panorama, then the banner
 
 ### Composition rules shared by every scene
 
@@ -317,64 +348,74 @@ it; do not move them all above the action to preserve gameplay visibility. They 
 props but must remain clear of the player/hero silhouette. Avoid a row, regular grid or tight
 cluster. Match any user-supplied size reference.
 
-### 1a — Banner (the first generation call)
+### 1a — Panorama (the approved concept)
 
-`art/long-banner.png` is the accepted campaign banner. When this run has to make it (no valid
-handoff), campaign-art.md's banner step makes it: the prompt is `banner-character` or
-`banner-object` from [references/campaign-prompts.md](references/campaign-prompts.md), rendered
-with this game's values and passing `tools/prompt_template.py check` — the same words
-`/autocreate-finalize` sends. The template is this section and "First-prompt requirements" below
-written out once for the banner; do not re-adapt them yourself. For a character-led game the character
-appears large on the left, framed from torso to head: the bottom edge or the foreground band cuts
-the body through the torso, with no legs or feet visible, and the character is neither standing
-full length nor flying. Object/mechanic leads put the lead object or the angled gameplay
-surface there instead, with no invented character. The mechanic sits at a three-quarter/3D angle
-beside the lead, the environment runs edge to edge, and the lower-edge band crosses the full
-width. The right third continues the scene without a face or decisive symbol, because
-`banner` seats the phone there (centered at 82% of the width, about a third of it wide). That area
-is not an empty reserved zone: background, housing and foreground run through it. Include all
-five labelled multiplier balls flying around the character and across the gameplay, clear of the
-character's silhouette. Keep their labels out of the right-third phone seat so the shipped graphic
-shows all five, and never keep balls off the gameplay to preserve it. No title, logo, wordmark, tagline, device,
-UI or copy space; a left side left blank for text is a failed banner. The banner must look finished
-alone.
+`art/panorama.png` is the concept panorama the user approved, copied byte-identical from
+`production/store-art/concept/panorama.png`. It already satisfies every rule in this phase: it was
+rendered from the `panorama-character` or `panorama-object` template in
+[references/campaign-prompts.md](references/campaign-prompts.md) — this phase's composition rules,
+lower edge, multiplier balls and first-prompt requirements written out literally — reviewed
+against Phase 2, and exported with the same `triptych` command this run uses. Do not render,
+edit, outpaint or re-letter it. Phase 4 crops and detail-passes it; nothing else touches it.
 
-Attach, in order: the original character asset (identity authority), the multiplier reference
-(ball model), the gameplay capture (context only), visible shipped sprites, matching previews.
-When the tool takes custom sizes, `3840x1872` matches the 1024×500 delivery aspect.
+For a game made before the approval gate, preflight made it with
+[references/concept-panorama.md](references/concept-panorama.md) as one complete, coherent image:
+the torso-to-head character, scene-native gameplay at a three-quarter/3D view with the real
+capture as context only, the lower-edge band, all five labelled balls in flight with at least one
+in every panel, and the environment. Attach, in order: the original character asset (identity
+authority), the multiplier reference (ball model), the gameplay capture (context only), visible
+shipped sprites, matching previews. When the tool takes custom sizes, `3456x2384` (about 1.45:1)
+covers three 1320×2868 panels plus the default hidden seam allowance. No banner is attached: the
+banner is made from the panorama, never the other way round.
 
-### 1b — Panorama (banner as world context)
+### 1b — Banner (panorama as world context)
 
-Generate `art/panorama.png` as a new composition for the panel geometry. The accepted banner is
-attached as **world context**, not as a source to extend: the panorama inherits its environment,
-palette, lighting, board housing, lower-edge treatment and ball look. The character may take a
-different pose, expression, crop or panel than in the banner, but it stays framed from torso to
-head with no legs visible; identity still comes only from the original asset. One call renders
-everything: the torso-to-head character, scene-native gameplay, the lower-edge band, all five
-labelled balls in flight with at least one in every panel, and the environment.
+`art/long-banner.png` is the campaign banner, made by campaign-art.md Step 4 unless a banner
+already exists in this panorama's world: the prompt is `banner-character` or `banner-object` from
+[references/campaign-prompts.md](references/campaign-prompts.md), rendered with this game's values
+and passing `tools/prompt_template.py check`. The template is this section and "First-prompt
+requirements" below written out once for the banner; do not re-adapt them yourself. The approved
+panorama is attached as **world context**, not as a source to extend: the banner inherits its
+environment, palette, lighting, board housing, lower-edge treatment and ball look in a new
+horizontal composition, not an edit, outpaint or crop of the panorama. The character may take a
+different pose, expression, crop or panel than in the panorama, but it stays framed from torso to
+head with no legs visible; identity still comes only from the original asset. For a character-led
+game the character appears large on the left, framed from torso to head: the bottom edge or the
+foreground band cuts the body through the torso, with no legs or feet visible, and the character
+is neither standing full length nor flying. Object/mechanic leads put the lead object or the
+angled gameplay surface there instead, with no invented character. The mechanic sits at a
+three-quarter/3D angle beside the lead, the environment runs edge to edge, and the lower-edge band
+crosses the full width. The right third continues the scene without a face or decisive symbol,
+because `banner` seats the phone there (centered at 82% of the width, about a third of it wide).
+That area is not an empty reserved zone: background, housing and foreground run through it.
+Include all five labelled multiplier balls flying around the character and across the gameplay,
+clear of the character's silhouette. Keep their labels out of the right-third phone seat so the
+shipped graphic shows all five, and never keep balls off the gameplay to preserve it. No title,
+logo, wordmark, tagline, device, UI or copy space; a left side left blank for text is a failed
+banner. The banner must look finished alone.
 
-Attach, in order: the original character asset (identity authority), the accepted banner (world
-context — not a character reference), the multiplier reference (ball model), the gameplay
-capture (context only), visible shipped sprites, matching previews. When the tool takes custom
-sizes, `3456x2384` (about 1.45:1) covers three 1320×2868 panels plus the default hidden seam
-allowance.
+Attach, in order: the original character asset (identity authority), the approved panorama (world
+context — not a character reference), the multiplier reference (ball model), the gameplay capture
+(context only), visible shipped sprites, matching previews. When the tool takes custom sizes,
+`3840x1872` matches the 1024×500 delivery aspect. The banner is made after Phase 3's captures, so
+its gameplay context is the current game — which was built to match the panorama's gameplay
+sample. Copy the accepted `production/store-art/long-banner.png` to `$ART_DIR/long-banner.png`.
 
 Only for `--panels 0 --keep-runtime-background`, generate the portrait
-`art/multiplier-showcase-bg.png` the same way, with the banner as world context, all five
-labelled balls in the scene and the existing game background as inspiration. Keep runtime
+`art/multiplier-showcase-bg.png` the same way, with the approved panorama as world context, all
+five labelled balls in the scene and the existing game background as inspiration. Keep runtime
 background files unchanged.
 
 ### First-prompt requirements
 
-Put this composition requirement in the **first** prompt of the panorama call, adapting the
-details to the game's actual characters, board, colors and environment, and adapt it the same way
-to any showcase background. The banner's version already exists, adapted once and literally, as
-the `banner-*` templates in [references/campaign-prompts.md](references/campaign-prompts.md):
+This is the composition requirement every scene's **first** prompt carries. The panorama's and
+the banner's versions exist, written out once and literally, as the `panorama-*` and `banner-*`
+templates in [references/campaign-prompts.md](references/campaign-prompts.md) — render those,
+never a paraphrase. Adapt it the same way to any showcase background:
 
-> One continuous, fully illustrated game panorama set in the world of the attached banner:
-> same environment, palette, lighting and board housing, in a new composition. Reproduce the
-> supplied original character asset faithfully; the banner is world context, not the character
-> reference. If the game has a main character, frame it as a torso-to-head bust (or the
+> One continuous, fully illustrated game panorama set in the game's own world. Reproduce the
+> supplied original character asset faithfully; it is the identity authority, and every other
+> image is context. If the game has a main character, frame it as a torso-to-head bust (or the
 > species-appropriate equivalent): the bottom edge of the image or the large foreground objects
 > cut its body through the torso, so no legs, knees, hips or feet are visible anywhere. The
 > character is not standing full length and is not flying, floating or leaping; its cut torso
@@ -412,12 +453,13 @@ the game's real palette and objects:
 Use the available built-in image tool; headless generation follows `generate-png-asset/SKILL.md`
 and `tools/gpt_image.py edit` with a prompt file and repeated `--image` inputs in the order above.
 Record every candidate as it lands, with each attached image — the ledger refuses a reference
-that is an earlier panorama or another generated store picture ([art-lineage.md](../../docs/art-lineage.md)):
+that is an earlier banner or any generated store picture other than the panorama
+([art-lineage.md](../../docs/art-lineage.md)):
 
 ```bash
-python3 tools/art_lineage.py record --file "$ART_DIR/panorama.png" --role panorama --made fresh \
-  --ref "$CHARACTER_ASSET" --ref "$ART_DIR/long-banner.png" --ref "$MULTIPLIER_REF" \
-  --ref "$RAW_DIR/<capture>.png" ... --prompt "$ART_DIR/prompts/panorama.txt"
+python3 tools/art_lineage.py record --file production/store-art/long-banner.png --role banner \
+  --made fresh --ref "$CHARACTER_ASSET" --ref "$ART_DIR/panorama.png" --ref "$MULTIPLIER_REF" \
+  --ref "$RAW_DIR/<capture>.png" ... --prompt production/store-art/banner-prompt.txt
 ```
 The compositor may grade and slice the finished panorama; it must not assemble its gameplay
 field or add anything to it. `boardplate` is retired for this workflow, and `triptych` refuses
@@ -439,6 +481,11 @@ all requested exports pass, without a fixed number of fresh retries, targeted ed
 adjustments. Reuse accepted artwork and correct only failed scenes. Never declare PASS or
 package rejected art to end the loop.
 
+The approved panorama is corrected only by crop, and by a region repair for an objective defect
+the concept review missed. A composition or taste note against it is not a defect: the user
+approved that composition, and the game was built to match it. Record the note in
+`STORE_INFO.md` for a later concept change; do not act on it here.
+
 **Repairs must not compound.** An image-model edit re-renders the whole frame even when the
 prompt says "change only X": every pixel is painted again, so an edit of an edit stacks
 generation loss — detail softens, texture smears, colour drifts and the character's face slowly
@@ -454,10 +501,11 @@ the correction from the defect, in this order:
   that window, and merge back only the defect box. Every pixel outside the box and its feathered
   edge stays byte-identical, and the box is drawn at more resolution than the candidate had there, so any
   number of repairs costs no more picture quality than one.
-- **A composition defect gets a fresh render.** The character too large or in the wrong panel,
+- **A composition defect gets a fresh render** — of a scene this run makes, never of the approved
+  panorama. The character too large or in the wrong panel,
   the board in the wrong place, a ball that has to move across the scene: write the correction
-  into the prompt and render a new composition from the original references (plus the accepted
-  banner as world context), keeping what the review already accepted as explicit direction.
+  into the prompt and render a new composition from the original references (plus the approved
+  panorama as world context), keeping what the review already accepted as explicit direction.
 - **At most one whole-frame edit per lineage.** A whole-frame edit may take only a
   first-generation render as its input; never send a frame that is itself an edit, or contains a
   merged repair, to another whole-frame edit. Headless whole-frame edits keep the candidate's
@@ -488,7 +536,7 @@ cut from one candidate merge in turn, each with `--base` set to the newest candi
 pixels are the image model's own render of that region of the same scene, which is why this is
 the one blend allowed inside generated art.
 
-Fresh renders may use the accepted banner as world context, never rejected art as an identity
+Fresh renders may use the approved panorama as world context, never rejected art as an identity
 reference. For a wrong symbol or chain connector, attach the window, original identity assets,
 authentic capture, and exact runtime facts; identify the cells and requested change. Never
 paste, warp, repaint, or composite a board or chain locally.
@@ -514,7 +562,10 @@ resume state, finish independent work, and report the incomplete delivery accura
 ## Phase 2 — visual review criteria (apply after exports)
 
 After the first full export, inspect one contact sheet showing the final App Store and Play crops,
-plus the feature graphic. Compare the character to its original asset, verify that `x5`, `x10`,
+plus the feature graphic. The approved panorama's art was reviewed before the user approved it:
+here its crops are reviewed (a label or head cut by a seam, a board row lost by the Play crop),
+and its art only for an objective defect. The banner and anything else this run made get the
+whole review. Compare the character to its original asset, verify that `x5`, `x10`,
 `x25`, `x50` and `x100` each appear once, spelled exactly, on distinct airborne balls in the
 panorama and in the banner, and that every panorama panel carries at least one ball. Check that
 any main character reads from torso to head in the banner and the panorama. Its body should be
@@ -527,7 +578,7 @@ read as the multiplier reference (silhouette, material, color, ornament) painted
 lit by it, with glow and motion, labels bold and dominant. A flat, pasted-looking or small-label
 ball is an error. Confirm at least two ball bodies visibly cover gameplay and none overlaps the
 player/hero silhouette. Do not move balls off the board to clear the action. Check that the
-panorama visibly shares the banner's world, and that the lower edge is a close-up band of large,
+banner visibly shares the approved panorama's world, and that the lower edge is a close-up band of large,
 readable game objects over a continuous layer of the game's own pieces, without a floor, drape or heap of tiny props.
 For a game without a character, check that no player/mascot was invented. Apply the correction
 policy from Phase 1 and recheck affected crops after repairs; avoid repeated audits of unchanged
@@ -545,7 +596,7 @@ untouched.
 
 Follow [references/runtime-branding.md](references/runtime-branding.md) for icon/emblem application,
 platform-density checks and background guards. Honor no-apply/no-wire-logo. The icon and emblem
-are generated with the accepted banner as world context. The game background is the campaign's
+are generated with the approved panorama as world context. The game background is the campaign's
 and stays as campaign art wired it; `--apply-backdrop` is retired, and
 `--confirm-game-background-replacement` belongs to campaign-art.md alone.
 
@@ -561,19 +612,21 @@ an unchanged matching capture does not justify another generation call.
 
 ## Phase 4 — final exports
 
-Select the game's lead kind and export directly from the complete generated panorama. Turn the
-numeric art gates off; do not measure hero, lead, gameplay or protected-region boxes. Inspect
-actual final crops in Phase 2. If a label or character is cut by a seam, adjust the crop
-and re-export until all requested formats pass; review the affected crops after each change.
-A flying ball covering gameplay is never a reason to adjust the crop.
+Export directly from the approved panorama with the flags recorded in
+`production/store-art/concept/export-flags.txt` — the same command the concept carousel was
+exported with, so the App Store panels are the slides the user approved. Turn the numeric art
+gates off; do not measure hero, lead, gameplay or protected-region boxes. Inspect actual final
+crops in Phase 2. If a label or character is cut by a seam, adjust the crop and re-export until
+all requested formats pass; review the affected crops after each change. A flying ball covering
+gameplay is never a reason to adjust the crop.
 
 ```bash
 "$STORE_PYTHON" tools/store_compose.py triptych --src "$ART_DIR/panorama.png" \
-  --out "$OUT_DIR" --panels 3 --size 1320x2868 --pop soft --seam-snap off \
-  --lead-kind mechanic --art-gate off
+  --out "$OUT_DIR" --size 1320x2868 $(cat production/store-art/concept/export-flags.txt)
+# a legacy game (no approved concept): --panels 3 --pop soft --seam-snap off --lead-kind mechanic --art-gate off
 ```
 
-Use `--lead-kind character` or `object` as applicable. Export Play separately with `--size play`
+Use `--lead-kind character` or `object` as applicable for a legacy game. Export Play separately with `--size play`
 from the same complete source; do not resize the App Store panels. The Play set's 9:16 panels
 crop about 18% of a 1.45:1 panorama's height, centred by default: `--offset-y` (-1 keeps the
 top, +1 the bottom) brings a clipped board row or the headroom back without new art. The
@@ -604,9 +657,12 @@ model's full resolution and merge them back in detail mode.
 Use at most four windows — the lead's head and shoulders first, then the ball labels — and chain
 them with `--base`. Detail mode refuses a render whose content drifted from the region it
 replaces; still compare identity and every label in `proof.png`. Leave the board out unless you
-then verify every cell. Export both sets from the final canvas. Never feed a canvas or a detailed
-canvas to a whole-frame edit. Record the canvas as `--made derive` and each merge as
-`--made detail`, each with its `--parent`.
+then verify every cell. The detail pass adds resolution, never content: the approved panorama
+must look the same after it, so a window whose render changes a face, a pose or a label is
+rejected, not accepted as an improvement. Export both sets from the final canvas, and ship that
+canvas as `art/panorama.png`. Never feed a canvas or a detailed canvas to a whole-frame edit.
+Record the canvas as `--made derive` and each merge as `--made detail`, each with its `--parent`
+— the archive gate walks those records back to the approved file.
 
 ## Phase 5 — showcases and feature graphic
 
@@ -706,14 +762,18 @@ Dart, run format/analysis and relevant existing tests, and verify the menu still
 success is not runtime or visual verification.
 
 Write STORE_INFO.md with the original character asset path, the multiplier reference asset path,
-the generation order and the references attached to each image call (the banner as world context
-for the panorama), panel and lower-edge plan, upload order/dimensions/counts, five store-only ball
+the panorama's provenance (the approved concept revision, its SHA-256, approval time and export
+flags — or, for a legacy game, that this run made it unapproved), every step it took after
+approval (crops, detail windows, any objective-defect repair), the references attached to each
+image call this run made (the approved panorama as world context for the banner, icon and emblem),
+panel and lower-edge plan, upload order/dimensions/counts, five store-only ball
 labels and whether each exists in gameplay, the single visual verdict for balls flying in every
 panel and covering gameplay while clearing the player, the character framing verdict (torso to
 head, no legs, not standing, not flying), any retry or correction with each accepted scene's
 lineage (fresh render, whole-frame edit, region repairs and detail windows), its native size and
-export enlargement, whether the campaign art was
-reused from finalization or made in this run (and why, with the runtime files it changed), the
+export enlargement, whether the game background was
+reused from implementation or made in this run (and why, with the runtime files it changed),
+whether the banner was made in this run or reused from one in this panorama's world, the
 phone-slide backdrop (`shared-background.png` and its SHA-256, or the fallback panel and
 `--bg-subject` extent), feature phone capture and no-text result, background guard and compliance notes. Do not require per-sprite audit tables, measured
 bounds, numeric gate results or repeated visual verdicts.
@@ -765,8 +825,11 @@ methods for a separate `/auto-learn` run; do not add that workflow to store-kit 
 Create the ZIP after this file exists, then validate the archive itself:
 
 ```bash
-"$STORE_PYTHON" tools/check_store_kit.py --archive "$ARCHIVE_PATH" --count "$STORE_COUNT"
-# Add --no-play-set when requested. STORE_COUNT is the resolved screenshot count.
+"$STORE_PYTHON" tools/check_store_kit.py --archive "$ARCHIVE_PATH" --count "$STORE_COUNT" \
+  --concept production/store-art/concept/concept.json
+# Add --no-play-set when requested. STORE_COUNT is the resolved screenshot count. Drop --concept
+# only for a legacy game with no concept record; with it, the gate proves art/panorama.png is
+# the approved panorama or descends from it by recorded crops, detail passes and repairs alone.
 ```
 
 The worker requires a new or changed ZIP whose contents pass this gate. A successful image call,

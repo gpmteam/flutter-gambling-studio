@@ -15,10 +15,13 @@ makes (genre/theme agnostic — everything visual comes from the arguments):
             lossless panorama when the publisher is known not to insert gaps.
             The source must already be one complete generated scene: the real
             game mechanic and the labelled multiplier balls are painted by the
-            image model in the same call (a shipped ball asset and the feature
-            banner are attached as references; the labels come from the
-            prompt). A gameplay capture informs generation; it is never inlaid
-            into the panorama, and nothing is pasted or lettered onto it here.
+            image model in the same call (a shipped ball asset is attached as
+            a reference; the labels come from the prompt). The panorama is the
+            concept carousel the user approves before implementation, and every
+            later store picture is rendered in its world. A gameplay capture —
+            or, before the game exists, a layout draft — informs generation; it
+            is never inlaid into the panorama, and nothing is pasted or lettered
+            onto it here.
             Numeric art diagnostics are opt-in. The default exports the panels
             for one visual review; at least two flying multiplier balls must
             visibly cover gameplay while keeping the player/hero unobscured.
@@ -28,6 +31,11 @@ makes (genre/theme agnostic — everything visual comes from the arguments):
             are not claims about actual gameplay. Marketing lettering across a
             panel boundary is cut by the store's gutters, and a lockup inside
             one panel breaks the single-picture illusion.
+  layout-draft
+            a flat, context-only sketch of the planned play field built from the
+            game's real symbol files, for the concept panorama: before the game
+            exists there is no capture to show the image model the field's
+            topology. It is attached as context and never enters any art.
   showcase  a real in-game frame placed inside a drawn phone (bezel, notch,
             home indicator, glass glare, drop shadow) over a themed background,
             with the caption typography that sells the frame.
@@ -97,6 +105,8 @@ Examples:
 from __future__ import annotations
 
 import argparse
+import contextlib
+import io
 import math
 import re
 import sys
@@ -3571,6 +3581,42 @@ def cmd_boardplate(args) -> None:
          "pass the real gameplay capture to image generation as context")
 
 
+def cmd_layout_draft(args) -> None:
+    """A flat sketch of the planned field from the real symbol files — context only.
+
+    The concept panorama is rendered before any game code exists, so there is no gameplay
+    capture to tell the image model the field's dimensions, symbol cast and resolving moment.
+    This draft does: the real symbols on the planned grid, optionally at the moment a group
+    clears. It rides along as a context image (like a capture) and is never composited into the
+    panorama or any other art.
+    """
+    plate_args = argparse.Namespace(
+        out=args.out, from_shot=None, rect=None, symbol=args.symbol, grid=args.grid,
+        frame=args.frame, panel=args.panel, tile=args.tile, border=args.border,
+        border_width=0.045, cell=args.cell, gap=args.gap, pad=0.09, tile_radius=0.16,
+        symbol_pad=0.12, radius=0.05, sheen=0.0, yaw=0.0, pitch=0.0, depth=0.0, tilt=0.0,
+        win=args.win, win_color=args.win_color, dim=0.35 if args.win else 0.0, lift=1.0)
+    if not (args.frame or args.panel or args.tile or args.border):
+        warn("no --frame/--panel/--tile/--border: the draft is built in neutral colours. Pass "
+             "the game's board asset or its planned board colours, or the model is shown a "
+             "field the game will not have")
+    # The legacy plate narrates store-panorama advice that does not apply to a draft; keep only
+    # what is about the inputs. Errors still go to stderr and stop the run.
+    chatter = io.StringIO()
+    with contextlib.redirect_stdout(chatter):
+        cmd_boardplate(plate_args)
+    for line in chatter.getvalue().splitlines():
+        if "no transparency" in line:
+            print(line)
+    with Image.open(args.out) as draft:
+        width, height = draft.size
+    ok(f"{Path(args.out).name}  {width}×{height}  layout draft ({args.grid}, "
+       f"{len(args.symbol)} symbol file{'s' if len(args.symbol) != 1 else ''}"
+       f"{', clearing ' + args.win if args.win else ''})")
+    info("Context only: attach it to the concept panorama call after the identity assets. It "
+         "is never pasted, warped or composited into generated art.")
+
+
 # ── showcase backdrop: the opening panel, slid until the character is whole ──
 #
 # Cover-cropping the whole panorama to portrait lands on its middle — whatever
@@ -4386,6 +4432,23 @@ def main() -> None:
 
     bp = sub.add_parser("boardplate", help=argparse.SUPPRESS)
     bp.set_defaults(func=cmd_retired_boardplate)
+
+    ld = sub.add_parser("layout-draft",
+                        help="context-only sketch of the planned field for the concept panorama")
+    ld.add_argument("--symbol", action="append", required=True,
+                    help="one per distinct game symbol (the shipped cut-out PNGs)")
+    ld.add_argument("--grid", required=True, help="COLSxROWS of the planned field (max 8x8)")
+    ld.add_argument("--out", required=True)
+    ld.add_argument("--frame", default=None, help="the game's board/frame asset, when it has one")
+    ld.add_argument("--panel", default="", help="board colour when there is no frame asset")
+    ld.add_argument("--tile", default="", help="cell backing colour")
+    ld.add_argument("--border", default="", help="board rim colour")
+    ld.add_argument("--win", default="",
+                    help="cells caught clearing, e.g. 2x3,3x3,4x3 (column x row, 1-based)")
+    ld.add_argument("--win-color", default="")
+    ld.add_argument("--cell", type=int, default=160)
+    ld.add_argument("--gap", type=float, default=0.06)
+    ld.set_defaults(func=cmd_layout_draft)
 
     s = sub.add_parser("showcase", help="real game frame in a phone on a themed background")
     s.add_argument("--shot", required=True)

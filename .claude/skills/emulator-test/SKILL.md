@@ -451,6 +451,7 @@ And visually check using the checklist:
 | V20 | **Gameplay field off-center** | The live play field is shoved toward one edge — an `Align`/`Padding`/`Positioned` offset with no reason — instead of sitting on the viewport's horizontal center by default | HIGH | ui-programmer (remove the unexplained offset, or record the state recipe/mechanic reason) |
 | V21 | **Reference mismatch** | A reference game (`design/reference-contract.md`: a named `examples-games/` family or the user's attached images) has a different character, symbol/sprite cast, board materials, background, palette, art finish or main composition than its sources | HIGH | art-director for assets; ui-programmer for composition |
 | V22 | **Campaign background missing or broken** | `production/store-art/campaign.md` exists but a screen still shows the replaced background, the menu cuts or covers the character, or the campaign picture is stretched/letterboxed (see `autocreate-finalize` 10.5.2g) | HIGH | ui-programmer (wiring) |
+| V23 | **Field is not the approved gameplay sample** | `production/store-art/concept/concept.json` is APPROVED but the live field, seen beside `gameplay-sample.png`, has a different topology, symbol cast, board housing, tile backing, clearing treatment or field palette than the carousel the user approved (see `autocreate-finalize` 10.5.2h) | HIGH | ui-programmer (field widgets), juice-artist (clear effect), art-director (a missing piece) |
 
 **V18 — asset distortion.** Run `python3 tools/check_asset_stretch.py --report
 <SHOT_DIR>/asset-stretch.md` for the static pass: it compares each asset's real pixel
@@ -505,7 +506,9 @@ For every game-idle and active screenshot, also apply
 `.claude/docs/mobile-first-contract.md` and `.claude/docs/gameplay-screen-contract.md`.
 For a reference game (`design/reference-contract.md`), open every source beside the menu and
 idle/active gameplay captures. Record each mismatch under V21 with its source path and affected
-game asset or screen. V13–V22 are release blockers. Run the screenshot tour across the four
+game asset or screen. When the concept carousel is APPROVED, also open
+`production/store-art/concept/gameplay-sample.png` beside the active gameplay capture and record
+each difference under V23. V13–V23 are release blockers. Run the screenshot tour across the four
 portrait phones — 360×640, 360×800, 390×844 and 430×932 — plus the one wide-host smoke capture.
 
 ### Create an entry for each screenshot
@@ -628,6 +631,10 @@ Sort by severity: CRITICAL → HIGH → MEDIUM.
    - V22 (campaign background): point the selector at `bg_campaign_menu`/`bg_campaign_game` with
      `BoxFit.cover` + `Alignment.topCenter`; a background that cannot fit its character goes back
      to campaign art, not to the UI
+   - V23 (approved gameplay sample): make the field's frame, tile plates, spacing and clear effect
+     follow `production/store-art/concept/gameplay-sample.md` with targeted widget edits; a piece
+     the asset set lacks is generated from the sample crop by the art-director, never cropped out
+     of the panorama; topology and rules stay as the frozen level data define them
    - V13/V14/V15/V16 (gameplay composition): apply `gameplay-screen-contract.md`; expand and
      integrate the field, remove nested framing/core scrolling, and rebuild the control deck. If this needs a whole-screen recomposition, route it through `/ui-audit --fix`.
 
