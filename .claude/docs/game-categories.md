@@ -1,7 +1,7 @@
 # Game categories — the studio's canonical reference
 
 > **The studio builds casual mobile games, never gambling games.** A game may *look* like premium
-> casino key art — jewel-toned symbols, gold trim, jokers, crowns, Zeus, sevens, glossy gems — or
+> casino key art — jewel-toned symbols, gold trim, jokers, crowns, deities, sevens, glossy gems — or
 > reproduce a reference's look exactly. Its *gameplay* is always one of the casual mechanics below,
 > scored in points. `.claude/rules/no-gambling.md` is the hard gate that keeps it that way.
 >

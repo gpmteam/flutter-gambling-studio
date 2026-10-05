@@ -14,7 +14,7 @@ new-game request, inspect the relevant `examples-games/` previews and read
 board topology, Joker expression (when relevant), and verified combo-marker meanings from
 the concept into the art direction, asset manifest and prompts. An unspecified match game uses a
 7×8 board; store gameplay placement is flexible and object-led games need no invented character.
-The named requests Book of Ra, Joker, Joker Jewels, Shining Crown, Zeus Game, and Plinko must use
+The named requests Book of Ra, Joker, Joker Jewels, Shining Crown, and Plinko must use
 the exact preview mapping in that document, including the casual mechanic each family is built
 as; Joker Jewels resolves to every file in `examples-games/joker-jewels/` and to the swap match-3
 board, not to the plain Joker row. Recreate what the preview shows — theme, character, symbol

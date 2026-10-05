@@ -6,9 +6,9 @@ release-ready project. The repository retains its historical name, `flutter-gamb
 **Casino-grade or reference-matched visuals; strictly casual gameplay.** References guide
 characters, symbols, frames, backgrounds, palette and rendering. A casino reference never
 supplies casino gameplay: its art becomes a match board, tile puzzle, merge game, peg clearer,
-reflex game or logic puzzle. An already-casual reference may supply its own gameplay: Zeus keeps
-its 7×6 link grid. Scores are points, with stars, levels and deterministic unlocks. No wagers
-(including on points), real or virtual money, wallets, currency shops or chance-based prizes.
+reflex game or logic puzzle. Scores are points, with stars, levels and deterministic unlocks.
+No wagers (including on points), real or virtual money, wallets, currency shops or chance-based
+prizes.
 
 The canonical contracts are [game categories](.claude/docs/game-categories.md),
 [balance models](.claude/docs/balance-models.md), [no gambling](.claude/rules/no-gambling.md),

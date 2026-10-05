@@ -22,8 +22,7 @@ build an APK/AAB or archive; request `/release-package` when ready.
 
 1. `/brainstorm` selects G1–G6, an archetype A–AB or unique casual mechanic, theme and B1–B6
    model. `/auto-idea` does this autonomously. The Classification block records scoring, balance
-   config, reference gameplay and the no-gambling check. Casino gameplay is translated;
-   already-casual references may retain their mechanic, such as Zeus's 7×6 link board.
+   config, reference gameplay and the no-gambling check. Casino gameplay is translated.
 2. `/gate-check concept`, then `/map-systems`, writes the architecture and dependency plan.
 3. `/design-system board-rules`, `/design-system tier-chain`, `/design-system tempo-ramp` or
    another category-appropriate system writes its GDD and JSON config with `balance-designer`.

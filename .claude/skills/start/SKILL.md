@@ -14,7 +14,7 @@ you bring, and play as skill games scored in points.
 We make match-3 and link boards, tile trays and sort puzzles, merge games, bubble shooters and peg
 clearers, runners and stackers, and logic puzzles. We never make gambling games: no bets, no money
 of any kind, no rewards left to chance. Ask for a slot and you get the slot's world as a casual
-game (a Zeus slot becomes a Zeus link-chain board).
+game (a Joker slot becomes a Joker tap-blast board).
 
 > **Rule 1**: everything here is produced in **English** — the conversation, the design
 > documents, the code and the game's own copy. If you want the game itself in another language,

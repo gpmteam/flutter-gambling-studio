@@ -13,7 +13,7 @@ Your job is to make the decisions; the team handles the rest.
 >
 > **Never gambling.** Games may look like slot key art, but nobody bets, there is no money of any
 > kind, and no reward is left to chance — points, stars and unlocks only
-> (`.claude/rules/no-gambling.md`). Ask for "a Zeus slot" and you get a Zeus link-chain game.
+> (`.claude/rules/no-gambling.md`). Ask for "a Joker slot" and you get a Joker tap-blast game.
 
 ## The six categories the studio works in
 

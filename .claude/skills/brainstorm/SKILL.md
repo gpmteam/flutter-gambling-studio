@@ -20,7 +20,7 @@ the concept into the art direction, asset manifest and prompts. An unspecified m
 > look may be casino-grade key art. If the user proposes a gambling idea (a slot, roulette,
 > crash, mines, gacha…), say so directly in one sentence and offer the casual translation with
 > the same feel from `.claude/docs/game-categories.md` → "Translating a gambling ask" (for
-> example "a Zeus slot" → a Zeus link-chain board, G1, archetype B). See
+> example "a Joker slot" → a Joker tap-blast board, G1, archetype C). See
 > `.claude/rules/no-gambling.md`.
 >
 > The canonical reference for categories and archetypes: `.claude/docs/game-categories.md`.

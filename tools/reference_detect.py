@@ -6,7 +6,7 @@ which mechanic governs play?
 A reference request is the one case where the studio must NOT invent a look: the
 user wants *that* game's character, sprites and symbols, frame and background.
 Leaving this decision to a model reading a docs table was fuzzy in exactly the
-cases that matter: a name typed in Russian ("джокер", "зевс"), a possessive
+cases that matter: a name typed in Russian ("джокер", "плинко"), a possessive
 ("Joker's Jewels"), a hyphenated folder name, or images attached to the chat
 with no name at all. Every miss produced a re-themed game the user rejected.
 
@@ -26,9 +26,9 @@ GAMEPLAY never is. This tool therefore also decides the mechanic:
   3. PHRASING      — an explicit "same as / copy / recreate / по референсу /
                      один в один" ask, which binds attachments on follow-up
                      requests and flags an unmapped title on a new one.
-  4. MECHANIC      — a casual mechanic the user named ("Zeus match-3") governs
-                     play; a gambling mechanic the user named ("Zeus Lightning
-                     Dice", "a roulette game") is translated to its casual
+  4. MECHANIC      — a casual mechanic the user named ("Book of Ra match-3")
+                     governs play; a gambling mechanic the user named ("Book of
+                     Ra dice", "a roulette game") is translated to its casual
                      equivalent (`.claude/docs/game-categories.md` →
                      "Translating a gambling ask"). The reference still governs
                      identity.
@@ -165,20 +165,6 @@ FAMILIES: tuple[Family, ...] = (
         aliases=(r"shining crown", r"shiningcrown", r"шайнинг краун", r"сияющ\w* корон\w*"),
     ),
     Family(
-        id="zeus",
-        name="Zeus Game",
-        files=(RefFile("examples-games/zeus.jpeg",
-                       "thunder-god lead, eagle/bolt/laurel symbols, Olympus sky, 7x6 grid "
-                       "with a lightning link"),),
-        classification="G1 / B / B1",
-        topology="7x6",
-        lead_kind="character",
-        default_mechanic="link chain",
-        reference_gameplay="casual",
-        reference_mechanic="link chain",
-        aliases=(r"zeus\w*", r"зевс\w*"),
-    ),
-    Family(
         id="plinko",
         name="Plinko",
         files=(RefFile("examples-games/plinko.jpeg",
@@ -241,7 +227,7 @@ CASUAL_MECHANICS: tuple[tuple[str, str, re.Pattern[str]], ...] = tuple(
 
 # A gambling mechanic the user named. It is never built: it is translated to the casual mechanic
 # on the right (.claude/docs/game-categories.md → "Translating a gambling ask"). When the request
-# also names a family whose built mechanic sits in the translation's category — "Zeus slot",
+# also names a family whose built mechanic sits in the translation's category — "Joker slot",
 # "Joker Jewels slot" — the family's own casual mechanic is kept.
 GAMBLING_MECHANICS: tuple[tuple[str, str, str, re.Pattern[str]], ...] = tuple(
     (name, translation, category, re.compile(pattern)) for name, translation, category, pattern in (
@@ -376,8 +362,8 @@ def detect(prompt: str, *, root: Path, attachments: list[str] | None = None,
 
     # Which mechanic governs play. A casual mechanic the user named wins. A gambling
     # mechanic is translated — unless it is only the family's own casino gameplay or
-    # its translation lands in the category the family is already built in ("Zeus
-    # slot" stays Zeus's link chain). Otherwise the family's casual mechanic governs.
+    # its translation lands in the category the family is already built in ("Joker
+    # slot" stays Joker's tap blast). Otherwise the family's casual mechanic governs.
     family = families[0][0] if families else None
     family_category = family.classification.split("/")[0].strip() if family else ""
     asks = [(name, tr, cat) for name, tr, cat in gambling if tr]

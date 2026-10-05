@@ -32,8 +32,7 @@ families in English or Russian, attached images under `design/references/user/`,
 as / copy / по референсу" asks) and recorded in `design/reference-contract.md`, together with the
 mechanic that governs play. A reference game must match its sources' character, sprites and
 symbols, frame, background, palette, composition and visual finish closely — and build the casual
-mechanic the detector names, never the casino gameplay a preview shows (Zeus is the one mapped
-reference whose own gameplay, a 7×6 link grid, is already casual). Pass the actual reference
+mechanic the detector names, never the casino gameplay a preview shows. Pass the actual reference
 images into image generation when the tool supports it, and compare the runtime game beside the
 references. See `.claude/docs/visual-context.md` and `.claude/docs/game-concept-examples.md` for
 the reference contract and limits.
@@ -56,7 +55,7 @@ Generate the entire scene, including a natural three-quarter/3D view of the mech
 image. Never paste, warp, or texture-map the capture or a gameplay board plate into the panorama,
 and never generate a placeholder scene to fill with gameplay afterward. Verify the generated
 topology, symbols, and scoring state against the capture; stop if the image cannot preserve them.
-Record `lead_kind: character | object | mechanic` before composing. Zeus, Joker and chicken games
+Record `lead_kind: character | object | mechanic` before composing. Joker and chicken games
 default to a large character on the first panel. Object/mechanic games such as Shining Crown and
 Plinko need no invented mascot or character-only opening. When the game has a main character,
 it is mandatory to show that character from torso to head in the banner and the panorama. The
@@ -101,9 +100,9 @@ puts the phone slides on the same game background; it makes the background itsel
 handoff is missing or stale.
 
 An unspecified match game uses a 7×8 board; reference families use the "Build as" topology in
-`.claude/docs/game-concept-examples.md` (Zeus keeps its 7×6 grid). Preserve explicit or existing
-variants. Joker defaults to a mischievous, slightly vicious theatrical trickster, playful rather than
-an elegant courtier or horror character. Prefer x2/x5/x10 combo badges in gameplay where the game's
+`.claude/docs/game-concept-examples.md`. Preserve explicit or existing variants. Joker defaults to
+a mischievous, slightly vicious theatrical trickster, playful rather than an elegant courtier or
+horror character. Prefer x2/x5/x10 combo badges in gameplay where the game's
 scoring model has a combo multiplier on points; never invent runtime multipliers or change balance
 solely for promotional art. Every generated game's store screenshot set includes theme-matched
 combo balls marked x5, x10, x25, x50 and x100 as store-only scene decoration, even when those

@@ -61,9 +61,9 @@ Six game categories (`.claude/docs/game-categories.md`):
 ## Visual references
 
 Follow `.claude/docs/visual-context.md` and `.claude/docs/game-concept-examples.md`: inspect
-matching previews and reproduce their look exactly; build the casual mechanic the family lists
-(Zeus keeps its own 7×6 link grid). Character-led games open with their character;
-object/mechanic-led games need no mascot. x2/x5/x10 combo badges only for real points combos.
+matching previews and reproduce their look exactly; build the casual mechanic the family lists.
+Character-led games open with their character; object/mechanic-led games need no mascot.
+x2/x5/x10 combo badges only for real points combos.
 Joker is mischievous and slightly vicious, playful rather than horror or an elegant host.
 
 See `AGENTS.md`, `CLAUDE.md`, `.claude/docs/game-categories.md`, `.claude/docs/balance-models.md`

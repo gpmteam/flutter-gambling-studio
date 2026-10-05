@@ -12,7 +12,7 @@ a character on every first slide and gameplay in every middle slide.
 
 - `.claude/docs/visual-context.md` owns the shared concept/asset/store rules.
 - `.claude/docs/game-concept-examples.md` maps the supplied Plinko, crown and Joker previews to
-  original concept seeds, with additional Zeus/chicken examples. New classic slots default to
+  original concept seeds, with an additional chicken example. New classic slots default to
   3×3; explicit and existing variants retain their topology.
 - Character-led games retain a prominent opening character; object/mechanic-led games need no
   invented mascot. Joker direction is mischievous and slightly vicious, playful rather than

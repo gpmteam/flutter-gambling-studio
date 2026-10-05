@@ -41,8 +41,6 @@ class NamedFamilyTests(unittest.TestCase):
     def test_russian_and_possessive_names_resolve(self) -> None:
         cases = {
             "Сделай слот Джокер": "joker",
-            "Zeus's thunder slot": "zeus",
-            "слот про зевса": "zeus",
             "Book of Ra deluxe": "book-of-ra",
             "сделай книгу ра": "book-of-ra",
             "book-of-ra": "book-of-ra",
@@ -72,12 +70,12 @@ class NamedFamilyTests(unittest.TestCase):
                 self.assertEqual(result["mechanic"], mechanic)
                 self.assertEqual(result["topology_source"], "family")
 
-    def test_zeus_reuses_its_own_casual_grid(self) -> None:
-        result = detect("Zeus game", new_game=True)
-        family = result["families"][0]
-        self.assertEqual(family["reference_gameplay"], "casual")
-        self.assertEqual(family["topology"], "7x6")
-        self.assertEqual(result["mechanic"], "link chain")
+    def test_zeus_is_no_longer_a_mapped_reference(self) -> None:
+        for prompt in ("Zeus game", "Zeus's thunder slot", "слот про зевса"):
+            with self.subTest(prompt=prompt):
+                result = detect(prompt, new_game=True)
+                self.assertFalse(result["reference"])
+                self.assertEqual(result["families"], [])
 
     def test_family_builds_are_casual_mechanics_documented_in_the_examples_doc(self) -> None:
         doc = (REPO / ".claude/docs/game-concept-examples.md").read_text(encoding="utf-8")
@@ -101,8 +99,8 @@ class NamedFamilyTests(unittest.TestCase):
 
 class MechanicOverrideTests(unittest.TestCase):
     def test_a_gambling_mechanic_is_translated_and_the_family_keeps_identity(self) -> None:
-        result = detect("Zeus Lightning Dice: a three-dice betting game played at Zeus's temple.")
-        self.assertEqual(family_ids(result), ["zeus"])
+        result = detect("Book of Ra Dice: a three-dice betting game played in the desert temple.")
+        self.assertEqual(family_ids(result), ["book-of-ra"])
         self.assertEqual(result["mechanic_override"], "slide merge")
         self.assertEqual(result["topology_source"], "translated")
         self.assertIn("dice", result["gambling_asks"])
@@ -117,7 +115,7 @@ class MechanicOverrideTests(unittest.TestCase):
 
     def test_naming_the_familys_own_casino_mechanic_keeps_the_family_build(self) -> None:
         for prompt, mechanic in (("Joker slot with a prize wheel bonus", "tap blast"),
-                                 ("Zeus slot", "link chain"),
+                                 ("Joker Jewels slot", "swap match-3"),
                                  ("Сделай слот Джокер", "tap blast")):
             with self.subTest(prompt=prompt):
                 result = detect(prompt)

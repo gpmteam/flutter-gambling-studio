@@ -1,17 +1,17 @@
 # Game concept examples and preview references
 
-Inspect the matching local preview when a user requests one of these game families. For the six
+Inspect the matching local preview when a user requests one of these game families. For the five
 named requests below, the listed preview is mandatory input to `/autocreate`, including the
 `--from-concept` path and common spacing, punctuation, hyphenation, and capitalization variants of
 the name. A reference entry is either one file or a folder; when it is a folder, every file in it
 is mandatory input and the table states each file's job.
 
-**A reference governs the look; `.claude/rules/no-gambling.md` governs the gameplay.** Most of
-these previews are casino slot art. The studio reproduces their character, symbol cast, frame
-ornament, background, palette and finish exactly — and builds a casual mechanic on top of them,
-because the reference's own gameplay is a casino game. Only a reference whose own gameplay is
-already casual (Zeus: a symbol grid with a lightning link, no reels, no bet) also lends its
-gameplay and topology. The `Reference gameplay` column says which.
+**A reference governs the look; `.claude/rules/no-gambling.md` governs the gameplay.** These
+previews are casino art — slots and a plinko board. The studio reproduces their character, symbol
+cast, frame ornament, background, palette and finish exactly — and builds a casual mechanic on top
+of them, because the reference's own gameplay is a casino game. A reference whose own gameplay is
+already casual would also lend its gameplay and topology; none of the mapped previews is one. The
+`Reference gameplay` column records this for each family.
 
 Suitable pixels may be reused as runtime assets when cleanly isolated and sharp at target size.
 The previews are not game specifications or validated level designs. Use
@@ -24,7 +24,6 @@ mechanic, lead kind and topology decision in the generated concept before produc
 | Joker / Joker game | `examples-games/joker2.png`, with `examples-games/joker.jpeg` as secondary reference | Casino slot — look only | **G1 / C / B1** tap blast on a 7×8 grid inside the reference's ornate red-and-gold frame | Character; reference-matched impish, slightly vicious Joker, bells, cherries, gems, crowns, clovers as tiles | Large reference-matched Joker on the first panel; the framed blast board spans the right two; gestures lead toward play |
 | Joker Jewels / Joker's Jewels / joker-jewels | `examples-games/joker-jewels/` — all four files: `jj_reference.jpeg` (key-art staging), `jj_gameplay.jpeg` (symbol family, purple reel-strip columns and frame), `jj_character-reference.jpeg` and `jj_character-reference2.jpeg` (jester lead) | Casino slot — look only | **G1 / A / B1** swap match-3 on a 7×8 grid whose columns wear the purple reel-strip backing | Character; reference-matched belled-cap jester in a striped costume, plus faceted red and cyan gems, blue orb, lute, juggling clubs, jester shoes, crown special tile | Large reference-matched jester on the first panel; the match-3 board occupies the right; gems, bunting and confetti spill through the foreground |
 | Shining Crown / Shining Crown game | `examples-games/shining-crown.jpeg` | Casino slot — look only | **G3 / I / B3** slide merge on a 4×4 grid: ruby → clover gem → star → … → the Shining Crown at the top of the tier chain | Object; crown, jewel star, clover gem, ruby, gold medallions as tiers | No invented player or mascot; slides 1–2 show the jewel board at a three-quarter/3D angle, with the crown and jewels across the foreground |
-| Zeus Game / Zeus | `examples-games/zeus.jpeg` | **Casual — reused**: a 7×6 symbol grid with a lightning link, no reels or wager | **G1 / B / B1** link chain on the reference's 7×6 grid: drag lightning through matching symbols | Character; reference-matched thunder god, lightning, eagle, laurel, temple, amphora and storm symbols | Large reference-matched Zeus on the first panel; the readable 7×6 grid occupies the right; lightning and game objects spill through the foreground |
 | Plinko / Plinko game | `examples-games/plinko.jpeg` | Casino plinko — look only | **G4 / N / B4** peg clear: aim glossy balls through the tilted peg field to clear target pegs; a moving catch bucket replaces prize buckets | Mechanic; glossy colored balls, pegs, the tilted board, glowing trails | Active tilted peg field can fill all three panels; trajectories carry motion; no invented person or mascot |
 | Chicken game | No exact local preview required | — | **G5 / R / B5** lane runner: cross lanes of traffic and hazards, points by distance | Character; expressive chicken, road lanes, hazards, collectible grain | Chicken on the first panel; the lanes may span the remaining panels or the whole scene |
 
@@ -36,7 +35,7 @@ The table above is the detector's family list; change both together (a test keep
 
 | Trigger | Examples it catches | Binding |
 |---|---|---|
-| A named family | "Joker Jewels", "Joker's Jewels", "joker-jewels", "джокер джуэлс", "Zeus", "зевс", "Book of Ra", "книга ра", "Shining Crown", "шайнинг краун", "Plinko", "плинко" | exact — the mapped files |
+| A named family | "Joker Jewels", "Joker's Jewels", "joker-jewels", "джокер джуэлс", "Book of Ra", "книга ра", "Shining Crown", "шайнинг краун", "Plinko", "плинко" | exact — the mapped files |
 | Images attached to the request | anything the web service saved in `design/references/user/` | exact — on a new game always; on a follow-up when the message asks to match them |
 | An explicit reproduction ask with no image | "exactly like Gates of Olympus", "копия игры …", "один в один как …" | description — match every described trait |
 
@@ -45,8 +44,8 @@ The detector also reports the **mechanic** that governs play:
 | `topology_source` | Meaning |
 |---|---|
 | `family` | The family's "Build as" mechanic and topology above |
-| `user mechanic` | The user named a casual mechanic ("Zeus match-3", "Joker bubble shooter"); it governs play and topology, the family governs identity |
-| `translated` | The user named a gambling mechanic ("Zeus Lightning Dice", "a roulette game"); the detector's translation (`.claude/docs/game-categories.md` → "Translating a gambling ask") governs play |
+| `user mechanic` | The user named a casual mechanic ("Book of Ra match-3", "Joker bubble shooter"); it governs play and topology, the family governs identity |
+| `translated` | The user named a gambling mechanic ("Book of Ra dice", "a roulette game"); the detector's translation (`.claude/docs/game-categories.md` → "Translating a gambling ask") governs play |
 | `user grid` | The user named a grid; it governs the board when the mechanic can be played on it |
 | `concept` | No family and no mechanic — the concept decides |
 
@@ -125,7 +124,7 @@ constraints. Text-only generation when image inputs are available causes identit
 
 Everything outside these limits is matched, not adapted.
 
-For Book of Ra, Joker, Joker Jewels, and Zeus Game the character is the lead: rebuild that
+For Book of Ra, Joker and Joker Jewels the character is the lead: rebuild that
 character as the reference draws it, as the game's host. For Shining Crown and Plinko the absence
 of a main character is itself part of the reference contract: do not add a host, mascot, hand,
 player silhouette, deity or other living lead.
@@ -162,13 +161,6 @@ is the special tile made by a five-in-a-row. A striped-costume jester is the vis
 appears in the menu, beside the board and in the level-complete celebration. Match the references'
 carnival purple staging, bunting and confetti, glossy gem silhouettes, and the jester's striped
 costume, belled cap and painted face as the character files draw them. G1 / A / B1.
-
-**Thunder Link:** Drag lightning through matching symbols on Zeus's 7×6 grid — eagles, bolts,
-laurels, temples, amphorae, storm clouds; chains of six or more call down a bolt that clears a
-column. Zeus is the in-game host and visual lead, with the preview's eagle/bolt/laurel asset
-family. Match the local preview's character-left/field-right energy, cloud-bright Olympus depth,
-electric blue/gold separation and Zeus himself. The 7×6 topology and the link comes from the
-reference itself. G1 / B / B1.
 
 **Chicken Dash:** A lane-crossing runner: the chicken hops across roads, rivers and farm machinery,
 collecting grain for points; the tempo rises over a run. The chicken's comic defiance makes it the

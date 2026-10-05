@@ -290,7 +290,7 @@ foreground objects hide everything below the cut: no legs, knees, hips or feet. 
 character standing full length, flying, floating or leaping. Leave visible open space above the
 complete head/headwear in the final panel crop, at least 2% of panel height, and protect
 attached forms from the first seam.
-Character-led Zeus/Joker/chicken games default to a large real character on panel 1. Use
+Character-led Joker/chicken games default to a large real character on panel 1. Use
 `--character-framing bust` for humanoids and `mascot` for a compact chicken/animal. Both are
 torso-to-head framings with no legs or feet; mascot mode only measures prominence by area rather
 than humanoid height, and still protects the head, first-panel placement and attached

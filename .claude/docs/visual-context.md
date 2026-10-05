@@ -17,7 +17,7 @@ Whether a request is a reference request is decided by `tools/reference_detect.p
 `game-concept-examples.md` → "Detecting a reference request") and recorded in
 `design/reference-contract.md`; images the user attached are references on the same footing as the
 local previews. `/autocreate` requests named **Book of Ra**, **Joker**, **Joker Jewels**, **Shining
-Crown**, **Zeus Game**, or **Plinko** must use the exact local reference mapping in
+Crown**, or **Plinko** must use the exact local reference mapping in
 `game-concept-examples.md`, on the `--from-concept` path as well; do not replace it with a generic
 category reference. Recreate what the preview shows: theme, character, symbol cast, palette,
 frame and composition are matched, not reinterpreted. The full rule is "How close to the
@@ -47,7 +47,7 @@ poster, map, or progression hub may choose `supporting` or `absent` with a concr
 
 | Lead | When it fits | Default storefront direction |
 |---|---|---|
-| Character | Zeus, Joker, chicken, another actual character or animal mascot | Recognizable large character on the first panel; action may occupy any remaining space or span panels |
+| Character | Joker, the Book of Ra explorer, chicken, another actual character or animal mascot | Recognizable large character on the first panel; action may occupy any remaining space or span panels |
 | Object | Crown, jewel, treasure chest, relic, the top tier of a merge chain is the visual star | Let that asset and the real mechanic drive the composition; when the game has no living character, slides 1–2 show angled authentic gameplay and introduce no person or mascot |
 | Mechanic | Peg field and ball trails, a link-chain board, a stacking tower is the attraction | Lead with active play; a board or trajectory may extend through all panels |
 
@@ -97,7 +97,7 @@ Rich fabrics and gold trim can support the character without making elegance its
 
 The mechanic sets the board, not the preview's reels. An unspecified match game (G1) defaults to
 a **7 columns × 8 rows** board; a named preview-mapped family takes the "Build as" topology from
-`game-concept-examples.md` (Zeus 7×6, Joker and Joker Jewels 7×8, Shining Crown 4×4, Book of Ra
+`game-concept-examples.md` (Joker and Joker Jewels 7×8, Shining Crown 4×4, Book of Ra
 a layered tile pile with a 7-slot tray, Plinko a tilted peg field). Save the topology in the
 concept and the balance config; implementation, board assets, runtime screenshots, and marketing
 must agree. A user's explicit grid keeps its dimensions when the mechanic can be played on it.

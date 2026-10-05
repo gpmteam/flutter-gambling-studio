@@ -16,9 +16,9 @@ references/adaptations, exact board topology, Joker expression (when relevant), 
 combo-marker meanings from the concept into the art direction, asset manifest and prompts. An
 unspecified match game uses a 7×8 board; store gameplay placement is flexible and object-led
 games need no invented character. The named requests Book of Ra, Joker, Joker Jewels, Shining
-Crown, Zeus Game, and Plinko must use the exact preview mapping in that document; Joker Jewels
-resolves to every file in `examples-games/joker-jewels/` and to the swap match-3 board, not to the
-plain Joker row. Recreate what the preview shows — theme, character, symbol cast, palette, frame
+Crown, and Plinko must use the exact preview mapping in that document; Joker Jewels resolves to
+every file in `examples-games/joker-jewels/` and to the swap match-3 board, not to the plain
+Joker row. Recreate what the preview shows — theme, character, symbol cast, palette, frame
 and composition are matched, not reinterpreted, and Variety Dimensions are not scrolled. Build
 the casual mechanic the family lists, never the casino gameplay a preview shows. Follow the
 source-quality and branding limits in `game-concept-examples.md`. Never add a character to Shining
@@ -121,7 +121,7 @@ python3 tools/reference_detect.py --prompt-file production/session-state/user-re
 ```
 
 The detector recognizes the named families in English and Russian spellings (Joker Jewels before
-Joker, Book of Ra, Shining Crown, Zeus, Plinko), binds attached images, flags an explicit
+Joker, Book of Ra, Shining Crown, Plinko), binds attached images, flags an explicit
 "same as / copy / по референсу" ask, and resolves the **mechanic**: the family's casual build, a
 casual mechanic the user named, or the casual translation of a gambling mechanic the user named
 (`mechanic`, `topology_source`, `gambling_asks`). Its result only adds obligations: you may add a
@@ -135,13 +135,13 @@ When `reference` is true:
   palette, finish and UI materials are the source's — the finished game's art must read as the
   same world. Variety Dimensions are not scrolled and the Similarity Check does not push away
   from it (`game-concept-examples.md` → "How close to the reference — match it").
-- **Play follows `topology_source`.** `family` → the family's casual build and topology (Zeus: its
-  own 7×6 link grid; the slot families: the mechanic in the "Build as" column); `user mechanic` →
-  the user's casual mechanic; `translated` → the casual translation of the user's gambling ask;
-  `user grid` → the user's grid where the mechanic can be played on it. In every case the
-  reference still governs identity (e.g. "Zeus Lightning Dice" is a dice-merge game in Zeus's
-  world with Zeus himself). A slot's symbols become tiles, its reel frame becomes the board
-  frame, its reel strips become column backing — nothing spins for an outcome.
+- **Play follows `topology_source`.** `family` → the family's casual build and topology (the
+  mechanic in the "Build as" column); `user mechanic` → the user's casual mechanic; `translated`
+  → the casual translation of the user's gambling ask; `user grid` → the user's grid where the
+  mechanic can be played on it. In every case the reference still governs identity (e.g. "Book of
+  Ra dice" is a dice-merge game in the Book of Ra temple with its explorer). A slot's symbols
+  become tiles, its reel frame becomes the board frame, its reel strips become column backing —
+  nothing spins for an outcome.
 - Before Phase 3, view every source at full size and complete the contract's identity ledger. A
   missing mapped file is a blocker, not a reason to improvise.
 - Every identity asset is generated **from its source image** (built-in edit path or
