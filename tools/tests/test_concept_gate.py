@@ -62,7 +62,7 @@ class ConceptGateTests(unittest.TestCase):
         panels = self.root / "panels"
         panels.mkdir(exist_ok=True)
         for i in range(1, 4):
-            Image.new("RGB", (1320, 2868), (self._shade, 20 * i, 60)).save(
+            Image.new("RGB", (1080, 1920), (self._shade, 20 * i, 60)).save(
                 panels / f"store-{i:02d}.png")
         Image.new("RGB", (900, 650), (10, 10, 10)).save(panels / "_carousel-preview.png")
         Image.new("RGB", (120, 90), (self._shade, 200, 40)).save(
@@ -159,10 +159,10 @@ class ConceptGateTests(unittest.TestCase):
 
     def test_publish_requires_a_recorded_panorama_and_store_sized_panels(self) -> None:
         self.render()
-        Image.new("RGB", (1080, 1920)).save(self.root / "panels/store-02.png")
+        Image.new("RGB", (1320, 2868)).save(self.root / "panels/store-02.png")  # App Store size
         code, message = self.publish()
         self.assertEqual(code, 1)
-        self.assertIn("1320x2868", message)
+        self.assertIn("1080x1920", message)
 
         self.render()
         Image.new("RGB", (300, 207), (9, 9, 9)).save(self.root / "panorama.png")  # unrecorded

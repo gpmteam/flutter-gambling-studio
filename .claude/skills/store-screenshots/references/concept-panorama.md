@@ -46,7 +46,7 @@ the store's correction policy.
 | `panorama-prompt.txt` | the rendered `panorama-*` prompt; `prompt_template.py check` PASS |
 | `layout-draft.png` | the context-only sketch of the planned field |
 | `composition-guide.png` | the context-only placement sketch: the panel cuts, the lead, the field, the five balls, the lower band |
-| `panels/` | the triptych export: `store-01..03.png` at 1320×2868, `_panorama-preview.png`, `_carousel-preview.png` |
+| `panels/` | the triptych export: `store-01..03.png` at the Google Play size 1080×1920, `_panorama-preview.png`, `_carousel-preview.png` |
 | `export-flags.txt` | the exact `triptych` flags the carousel was exported with — the store run reuses them |
 | `gameplay-sample.png` | the crop of the panorama's gameplay: the field the game is built to look like |
 | `gameplay-sample.md` | the written spec of that sample |
@@ -94,10 +94,11 @@ never pasted, warped or composited into the panorama.
 
 Then draw the **composition guide** — where the export will cut the picture, and where everything
 goes — for the size the image tool returns (`--canvas 1536x1024` for the built-in tool, which is
-asked for that landscape size; the default `3456x2384` headless):
+asked for that landscape size; the default `3456x2384` headless) and for the carousel's panels,
+the Google Play size (`--size play`, 1080×1920):
 
 ```bash
-"$STORE_PYTHON" tools/store_compose.py composition-guide --canvas 1536x1024 \
+"$STORE_PYTHON" tools/store_compose.py composition-guide --size play --canvas 1536x1024 \
   --lead-kind character --lead "$CHARACTER_ASSET" --ball "$MULTIPLIER_REF" \
   --field production/store-art/concept/layout-draft.png \
   --object "$SYMBOL_1" --object "$SYMBOL_2" ... \
@@ -105,7 +106,9 @@ asked for that landscape size; the default `3456x2384` headless):
 ```
 
 Red bands are the cuts (the hidden allowance plus a safety margin), darkened edges are what the
-cover crop trims, and the real assets sit where the panorama needs them: the torso-to-head bust on
+cover crop trims — on a 3:2 render, a band along the top and the bottom, because Play's 9:16
+panels take the picture's whole width and not its whole height — and the real assets sit where
+the panorama needs them: the torso-to-head bust on
 panel 1 (or the lead object on the last panel; a mechanic lead is the field itself), the field
 across the remaining panels, one ball per panel, two over the board, the lower-edge objects. Look
 at it once: a clearing cell under a red band means moving `--win` left, or the field with
@@ -159,11 +162,11 @@ unrecorded picture cannot be published.
 ## Step 4 — review and correct, within the budget
 
 First see where the cuts fall on the candidate itself — the tool may return another aspect than
-the guide's (16:9 instead of 3:2 trims about 9% from each side), and the overlay is drawn for the
-candidate's real size:
+the guide's (16:9 instead of 3:2 fills the Play panels' height, so the cuts move outward and
+nothing is trimmed top or bottom), and the overlay is drawn for the candidate's real size:
 
 ```bash
-"$STORE_PYTHON" tools/store_compose.py composition-guide \
+"$STORE_PYTHON" tools/store_compose.py composition-guide --size play \
   --over production/store-art/concept/panorama-candidate-1.png \
   --out production/store-art/concept/panorama-candidate-1-cuts.png
 ```
@@ -189,8 +192,9 @@ Correct each defect with the cheapest fix that can work, in this order, and chec
 `python3 tools/concept_gate.py budget` before spending a render:
 
 1. **Crop** — something in a red band or a trimmed edge: `--zoom` with `--offset` on the export,
-   recorded in `export-flags.txt` (the same flags on `composition-guide --over` show where the
-   cuts move). Free, and no new picture.
+   or `--offset-y` for a board row or a head in the grey along the top or bottom (-1 keeps the
+   top, +1 the bottom), recorded in `export-flags.txt` (the same flags on
+   `composition-guide --over` show where the cuts and the grey move). Free, and no new picture.
 2. **Region repair** — a misspelled or missing label, a hand or prop on a cut, a wrong cell, a ball
    to add or move (`/store-screenshots` → "Correcting a generated scene"). Five per revision.
 3. **Fresh render** — a composition defect only: the field reads as a different game, the
@@ -209,23 +213,26 @@ ledger knows a picture by its content, so the copy keeps its record.
 
 ## Step 5 — export the carousel exactly like the store kit
 
-The store run will export this same picture with the same command, so the user approves exactly
-what the App Store will show:
+The carousel is the Google Play set. The store run exports this same picture with the same command
+for its `store-play/` panels, so the user approves exactly what Google Play will show:
 
 ```bash
 "$STORE_PYTHON" tools/store_compose.py triptych --src production/store-art/concept/panorama.png \
-  --out production/store-art/concept/panels --panels 3 --size 1320x2868 --pop soft \
+  --out production/store-art/concept/panels --panels 3 --size play --pop soft \
   --seam-snap off --lead-kind character --art-gate off
 printf '%s\n' "--panels 3 --pop soft --seam-snap off --lead-kind character --art-gate off" \
   > production/store-art/concept/export-flags.txt
 ```
 
 Use the game's `--lead-kind`. A head or label clipped by a seam is fixed in the export
-(`--zoom` with `--offset`), and the flags that fixed it go into `export-flags.txt`. Review the
-three panels at final crop size and `_carousel-preview.png` once. With the built-in tool's ~1.6 MP
-source the compositor warns about the enlargement: that is expected here — the user judges the
-composition from the previews, and the store run's detail pass gives the exports their resolution
-without changing the picture.
+(`--zoom` with `--offset`, `--offset-y` for the top or bottom edge), and the flags that fixed it
+go into `export-flags.txt`. The size never goes into that file: the store run passes it, once for
+each set. On a 3:2 render its App Store panels (1320×2868) cut the picture within a percent of its
+width of the Play cuts and add back the strip above and below that the Play crop trims — which is
+why the panorama is still rendered 3:2: one picture serves both sets. Review the three panels at final crop size and `_carousel-preview.png` once. With the
+built-in tool's ~1.6 MP source the compositor warns about the enlargement: that is expected here —
+the user judges the composition from the previews, and the store run's detail pass gives the
+exports their resolution without changing the picture.
 
 ## Step 6 — the gameplay sample
 

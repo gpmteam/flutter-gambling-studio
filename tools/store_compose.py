@@ -64,7 +64,8 @@ makes (genre/theme agnostic — everything visual comes from the arguments):
 Screenshot size defaults to 1320x2868 — the App Store's 6.9" slot, the single
 upload that covers every current iPhone. Google Play will NOT take that shape
 (it caps the long side at 2× the short one), so a listing aimed at both stores
-exports a second set at `--size play` (1080x1920, exactly 9:16).
+exports a second set at `--size play` (1080x1920, exactly 9:16). The concept
+carousel the user approves before any code is exported at `play`.
 
 Why a tool instead of inline ImageMagick: rounded corners, notches, glare,
 fractional-alpha shadows and display typography are exactly the steps that
@@ -3684,11 +3685,12 @@ def guide_ball_spots(panels: int, lead_kind: str) -> list[tuple[int, float, floa
 
 
 def guide_geometry(canvas: tuple[int, int], panels: int, panel_w: int, panel_h: int,
-                   gutter: int, zoom: float = 1.0, offset: float = 0.0) -> dict:
+                   gutter: int, zoom: float = 1.0, offset: float = 0.0,
+                   offset_y: float = 0.0) -> dict:
     """Where the export cuts a render of `canvas` size, in that render's own pixels."""
     pano_w = panel_w * panels + gutter * (panels - 1)
     _, _, left, top, scale = cover_geometry(canvas[0], canvas[1], pano_w, panel_h,
-                                            bias_x=offset, zoom=zoom)
+                                            bias_x=offset, zoom=zoom, bias_y=offset_y)
     to_x = lambda x: (x + left) / scale  # noqa: E731 - pano → render pixels
     to_y = lambda y: (y + top) / scale   # noqa: E731
     spans = [panel_span(i, panel_w, gutter) for i in range(panels)]
@@ -3778,21 +3780,23 @@ def cmd_composition_guide(args) -> None:
 
     if args.over:
         canvas = load_image(args.over, "candidate").convert("RGBA")
-        geo = guide_geometry(canvas.size, n, w, h, gutter, args.zoom, args.offset)
+        geo = guide_geometry(canvas.size, n, w, h, gutter, args.zoom, args.offset,
+                             args.offset_y)
         _guide_marks(canvas, geo, 1.0)
         save_png(canvas.convert("RGB"), Path(args.out))
         ok(f"{Path(args.out).name}  {canvas.width}×{canvas.height}  the export's cuts over "
            f"{Path(args.over).name}")
         _guide_report(geo, canvas.size)
         info("A face, hand, held prop or ball label inside a red band is cut by the carousel; "
-             "inside the grey it is cropped away. Fix it by crop first (--zoom/--offset, same "
-             "flags here), by a region repair second — a fresh render only for composition.")
+             "inside the grey it is cropped away. Fix it by crop first (--zoom/--offset/"
+             "--offset-y, same flags here), by a region repair second — a fresh render only for "
+             "composition.")
         return
 
     cw, ch = parse_size(args.canvas)
     k = max(1.0, GUIDE_MIN_WIDTH / cw)
     gw, gh = round(cw * k), round(ch * k)
-    geo = guide_geometry((cw, ch), n, w, h, gutter, args.zoom, args.offset)
+    geo = guide_geometry((cw, ch), n, w, h, gutter, args.zoom, args.offset, args.offset_y)
     px = lambda x: geo["to_x"](x) * k  # noqa: E731 - pano → guide pixels
     py = lambda y: geo["to_y"](y) * k  # noqa: E731
     span = lambda p: geo["spans"][p]   # noqa: E731
@@ -3865,11 +3869,16 @@ def cmd_composition_guide(args) -> None:
     ok(f"{Path(args.out).name}  {gw}×{gh}  composition guide — {n} panels of a {cw}×{ch} "
        f"render ({args.lead_kind} lead)")
     _guide_report(geo, (cw, ch))
-    want = geo["pano"][0] / geo["pano"][1]
-    if abs(math.log((cw / ch) / want)) > math.log(1.12):
-        warn(f"a {cw}×{ch} render is {cw / ch:.2f}:1 against the carousel's {want:.2f}:1 — the "
-             "export trims the grey a lot. Ask the image tool for a 3:2 landscape render "
-             "(1536x1024) or render headless at 3456x2384, and draw the guide for that size")
+    # One render feeds both of the store kit's sets, so it is judged against the App Store strip
+    # whatever --size the guide is drawn for: the App Store's tall panels need nearly its whole
+    # height, and Play's 9:16 panels take the same width and crop its top and bottom.
+    app_w, app_h = SIZE_PRESETS["iphone-6.9"]
+    kit = (app_w * n + parse_gutter(args.gutter, app_w) * (n - 1)) / app_h
+    if abs(math.log((cw / ch) / kit)) > math.log(1.12):
+        warn(f"a {cw}×{ch} render is {cw / ch:.2f}:1, and the store kit cuts its App Store set "
+             f"({kit:.2f}:1) from the same picture as its Play set — the export trims it a lot. "
+             "Ask the image tool for a 3:2 landscape render (1536x1024) or render headless at "
+             "3456x2384, and draw the guide for that size")
     info("Context only: attach it to the panorama call after the identity asset and the ball "
          "model, and say so in the prompt. It is never pasted, warped or composited into art.")
 
@@ -4726,11 +4735,13 @@ def main() -> None:
     cg.add_argument("--out", required=True)
     cg.add_argument("--panels", type=int, default=3)
     cg.add_argument("--size", default=DEFAULT_SCREEN_SIZE,
-                    help=f"carousel panel size, as triptych --size (default {DEFAULT_SCREEN_SIZE})")
+                    help=f"carousel panel size, as triptych --size (default {DEFAULT_SCREEN_SIZE}; "
+                         "the concept carousel uses play)")
     cg.add_argument("--gutter", default=DEFAULT_GUTTER, metavar="PX|N%|auto",
                     help="the hidden seam allowance, as triptych --gutter")
     cg.add_argument("--zoom", type=float, default=1.0, help="as triptych --zoom")
     cg.add_argument("--offset", type=float, default=0.0, help="as triptych --offset")
+    cg.add_argument("--offset-y", type=float, default=0.0, help="as triptych --offset-y")
     cg.add_argument("--canvas", default="3456x2384", metavar="WxH",
                     help="the size the image tool returns: 3456x2384 headless (the default), "
                          "1536x1024 from the built-in tool. The cuts are those of "

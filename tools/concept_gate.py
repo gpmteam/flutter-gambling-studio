@@ -46,7 +46,10 @@ STATUSES = ("DRAFTING", "PENDING", "APPROVED")
 PANEL_PREVIEW_HEIGHT = 1200
 PANORAMA_PREVIEW_WIDTH = 2400
 PREVIEW_QUALITY = 86
-PANEL_SIZE = (1320, 2868)
+# The carousel the user approves is the Google Play set (`store_compose.py triptych --size play`).
+# The store kit exports its App Store set later from the same 3:2 panorama: nearly the same cuts
+# across the width, plus the height that Play's 9:16 crop trims.
+PANEL_SIZE = (1080, 1920)
 DEFAULT_LEDGER = "production/store-art/lineage.json"
 # The concept panorama's own review is bounded, because the user reviews it the moment it is
 # published. Unbounded, one panorama took ten fresh renders and 42 minutes, every one of them
@@ -249,7 +252,8 @@ def cmd_publish(args: argparse.Namespace) -> int:
         with Image.open(panel) as image:
             if image.size != PANEL_SIZE:
                 raise GateError(f"{panel} is {image.size[0]}x{image.size[1]}; the carousel is "
-                                f"exported at the App Store size {PANEL_SIZE[0]}x{PANEL_SIZE[1]}")
+                                f"exported at the Google Play size {PANEL_SIZE[0]}x{PANEL_SIZE[1]} "
+                                "(`store_compose.py triptych --size play`)")
     if not sample_spec.read_text(encoding="utf-8").strip():
         raise GateError(f"{sample_spec} is empty — describe the gameplay sample the game must match")
 

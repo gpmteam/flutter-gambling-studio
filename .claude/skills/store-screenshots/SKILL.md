@@ -620,27 +620,36 @@ an unchanged matching capture does not justify another generation call.
 
 ## Phase 4 — final exports
 
-Export directly from the approved panorama with the flags recorded in
+Export both sets directly from the approved panorama with the flags recorded in
 `production/store-art/concept/export-flags.txt` — the same command the concept carousel was
-exported with, so the App Store panels are the slides the user approved. Turn the numeric art
-gates off; do not measure hero, lead, gameplay or protected-region boxes. Inspect actual final
-crops in Phase 2. If a label or character is cut by a seam, adjust the crop and re-export until
-all requested formats pass; review the affected crops after each change. A flying ball covering
-gameplay is never a reason to adjust the crop.
+exported with. The concept carousel is the Google Play set, so the `store-play/` panels are the
+slides the user approved. (A concept approved before the carousel moved to the Play size was
+exported at 1320×2868; the size of `production/store-art/concept/panels/store-01.png` says which
+set the user saw.) Turn the numeric art gates off; do not measure hero, lead, gameplay or
+protected-region boxes. Inspect actual final crops in Phase 2. If a label or character is cut by
+a seam, adjust the crop and re-export until all requested formats pass; review the affected crops
+after each change. A flying ball covering gameplay is never a reason to adjust the crop.
 
 ```bash
-"$STORE_PYTHON" tools/store_compose.py triptych --src "$ART_DIR/panorama.png" \
-  --out "$OUT_DIR" --size 1320x2868 $(cat production/store-art/concept/export-flags.txt)
+FLAGS=$(cat production/store-art/concept/export-flags.txt)
 # a legacy game (no approved concept): --panels 3 --pop soft --seam-snap off --lead-kind mechanic --art-gate off
+"$STORE_PYTHON" tools/store_compose.py triptych --src "$ART_DIR/panorama.png" \
+  --out "$PLAY_DIR" --size play $FLAGS
+"$STORE_PYTHON" tools/store_compose.py triptych --src "$ART_DIR/panorama.png" \
+  --out "$OUT_DIR" --size 1320x2868 $FLAGS
 ```
 
-Use `--lead-kind character` or `object` as applicable for a legacy game. Export Play separately with `--size play`
-from the same complete source; do not resize the App Store panels. The Play set's 9:16 panels
-crop about 18% of a 1.45:1 panorama's height, centred by default: `--offset-y` (-1 keeps the
-top, +1 the bottom) brings a clipped board row or the headroom back without new art. The
-compositor's default gutter remains suitable for a carousel. A label cut by the gutter needs a
-crop correction; every panel must still carry a ball, at least two balls must still cover
-gameplay, and no ball may cover the player.
+Use `--lead-kind character` or `object` as applicable for a legacy game. Export each set from the
+same complete source; never resize one set into the other. The approved set keeps the recorded
+flags unchanged: they are the crop the user approved. The Play set's 9:16 panels crop about 18%
+of a 1.45:1 panorama's height, centred by default, and `--offset-y` (-1 keeps the top, +1 the
+bottom) brings a clipped board row or the headroom back without new art. The App Store panels
+take back the height the Play crop trimmed. On a 3:2 source their cuts land within a percent of
+the width of the Play cuts, so the recorded flags normally fit them too. A 16:9 source moves them
+about 3% of the width: a label or character cut in an App Store panel is fixed with that set's own
+`--zoom`/`--offset`, never by changing the approved set. The compositor's default gutter remains
+suitable for a carousel. A label cut by the gutter needs a crop correction; every panel must still
+carry a ball, at least two balls must still cover gameplay, and no ball may cover the player.
 
 **Resolution.** The App Store panels need about 4160×2868 of picture. `tools/gpt_image.py`
 renders the panorama natively at `3456x2384`, a 1.2× export. The built-in image tool returns about

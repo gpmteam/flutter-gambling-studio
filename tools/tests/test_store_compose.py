@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import importlib.util
+import itertools
 import subprocess
 import sys
 import tempfile
@@ -80,15 +81,17 @@ class CompositionGuideTests(unittest.TestCase):
     """The guide's red bands are where `triptych --seam-snap off` really cuts the render."""
 
     PANEL = (1320, 2868)
+    PLAY = (1080, 1920)  # the concept carousel's export size
 
     def run_cli(self, *args: str) -> subprocess.CompletedProcess:
         return subprocess.run([sys.executable, str(SCRIPT), "composition-guide", *args],
                               capture_output=True, text=True, timeout=120)
 
     def test_a_line_on_the_guide_cut_is_hidden_by_the_export_and_one_beside_it_is_not(self) -> None:
-        for canvas in ((1536, 1024), (1672, 941), (3456, 2384)):
-            gutter = store_compose.parse_gutter("auto", self.PANEL[0])
-            geo = store_compose.guide_geometry(canvas, 3, *self.PANEL, gutter)
+        for panel, canvas in itertools.product((self.PANEL, self.PLAY),
+                                               ((1536, 1024), (1672, 941), (3456, 2384))):
+            gutter = store_compose.parse_gutter("auto", panel[0])
+            geo = store_compose.guide_geometry(canvas, 3, *panel, gutter)
             with tempfile.TemporaryDirectory() as tmp:
                 folder = Path(tmp)
                 for name, pick in (("hidden", lambda a, b, c: c),
@@ -103,7 +106,7 @@ class CompositionGuideTests(unittest.TestCase):
                     out = folder / name
                     result = subprocess.run(
                         [sys.executable, str(SCRIPT), "triptych", "--src", str(src),
-                         "--out", str(out), "--panels", "3", "--size", "1320x2868",
+                         "--out", str(out), "--panels", "3", "--size", f"{panel[0]}x{panel[1]}",
                          "--seam-snap", "off", "--pop", "off", "--art-gate", "off"],
                         capture_output=True, text=True, timeout=120)
                     self.assertEqual(result.returncode, 0, result.stderr)
@@ -114,9 +117,29 @@ class CompositionGuideTests(unittest.TestCase):
                         magenta += int(((px[..., 0] > 180) & (px[..., 1] < 90)
                                         & (px[..., 2] > 180)).sum())
                     if name == "hidden":
-                        self.assertEqual(magenta, 0, f"{canvas}: the guide's cut is not the export's")
+                        self.assertEqual(magenta, 0,
+                                         f"{panel} of {canvas}: the guide's cut is not the export's")
                     else:
-                        self.assertGreater(magenta, 0, f"{canvas}: the band edge is not in a panel")
+                        self.assertGreater(magenta, 0,
+                                           f"{panel} of {canvas}: the band edge is not in a panel")
+
+    def test_the_play_guide_greys_the_rows_the_9_16_crop_trims(self) -> None:
+        # The concept carousel is cut at the Play size from a 3:2 render: the cover crop takes
+        # the full width and trims the top and bottom, and --offset-y slides that window.
+        gutter = store_compose.parse_gutter("auto", self.PLAY[0])
+        for offset_y, keeps in ((0.0, "middle"), (-1.0, "top"), (1.0, "bottom")):
+            geo = store_compose.guide_geometry((1536, 1024), 3, *self.PLAY, gutter,
+                                               offset_y=offset_y)
+            x0, y0, x1, y1 = geo["visible"]
+            self.assertAlmostEqual(x0, 0, delta=1, msg=keeps)
+            self.assertAlmostEqual(x1, 1536, delta=1, msg=keeps)
+            self.assertGreater(1024 - (y1 - y0), 100, keeps)
+            if keeps == "top":
+                self.assertAlmostEqual(y0, 0, delta=1)
+            elif keeps == "bottom":
+                self.assertAlmostEqual(y1, 1024, delta=1)
+            else:
+                self.assertAlmostEqual(y0, 1024 - y1, delta=1)
 
     def test_five_balls_one_per_panel_none_on_a_cut_or_over_the_bust(self) -> None:
         w, h = self.PANEL
@@ -169,6 +192,14 @@ class CompositionGuideTests(unittest.TestCase):
             wide = self.run_cli("--out", str(folder / "wide.png"), "--canvas", "1672x941")
             self.assertEqual(wide.returncode, 0, wide.stderr)
             self.assertIn("3:2 landscape", wide.stdout + wide.stderr)
+
+            # A Play-sized guide on the 3:2 render the tool is asked for is the intended input:
+            # the store kit cuts its App Store set from the same picture.
+            play = self.run_cli("--out", str(folder / "play.png"), "--canvas", "1536x1024",
+                                "--size", "play")
+            self.assertEqual(play.returncode, 0, play.stderr)
+            self.assertNotIn("3:2 landscape", play.stdout + play.stderr)
+            self.assertIn("top", play.stdout)
 
             Image.new("RGB", (1536, 1024), (90, 90, 90)).save(folder / "candidate.png")
             over = self.run_cli("--out", str(folder / "cuts.png"),
