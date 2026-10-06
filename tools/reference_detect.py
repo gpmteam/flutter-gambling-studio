@@ -18,9 +18,11 @@ GAMEPLAY never is. This tool therefore also decides the mechanic:
                      `.claude/docs/game-concept-examples.md`, matched on
                      English and Russian spellings, possessives, hyphens and
                      run-together names. Joker Jewels is tested before Joker.
-                     Each family names the casual mechanic it is built as and
+                     Each family names the casual mechanic it is built as,
                      whether its own gameplay is a casino game (look only) or
-                     already casual (reused).
+                     already casual (reused), and its fidelity: `exact`
+                     families are recreated, `loose` ones (Royal Joker) are a
+                     common reference for the game's world, not a recreation.
   2. ATTACHMENTS   — images the user attached to the request (the web service
                      stores them under `design/references/user/`).
   3. PHRASING      — an explicit "same as / copy / recreate / по референсу /
@@ -42,6 +44,9 @@ Usage:
   python3 tools/reference_detect.py --prompt-file request.txt \\
       --attachments-dir design/references/user --new-game --markdown \\
       > design/reference-contract.md
+
+`binding` is `exact` when an exact family or binding attachments are present, `loose` when
+only loose families matched, `description` for an unmapped title to copy, else `none`.
 
 Exit codes: 0 = ran (read `reference` and `mechanic` in the output), 2 = bad invocation.
 """
@@ -84,6 +89,11 @@ class Family:
     aliases: tuple[str, ...]
     # Families whose match makes this one redundant (Joker inside Joker Jewels).
     shadowed_by: tuple[str, ...] = ()
+    # "exact": recreate the sources. "loose": a common reference — the game shares the sources'
+    # world and background treatment, with its own character, symbols and composition.
+    fidelity: str = "exact"
+    # Family-specific direction carried into the contract and the worker's directive.
+    guidance: str = ""
     patterns: tuple[re.Pattern[str], ...] = field(init=False, repr=False, compare=False)
 
     def __post_init__(self) -> None:
@@ -123,11 +133,17 @@ FAMILIES: tuple[Family, ...] = (
         ),
     ),
     Family(
-        id="joker",
-        name="Joker",
+        id="royal-joker",
+        name="Royal Joker",
         files=(
-            RefFile("examples-games/joker2.png", "primary: the Joker character, symbols and frame"),
-            RefFile("examples-games/joker.jpeg", "secondary: supporting palette and symbols"),
+            RefFile("examples-games/royal-joker/rj_key-art.jpeg",
+                    "jester lead and backdrop: grinning jester in a purple-and-gold belled cap "
+                    "over a warm red diamond-pattern glow with flames and gold light"),
+            RefFile("examples-games/royal-joker/rj_store-set-1.jpeg",
+                    "symbol family and mood: plums, oranges, cherries, stars, crowns, jester "
+                    "medallions and a gold frame under lightning on a red-to-violet glow"),
+            RefFile("examples-games/royal-joker/rj_store-set-2.jpeg",
+                    "second jester pose; cherries, sevens and card suits in gold light streaks"),
         ),
         classification="G1 / C / B1",
         topology="7x8",
@@ -135,8 +151,17 @@ FAMILIES: tuple[Family, ...] = (
         default_mechanic="tap blast",
         reference_gameplay="casino",
         reference_mechanic="slot",
-        aliases=(r"jokers?", r"джокер\w*"),
+        # A plain "Joker" resolves here too; Joker Jewels keeps its own folder.
+        aliases=(r"royal ?jokers?", r"(?:роял|ройал) джокер\w*", r"королевск\w* джокер\w*",
+                 r"jokers?", r"джокер\w*"),
         shadowed_by=("joker-jewels",),
+        fidelity="loose",
+        guidance=("A common reference, not a recreation: keep its world — a grinning, mischievous "
+                  "jester lead, fruit, seven, crown, star and gem symbols, gold trim and glow — "
+                  "and design the character, symbols and composition fresh. The background is "
+                  "the reference's own: a warm red-orange-to-magenta glow with a diamond pattern, "
+                  "flames, gold light streaks and lightning. Never a palace, castle, ballroom, "
+                  "throne room or curtained stage."),
     ),
     Family(
         id="book-of-ra",
@@ -408,8 +433,9 @@ def detect(prompt: str, *, root: Path, attachments: list[str] | None = None,
 
     return {
         "reference": bool(families or images_bind or unmapped_title),
-        "binding": "exact" if (families or images_bind) else
-                   ("description" if unmapped_title else "none"),
+        "binding": "exact" if (images_bind or any(f.fidelity == "exact" for f, _ in families))
+                   else "loose" if families
+                   else "description" if unmapped_title else "none",
         "sources": sources,
         "families": [
             {
@@ -422,6 +448,8 @@ def detect(prompt: str, *, root: Path, attachments: list[str] | None = None,
                 "default_mechanic": family.default_mechanic,
                 "reference_gameplay": family.reference_gameplay,
                 "reference_mechanic": family.reference_mechanic,
+                "fidelity": family.fidelity,
+                "guidance": family.guidance,
                 "files": [{"path": f.path, "role": f.role} for f in family.files],
                 "missing_files": [f.path for f in family.files if not (root / f.path).is_file()],
             }
@@ -444,7 +472,9 @@ def mechanic_lines(result: dict) -> list[str]:
     lines = ["## Mechanic and topology", ""]
     if result["families"]:
         family = result["families"][0]
-        own = ("casino game — its look is reproduced, its gameplay is not"
+        look = ("its look is a common reference" if family.get("fidelity") == "loose"
+                else "its look is reproduced")
+        own = (f"casino game — {look}, its gameplay is not"
                if family["reference_gameplay"] == "casino" else
                "casual — its gameplay and topology are reused")
         lines.append(f"- Reference gameplay: {family['reference_mechanic']} ({own})")
@@ -485,10 +515,14 @@ def to_markdown(result: dict) -> str:
         if result["gambling_asks"] or result["mechanics"]:
             lines += mechanic_lines(result) + [""]
         return "\n".join(lines)
-    binding = ("EXACT — the finished game's art must read as the same world as these sources"
-               if result["binding"] == "exact" else
-               "DESCRIPTION — the user named a game with no local image; match every "
-               "described visual trait and record that no pixels were available")
+    binding = {
+        "exact": "EXACT — the finished game's art must read as the same world as these sources",
+        "loose": "LOOSE — a common reference, not a recreation: the game shares these sources' "
+                 "world, mood, palette, light and background treatment; its character, symbols "
+                 "and composition are designed fresh within that world",
+    }.get(result["binding"], "DESCRIPTION — the user named a game with no local image; match "
+                             "every described visual trait and record that no pixels were "
+                             "available")
     lines += [f"- Detected: yes — {', '.join(result['sources'])}",
               f"- Binding: {binding}",
               f"- Detection: `tools/reference_detect.py` "
@@ -505,7 +539,12 @@ def to_markdown(result: dict) -> str:
     if missing:
         lines += ["", "**Missing mapped files (blocker until restored):** "
                   + ", ".join(f"`{p}`" for p in missing)]
+    for family in result["families"]:
+        if family.get("guidance"):
+            lines += ["", f"**{family['name']} direction:** {family['guidance']}"]
     lines += [""] + mechanic_lines(result)
+    if result["binding"] == "loose":
+        return "\n".join(lines + loose_contract_lines())
     lines += [
         "", "## Identity ledger (fill in at full size before Phase 3)", "",
         "- Character: costume colours and pattern, headwear shape and bell count, face paint, "
@@ -534,6 +573,36 @@ def to_markdown(result: dict) -> str:
         "",
     ]
     return "\n".join(lines)
+
+
+def loose_contract_lines() -> list[str]:
+    """The rest of the contract for a common reference: shared traits instead of a copy ledger."""
+    return [
+        "", "## Shared world (fill in at full size before Phase 3)", "",
+        "- Character: the lead's archetype, attitude and signature colours kept from the sources; "
+        "what is designed fresh (face, pose, costume details):",
+        "- Symbol family: the kinds of objects kept (they become tiles, pieces, balls or targets); "
+        "the game's own set and how it differs:",
+        "- Background and environment: the sources' own treatment, followed closely:",
+        "- Palette and light:",
+        "- Finish (2D/2.5D, linework, shading, texture):",
+        "", "## Not carried over (production limits)", "",
+        "- Title, wordmark, logo and operator branding",
+        "- The casino mechanic and interface: spinning reels, paylines, bet/credit panels, "
+        "SPIN/AUTOPLAY, paytables, prize wheels and payout figures",
+        "- Object-for-object copies: a loose reference is not recreated asset by asset",
+        "", "## Gates", "",
+        "- [ ] Phase 3: the sources are attached to generation as style references (editing a "
+        "source is allowed, not required); assets are designed for this game",
+        "- [ ] Phase 3.6 AR11 (loose): the set reads as the sources' world — character archetype, "
+        "symbol family, palette, light, background — without one-for-one copies: PASS",
+        "- [ ] Runtime V21 (loose): the menu and gameplay share that world and its background "
+        "treatment: PASS",
+        "- [ ] `.claude/rules/no-gambling.md`: no wager, currency or chance-based reward",
+        "- [ ] Campaign art: sources attached to the banner and background calls; the background "
+        "follows the sources' treatment",
+        "",
+    ]
 
 
 def main(argv: list[str] | None = None) -> int:

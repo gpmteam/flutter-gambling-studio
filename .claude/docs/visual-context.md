@@ -16,20 +16,23 @@ or complete game specifications. A missing reference does not block an unrelated
 Whether a request is a reference request is decided by `tools/reference_detect.py` (see
 `game-concept-examples.md` → "Detecting a reference request") and recorded in
 `design/reference-contract.md`; images the user attached are references on the same footing as the
-local previews. `/autocreate` requests named **Book of Ra**, **Joker**, **Joker Jewels**, **Shining
-Crown**, or **Plinko** must use the exact local reference mapping in
+local previews. `/autocreate` requests named **Book of Ra**, **Royal Joker** (or a plain **Joker**), **Joker
+Jewels**, **Shining Crown**, or **Plinko** must use the local reference mapping in
 `game-concept-examples.md`, on the `--from-concept` path as well; do not replace it with a generic
-category reference. Recreate what the preview shows: theme, character, symbol cast, palette,
-frame and composition are matched, not reinterpreted. The full rule is "How close to the
-reference — match it" in `game-concept-examples.md`, and it governs the whole look of the concept.
+category reference. For an exact family, recreate what the preview shows: theme, character,
+symbol cast, palette, frame and composition are matched, not reinterpreted. The full rule is "How
+close to the reference — match it" in `game-concept-examples.md`, and it governs the whole look of
+the concept. Royal Joker is a loose reference: the game shares its world and its fiery,
+diamond-patterned backdrop (never a palace) with its own jester and symbol designs — see "Loose
+references" in that document.
 The mechanic is the family's casual "Build as" entry (or the user's casual mechanic, or the
 translation of a gambling ask) — never the casino gameplay a preview shows. Follow the production
 limits in `game-concept-examples.md`; suitable source pixels can be reused, while branding and the
 casino interface do not carry over. Shining Crown and Plinko are object/mechanic-led and must not
 gain an invented main character or mascot.
-**Joker** and **Joker Jewels** are two different entries: Joker Jewels resolves to every file in
-the `examples-games/joker-jewels/` folder and to the swap match-3 board, never to the plain Joker
-row's tap-blast board.
+**Royal Joker** and **Joker Jewels** are two different entries: Joker Jewels resolves to every
+file in the `examples-games/joker-jewels/` folder and to the swap match-3 board, never to the
+Royal Joker row's tap-blast board.
 
 ## Decide the visual lead before generating
 

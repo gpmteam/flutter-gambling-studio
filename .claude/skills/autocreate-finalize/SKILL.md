@@ -257,7 +257,9 @@ Then:
   `.claude/docs/mobile-first-contract.md`, and `.claude/docs/gameplay-screen-contract.md`.
   For a named `examples-games/` game, compare the mapped source files beside the menu and
   idle/active gameplay captures. Record wrong character, symbol, background, palette, topology,
-  finish or composition as HIGH V21 and route the fix to art or UI before a PASS verdict.
+  finish or composition as HIGH V21 and route the fix to art or UI before a PASS verdict. For a
+  loose reference (`binding: loose`, Royal Joker) V21 judges the same world and background
+  treatment, not object-for-object identity.
   Inspect the portrait phone matrix at 360×640, 360×800, 390×844 and 430×932, with idle and
   active gameplay at 390×844 and 360×640. These are the only design gates: there is no
   landscape, tablet or desktop layout to verify, and one found in the code is V17. The wide-host

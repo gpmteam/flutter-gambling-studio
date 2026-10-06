@@ -4,7 +4,9 @@ Inspect the matching local preview when a user requests one of these game famili
 named requests below, the listed preview is mandatory input to `/autocreate`, including the
 `--from-concept` path and common spacing, punctuation, hyphenation, and capitalization variants of
 the name. A reference entry is either one file or a folder; when it is a folder, every file in it
-is mandatory input and the table states each file's job.
+is mandatory input and the table states each file's job. Every family is an **exact** reference —
+recreate it — except Royal Joker, a **loose** reference: a common reference for the game's world,
+not a recreation (see "Loose references" below).
 
 **A reference governs the look; `.claude/rules/no-gambling.md` governs the gameplay.** These
 previews are casino art — slots and a plinko board. The studio reproduces their character, symbol
@@ -21,7 +23,7 @@ mechanic, lead kind and topology decision in the generated concept before produc
 | Request family | Preview | Reference gameplay | Build as (Classification) | Lead and assets | Store starting composition |
 |---|---|---|---|---|---|
 | Book of Ra / Book of Ra game | `examples-games/book-of-ra.png` | Casino slot — look only | **G2 / E / B2** triple tile tray: relic tiles stacked in layers inside the temple frame, a 7-slot tray | Character; reference-matched desert archaeologist, enchanted book, ankhs, scarabs, falcons, Egyptian relics as tiles | Large reference-matched explorer on the first panel; the layered relic pile and tray occupy the right; sunset temple depth and relic spill support the gameplay |
-| Joker / Joker game | `examples-games/joker2.png`, with `examples-games/joker.jpeg` as secondary reference | Casino slot — look only | **G1 / C / B1** tap blast on a 7×8 grid inside the reference's ornate red-and-gold frame | Character; reference-matched impish, slightly vicious Joker, bells, cherries, gems, crowns, clovers as tiles | Large reference-matched Joker on the first panel; the framed blast board spans the right two; gestures lead toward play |
+| Royal Joker / Joker / Joker game | `examples-games/royal-joker/` — all three files: `rj_key-art.jpeg` (jester lead and backdrop), `rj_store-set-1.jpeg` (symbol family, gold frame, lightning), `rj_store-set-2.jpeg` (second jester pose, cherries and sevens) — **loose: a common reference, not a recreation** | Casino slot — look only | **G1 / C / B1** tap blast on a 7×8 grid in a gold frame | Character; a grinning, mischievous jester designed for this game in the reference's purple, red and gold, with fruit, sevens, crowns, stars and gems as tiles | Large jester on the first panel over the reference's fiery red-to-magenta glow; the blast board spans the right two; fruit, gold light and lightning carry the motion |
 | Joker Jewels / Joker's Jewels / joker-jewels | `examples-games/joker-jewels/` — all four files: `jj_reference.jpeg` (key-art staging), `jj_gameplay.jpeg` (symbol family, purple reel-strip columns and frame), `jj_character-reference.jpeg` and `jj_character-reference2.jpeg` (jester lead) | Casino slot — look only | **G1 / A / B1** swap match-3 on a 7×8 grid whose columns wear the purple reel-strip backing | Character; reference-matched belled-cap jester in a striped costume, plus faceted red and cyan gems, blue orb, lute, juggling clubs, jester shoes, crown special tile | Large reference-matched jester on the first panel; the match-3 board occupies the right; gems, bunting and confetti spill through the foreground |
 | Shining Crown / Shining Crown game | `examples-games/shining-crown.jpeg` | Casino slot — look only | **G3 / I / B3** slide merge on a 4×4 grid: ruby → clover gem → star → … → the Shining Crown at the top of the tier chain | Object; crown, jewel star, clover gem, ruby, gold medallions as tiers | No invented player or mascot; slides 1–2 show the jewel board at a three-quarter/3D angle, with the crown and jewels across the foreground |
 | Plinko / Plinko game | `examples-games/plinko.jpeg` | Casino plinko — look only | **G4 / N / B4** peg clear: aim glossy balls through the tilted peg field to clear target pegs; a moving catch bucket replaces prize buckets | Mechanic; glossy colored balls, pegs, the tilted board, glowing trails | Active tilted peg field can fill all three panels; trajectories carry motion; no invented person or mascot |
@@ -35,7 +37,7 @@ The table above is the detector's family list; change both together (a test keep
 
 | Trigger | Examples it catches | Binding |
 |---|---|---|
-| A named family | "Joker Jewels", "Joker's Jewels", "joker-jewels", "джокер джуэлс", "Book of Ra", "книга ра", "Shining Crown", "шайнинг краун", "Plinko", "плинко" | exact — the mapped files |
+| A named family | "Joker Jewels", "Joker's Jewels", "joker-jewels", "джокер джуэлс", "Royal Joker", "роял джокер", "Joker", "джокер", "Book of Ra", "книга ра", "Shining Crown", "шайнинг краун", "Plinko", "плинко" | exact — the mapped files; loose for Royal Joker |
 | Images attached to the request | anything the web service saved in `design/references/user/` | exact — on a new game always; on a follow-up when the message asks to match them |
 | An explicit reproduction ask with no image | "exactly like Gates of Olympus", "копия игры …", "один в один как …" | description — match every described trait |
 
@@ -55,7 +57,8 @@ Two rules keep detection honest:
   drop one the detector found, reinterpret a named family as "inspiration", or treat attached
   images as mood boards.
 - **Identity and mechanics are separate.** The family always governs identity — the character,
-  symbols, board and frame materials, background, palette and finish. The mechanic comes from the
+  symbols, board and frame materials, background, palette and finish (a loose family governs the
+  world they belong to, not their pixels). The mechanic comes from the
   table above, the user's casual mechanic, or the translation of a gambling ask — never from a
   casino reference's own gameplay.
 
@@ -64,10 +67,11 @@ to the reference — match it" below applies to them, with the attachment as the
 an attachment shows a casino game (reels, a bet panel, a paytable), reproduce its look and
 translate its mechanic exactly as for a mapped casino family.
 
-**Joker and Joker Jewels are separate families.** A request that names only a Joker resolves to
-`joker2.png` (with `joker.jpeg`) and the tap-blast board. A request that names Joker Jewels,
-Joker's Jewels, Jokers Jewels or `joker-jewels` resolves to the `examples-games/joker-jewels/`
-folder and the swap match-3 board, and is never satisfied by the plain Joker row.
+**Royal Joker and Joker Jewels are separate families.** A request that names Royal Joker, or only
+a Joker, resolves to the `examples-games/royal-joker/` folder — a loose reference — and the
+tap-blast board. A request that names Joker Jewels, Joker's Jewels, Jokers Jewels or
+`joker-jewels` resolves to the `examples-games/joker-jewels/` folder and the swap match-3 board,
+an exact reference, and is never satisfied by the Royal Joker row.
 
 **Joker Jewels file roles.** Use `jj_reference.jpeg` for the festive purple staging, bunting,
 confetti and the mask-with-gems subject pairing; `jj_gameplay.jpeg` for the symbol family (jester
@@ -78,10 +82,33 @@ gesture. Do not reproduce the `Joker's Jewels` wordmark, the operator logo or br
 reference's UI chrome, copy, credit/bet panel and paytable — those are another product's casino
 interface.
 
+## Loose references — a common reference, not a recreation
+
+Royal Joker is mapped as a **loose** family (`binding: loose` in the detection). Its previews set
+the game's world, not its pixels:
+
+- **Kept:** the lead's archetype and attitude — a grinning, mischievous jester in a belled cap in
+  purple, red and gold; the symbol family — fruit (cherries, plums, oranges, lemons, grapes),
+  sevens, crowns, stars and gems; gold trim and glow; the warm, saturated palette and the
+  glossy 2.5D slot-art finish.
+- **Designed fresh:** the jester's face, pose and costume details, the exact symbol set and its
+  silhouettes, the frame, and the composition of the menu and store art. Variety Dimensions and
+  the Similarity Check apply as for an original game, within this world.
+- **The background is the reference's own.** A warm red-orange-to-magenta glow with a diamond
+  (harlequin) pattern, flames, gold light streaks and lightning — the backdrop of
+  `rj_key-art.jpeg` and the store sets. Never a palace, castle, ballroom, throne room or curtained
+  stage: "royal" names the jester, not the setting.
+- **Gates.** AR11 and V21 judge "the same world" — character archetype, symbol family, palette,
+  light and background treatment — not object-for-object identity. The sources are attached to
+  generation as style references; a source-image edit is allowed but not required.
+- Images the user attaches still bind exactly, even alongside Royal Joker.
+
+The next section applies to exact references: every other mapped family and attached images.
+
 ## How close to the reference — match it
 
-When a request maps to a reference — a named family or the user's attached images — **recreate
-what the reference shows.** Not a reinterpretation, not an homage, not "inspired by": put the
+When a request maps to an exact reference — a named exact family or the user's attached images —
+**recreate what the reference shows.** Not a reinterpretation, not an homage, not "inspired by": put the
 generated game's art beside the reference and they should read as the same world. Match all of
 it, as closely as the generator can get —
 
@@ -124,8 +151,9 @@ constraints. Text-only generation when image inputs are available causes identit
 
 Everything outside these limits is matched, not adapted.
 
-For Book of Ra, Joker and Joker Jewels the character is the lead: rebuild that
-character as the reference draws it, as the game's host. For Shining Crown and Plinko the absence
+For Book of Ra and Joker Jewels the character is the lead: rebuild that character
+as the reference draws it, as the game's host. Royal Joker's jester is the lead too, designed
+fresh within that reference's world. For Shining Crown and Plinko the absence
 of a main character is itself part of the reference contract: do not add a host, mascot, hand,
 player silhouette, deity or other living lead.
 
@@ -149,11 +177,13 @@ merge into clover gems, clover gems into stars, up a jewel ladder to the Shining
 Match the preview's royal tactility, jewel silhouettes, dramatic lighting, frame ornament and gold
 spill. x2/x5 combo badges appear when one swipe makes several merges. G3 / I / B3.
 
-**Joker's Blast:** A tap-blast board of bells, cherries, gems, crowns and clovers inside the
-ornate red-and-gold frame from `joker2.png`; the grinning theatrical trickster hosts from the left
-and reacts to big blasts. Keep the mischievous expression rather than drifting toward an elegant
-host. Groups of five or more leave a jester-cap rocket; level goals ask for bells or cherries
-collected within a move budget. G1 / C / B1.
+**Royal Blast:** A tap-blast board of cherries, plums, oranges, sevens, crowns and stars in a
+gold frame over Royal Joker's fiery red-to-magenta glow — diamond pattern, flames, gold light
+streaks; a grinning jester in a purple-and-gold belled cap hosts from the left and reacts to big
+blasts. The previews are a common reference: the same world and mood, with this game's own jester
+and symbol designs. Keep the mischievous expression rather than drifting toward an elegant host.
+Groups of five or more leave a jester-cap rocket; level goals ask for cherries or sevens collected
+within a move budget. G1 / C / B1.
 
 **Harlequin Revel:** A swap match-3 of faceted red and cyan gems, blue orbs, lutes, juggling clubs
 and jester shoes on a board whose columns wear the reference's purple reel-strip backing; the crown

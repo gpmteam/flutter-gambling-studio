@@ -15,11 +15,12 @@ lists and read `.claude/docs/game-concept-examples.md`. Carry the lead kind,
 references/adaptations, exact board topology, Joker expression (when relevant), and verified
 combo-marker meanings from the concept into the art direction, asset manifest and prompts. An
 unspecified match game uses a 7×8 board; store gameplay placement is flexible and object-led
-games need no invented character. The named requests Book of Ra, Joker, Joker Jewels, Shining
-Crown, and Plinko must use the exact preview mapping in that document; Joker Jewels resolves to
-every file in `examples-games/joker-jewels/` and to the swap match-3 board, not to the plain
-Joker row. Recreate what the preview shows — theme, character, symbol cast, palette, frame
-and composition are matched, not reinterpreted, and Variety Dimensions are not scrolled. Build
+games need no invented character. The named requests Book of Ra, Royal Joker (or a plain
+Joker), Joker Jewels, Shining Crown, and Plinko must use the preview mapping in that document;
+Joker Jewels resolves to every file in `examples-games/joker-jewels/` and to the swap match-3
+board, not to the Royal Joker row. For an exact family, recreate what the preview shows — theme,
+character, symbol cast, palette, frame and composition are matched, not reinterpreted, and
+Variety Dimensions are not scrolled. Royal Joker is a loose reference (`binding: loose`, below). Build
 the casual mechanic the family lists, never the casino gameplay a preview shows. Follow the
 source-quality and branding limits in `game-concept-examples.md`. Never add a character to Shining
 Crown or Plinko.
@@ -150,6 +151,16 @@ When `reference` is true:
   against these sources.
 - The studio's generic art direction for original concepts does not apply; the reference's
   rendering style does.
+
+`binding: loose` (Royal Joker, or a plain Joker): the sources are a common reference, not a
+recreation. The bullets above apply with these changes — the game shares the sources' world
+(character archetype, symbol family, palette, light, finish) and follows their background
+treatment closely, a fiery red-to-magenta glow and never a palace; the character, symbols and
+composition are designed fresh for this game, so Variety Dimensions and the Similarity Check
+apply within that world. Complete the contract's "Shared world" section instead of an identity
+ledger. Attach the sources to generation as style references; a source-image edit is allowed, not
+required. AR11 and V21 judge the same world, not object-for-object identity
+(`game-concept-examples.md` → "Loose references").
 
 `binding: description` (the user named an unmapped game with no image): match every described
 visual trait, record that no pixels were available, and never claim pixel fidelity.
@@ -336,7 +347,7 @@ Write `production/session-state/autocreate-handoff-1.md` with:
 - Session 2's required exit criteria: an approved concept (`concept_gate.py check --for implement`), the campaign background rendered in its world, `dart analyze` with zero errors, green tests, complete content wiring, a field that matches the approved gameplay sample, passed UI/no-gambling audit, a passed full-screen portrait gameplay-screen gate at the four phone sizes, verified balance, and 20/20 crash-prevention checks.
 - A portrait-phone checklist: portrait lock, phone column, touch-only input, one composition per
   screen verified at 360×640, 360×800, 390×844 and 430×932 — and no desktop/tablet/landscape layout.
-- The reference contract path and its binding (`exact`, `description` or none).
+- The reference contract path and its binding (`exact`, `loose`, `description` or none).
 
 Then continue to Phase 3.9 in this session.
 

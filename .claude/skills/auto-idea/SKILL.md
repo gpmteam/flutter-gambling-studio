@@ -14,12 +14,14 @@ new-game request, inspect the relevant `examples-games/` previews and read
 board topology, Joker expression (when relevant), and verified combo-marker meanings from
 the concept into the art direction, asset manifest and prompts. An unspecified match game uses a
 7×8 board; store gameplay placement is flexible and object-led games need no invented character.
-The named requests Book of Ra, Joker, Joker Jewels, Shining Crown, and Plinko must use
-the exact preview mapping in that document, including the casual mechanic each family is built
-as; Joker Jewels resolves to every file in `examples-games/joker-jewels/` and to the swap match-3
-board, not to the plain Joker row. Recreate what the preview shows — theme, character, symbol
-cast, palette, frame and composition are matched, not reinterpreted, and Variety Dimensions are
-not scrolled. Follow the source-quality and branding limits in `game-concept-examples.md`. Never
+The named requests Book of Ra, Royal Joker (or a plain Joker), Joker Jewels, Shining Crown,
+and Plinko must use the preview mapping in that document, including the casual mechanic each
+family is built as; Joker Jewels resolves to every file in `examples-games/joker-jewels/` and to
+the swap match-3 board, not to the Royal Joker row. For an exact family, recreate what the preview
+shows — theme, character, symbol cast, palette, frame and composition are matched, not
+reinterpreted, and Variety Dimensions are not scrolled. Royal Joker is a loose reference: keep its
+world and its fiery, diamond-patterned backdrop (never a palace) and design the jester, symbols
+and composition fresh ("Loose references" in that document). Follow the source-quality and branding limits in `game-concept-examples.md`. Never
 add a character to Shining Crown or Plinko.
 
 Don't ask the user questions! Create `design/gdd/game-concept.md` completely autonomously.

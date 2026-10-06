@@ -40,7 +40,10 @@ class NamedFamilyTests(unittest.TestCase):
 
     def test_russian_and_possessive_names_resolve(self) -> None:
         cases = {
-            "Сделай слот Джокер": "joker",
+            "Сделай слот Джокер": "royal-joker",
+            "Royal Joker": "royal-joker",
+            "роял джокер": "royal-joker",
+            "королевский джокер": "royal-joker",
             "Book of Ra deluxe": "book-of-ra",
             "сделай книгу ра": "book-of-ra",
             "book-of-ra": "book-of-ra",
@@ -59,7 +62,7 @@ class NamedFamilyTests(unittest.TestCase):
         self.assertEqual(result["families"], [])
 
     def test_casino_references_keep_the_look_and_get_a_casual_mechanic(self) -> None:
-        for prompt, family_id, mechanic in (("Joker", "joker", "tap blast"),
+        for prompt, family_id, mechanic in (("Joker", "royal-joker", "tap blast"),
                                             ("Book of Ra", "book-of-ra", "triple tile"),
                                             ("Shining Crown", "shining-crown", "slide merge"),
                                             ("Plinko", "plinko", "peg clear")):
@@ -97,6 +100,33 @@ class NamedFamilyTests(unittest.TestCase):
                                     f"{ref.path} is not documented in game-concept-examples.md")
 
 
+class LooseReferenceTests(unittest.TestCase):
+    def test_royal_joker_is_a_common_reference_not_a_recreation(self) -> None:
+        result = detect("Make a Royal Joker game", new_game=True)
+        self.assertTrue(result["reference"])
+        self.assertEqual(result["binding"], "loose")
+        self.assertEqual(result["families"][0]["fidelity"], "loose")
+        md = reference_detect.to_markdown(result)
+        self.assertIn("Binding: LOOSE", md)
+        self.assertIn("## Shared world", md)
+        self.assertNotIn("Identity ledger", md)
+        self.assertIn("Never a palace", md)
+
+    def test_a_plain_joker_request_uses_royal_joker(self) -> None:
+        for prompt in ("Make a Joker game", "сделай джокера"):
+            with self.subTest(prompt=prompt):
+                result = detect(prompt, new_game=True)
+                self.assertEqual(family_ids(result), ["royal-joker"])
+                self.assertEqual(result["binding"], "loose")
+
+    def test_exact_families_stay_exact(self) -> None:
+        for prompt in ("Joker Jewels", "Book of Ra", "Shining Crown", "Plinko"):
+            with self.subTest(prompt=prompt):
+                result = detect(prompt, new_game=True)
+                self.assertEqual(result["binding"], "exact")
+                self.assertIn("Identity ledger", reference_detect.to_markdown(result))
+
+
 class MechanicOverrideTests(unittest.TestCase):
     def test_a_gambling_mechanic_is_translated_and_the_family_keeps_identity(self) -> None:
         result = detect("Book of Ra Dice: a three-dice betting game played in the desert temple.")
@@ -110,7 +140,7 @@ class MechanicOverrideTests(unittest.TestCase):
 
     def test_hi_lo_joker_host_becomes_card_patience(self) -> None:
         result = detect("Joker's High Card: a fast high-or-low card game hosted by a mischievous joker.")
-        self.assertEqual(family_ids(result), ["joker"])
+        self.assertEqual(family_ids(result), ["royal-joker"])
         self.assertEqual(result["mechanic_override"], "card patience")
 
     def test_naming_the_familys_own_casino_mechanic_keeps_the_family_build(self) -> None:
@@ -184,6 +214,12 @@ class AttachmentTests(unittest.TestCase):
         match_ru = detect("сделай символы как на картинке", root=self.root,
                           attachments_dir="design/references/user")
         self.assertTrue(match_ru["attachments_bind"])
+
+    def test_attached_images_make_a_loose_family_exact(self) -> None:
+        result = detect("a Royal Joker game like these pictures", root=self.root,
+                        attachments_dir="design/references/user", new_game=True)
+        self.assertEqual(family_ids(result), ["royal-joker"])
+        self.assertEqual(result["binding"], "exact")
 
     def test_legacy_root_attachments_are_found(self) -> None:
         (self.root / "user_reference.jpg").write_bytes(b"\xff\xd8\xff" + b"0" * 32)
