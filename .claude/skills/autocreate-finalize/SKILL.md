@@ -259,7 +259,7 @@ Then:
   idle/active gameplay captures. Record wrong character, symbol, background, palette, topology,
   finish or composition as HIGH V21 and route the fix to art or UI before a PASS verdict. For a
   loose reference (`binding: loose`, Royal Joker) V21 holds the character to the sources and the
-  symbols and finish to its world; the background is the game's own and is not compared.
+  symbols and finish to its world; the background is checked against the abstract slot style, not the sources.
   Inspect the portrait phone matrix at 360×640, 360×800, 390×844 and 430×932, with idle and
   active gameplay at 390×844 and 360×640. These are the only design gates: there is no
   landscape, tablet or desktop layout to verify, and one found in the code is V17. The wide-host

@@ -159,10 +159,11 @@ FAMILIES: tuple[Family, ...] = (
         guidance=("The character can be the same: keep the grinning, mischievous jester in the "
                   "purple-and-gold belled cap as the sources draw him. Fruit, seven, crown, star "
                   "and gem symbols and the glossy gold-trimmed finish set the world; the symbol "
-                  "designs and composition are this game's own. The background is free: design "
-                  "it for this game's concept and vary it between games — do not copy the "
-                  "sources' red diamond-pattern backdrop every time, and do not fall back to the "
-                  "old palace or ballroom staging."),
+                  "designs and composition are this game's own. The background is abstract slot "
+                  "style — gradients, glows, light rays, bokeh and the game's objects out of "
+                  "focus (.claude/docs/visual-context.md → \"Backgrounds — abstract slot "
+                  "style\") — not the sources' red diamond-pattern backdrop every time, and never "
+                  "a palace, ballroom or other place."),
     ),
     Family(
         id="book-of-ra",
@@ -519,9 +520,9 @@ def to_markdown(result: dict) -> str:
     binding = {
         "exact": "EXACT — the finished game's art must read as the same world as these sources",
         "loose": "LOOSE — a common reference, not a recreation: the character follows these "
-                 "sources and the symbol family, palette and finish fit their world; the "
-                 "background, symbol designs and composition are designed for this game, and the "
-                 "sources' backdrop is not copied by default",
+                 "sources and the symbol family, palette and finish fit their world; the symbol "
+                 "designs and composition are designed for this game, and the background is "
+                 "abstract slot style rather than the sources' backdrop",
     }.get(result["binding"], "DESCRIPTION — the user named a game with no local image; match "
                              "every described visual trait and record that no pixels were "
                              "available")
@@ -585,8 +586,8 @@ def loose_contract_lines() -> list[str]:
         "expression — source:",
         "- Symbol family: the kinds of objects kept (they become tiles, pieces, balls or targets); "
         "the game's own set and how it differs:",
-        "- Background and environment: designed for this game's concept, not copied from the "
-        "sources — what it is and why:",
+        "- Background: abstract slot style (`.claude/docs/visual-context.md` → \"Backgrounds — "
+        "abstract slot style\"), not copied from the sources — its gradient, light and objects:",
         "- Palette and light:",
         "- Finish (2D/2.5D, linework, shading, texture):",
         "", "## Not carried over (production limits)", "",
@@ -598,12 +599,13 @@ def loose_contract_lines() -> list[str]:
         "- [ ] Phase 3: the character is generated from its source images; the other assets use "
         "the sources as style references and are designed for this game",
         "- [ ] Phase 3.6 AR11 (loose): the character reads as the sources' jester; the symbol "
-        "family, palette and finish fit their world; the background is not compared: PASS",
-        "- [ ] Runtime V21 (loose): the menu and gameplay show the same character; the "
-        "background is the game's own: PASS",
+        "family, palette and finish fit their world; the background is abstract slot style, "
+        "not compared with the sources: PASS",
+        "- [ ] Runtime V21 (loose): the menu and gameplay show the same character over an "
+        "abstract slot-style background: PASS",
         "- [ ] `.claude/rules/no-gambling.md`: no wager, currency or chance-based reward",
-        "- [ ] Campaign art: sources attached for the character; the background follows this "
-        "game's concept, not the sources' backdrop",
+        "- [ ] Campaign art: sources attached for the character; the background is abstract "
+        "slot style, not the sources' backdrop",
         "",
     ]
 

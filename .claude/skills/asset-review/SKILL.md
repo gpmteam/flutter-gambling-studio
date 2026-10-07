@@ -94,8 +94,10 @@ object for object: the same subjects, the same materials and colours, the same l
 character and finish. Anything re-themed, substituted, recoloured or "improved" fails AR11 and
 is corrected toward the reference. For a loose reference (`binding: loose`, Royal Joker) the
 character is held to the sources — the same jester — while the symbol family, palette and finish
-only need to fit that world; fresh symbol designs pass, and the background is the game's own and
-is not compared. Verify each source image appears in the ledger and that relevant
+only need to fit that world; fresh symbol designs pass, and the background is checked against the abstract slot style, not
+the sources. For every game, a background that depicts a place (street, city, castle, palace,
+temple, landscape, interior) fails unless the user asked for it or an exact reference's own
+background is one (`.claude/docs/visual-context.md` → "Backgrounds — abstract slot style"). Verify each source image appears in the ledger and that relevant
 images were actually supplied to generation or directly reused with provenance. When the game is
 runnable, review the real runtime screen beside the reference; in pre-production, mark this check
 pending for runtime verification. Follow the production limits in

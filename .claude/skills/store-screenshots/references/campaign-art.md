@@ -135,7 +135,10 @@ Review `shared-background.png` and `background-crops.png` once. Objective failur
 - character drift from its asset (face, silhouette, costume, colours);
 - any text, letters, numbers or logo; any multiplier ball or labelled coin;
 - a painted board, reels, grid, cards, table, buttons, HUD, frame, phone or device;
-- a different world from the approved panorama (environment, palette, light, materials);
+- a different world from the approved panorama (backdrop, palette, light, materials);
+- a literal place instead of an abstract slot-style backdrop — a street, city, castle, palace,
+  temple, landscape or interior — unless the user asked for a setting or an exact reference's own
+  background is one (`.claude/docs/visual-context.md` → "Backgrounds — abstract slot style");
 - for an object/mechanic game, an invented person, hand, animal or mascot.
 
 For a failed background, follow `/store-screenshots` → "Correcting a generated scene" until all

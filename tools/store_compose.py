@@ -1282,7 +1282,7 @@ def parse_gutter(spec: str, panel_w: int) -> int:
 #
 # So the panorama is composed with a little slack and the cuts are allowed to
 # slide inside it: the picture's own column energy chooses where the strips come
-# out, and they settle on quiet background — sky, wall, floor, haze — instead of
+# out, and they settle on quiet background — gradient, glow, haze — instead of
 # through the subject. The allowance itself stays the publisher's ~100px.
 
 SNAP_REF = 0.12            # search radius, as a fraction of one panel width
@@ -1733,9 +1733,9 @@ def crown_report(pano: Image.Image, span: tuple[int, int], hero_top: int,
 
     The hero now fills most of the panel's height, which leaves one band above
     its head — and that band is what the note "more decorative" is about. A
-    berth drawn as a place to *stand* leaves sky there; a berth drawn as an
-    ornament around the character fills it with the arch, the crest, the banner,
-    the hanging lamps and the light burst the figure's head sits inside. The
+    berth drawn as a place to *stand* leaves empty sky there; a berth drawn as
+    ornament around the character fills it with the light burst, rays, sparkles
+    and drifting game objects the figure's head sits inside. The
     difference is the whole distance between a screenshot and a poster, and it
     is measurable the same way panel emptiness is.
 
@@ -1771,11 +1771,11 @@ def crown_report(pano: Image.Image, span: tuple[int, int], hero_top: int,
              "berth was drawn as a place to stand, not as an ornament around the "
              "character. "
              "That band is the one the store shows at full size and it is what makes "
-             "the slide read as decorated — ask Phase 1 for the berth as a framing "
-             "device (arch, portal, crest, banner, drapery, flanking lanterns or "
-             "columns, a light burst behind where the head will be, embers or petals "
-             "drifting through it) and regenerate. Do not answer it by scaling the "
-             "hero up into the gap — a cropped head is not ornament.")
+             "the slide read as decorated — ask Phase 1 to fill it with abstract "
+             "slot-style ornament (a light burst or radial glow behind where the head "
+             "will be, light rays, sparkles, bokeh and the game's own objects drifting "
+             "through it; no architecture or place) and regenerate. Do not answer it by "
+             "scaling the hero up into the gap — a cropped head is not ornament.")
     return flat
 
 
@@ -2180,13 +2180,13 @@ def final_art_issues(
             f"the panorama is too dark (luma {mean_luma:.2f}, deep shadow "
             f"{shadow_share * 100:.0f}%; need luma ≥{FINAL_LUMA_MIN:.2f} and "
             f"shadow ≤{FINAL_SHADOW_MAX * 100:.0f}%). The far background must be "
-            "readable and broad; bright trim alone does not rescue crushed scenery")
+            "readable and broad; bright trim alone does not rescue a crushed backdrop")
     if upper_mean > FINAL_UPPER_DETAIL_MAX:
         issues.append(
             f"the visible upper background is too detailed ({upper_mean:.1f}, maximum "
             f"{FINAL_UPPER_DETAIL_MAX:.1f}). Replace dense architecture, filigree, "
-            "crowds, foliage, and all-over particles with broad color, simplified "
-            "far silhouettes, soft atmosphere, and one simple focal source")
+            "crowds, foliage, and all-over particles with a broad abstract gradient, "
+            "soft glow and bokeh, and one simple focal light source")
     if frame_ratio < FINAL_FRAME_RATIO_MIN:
         issues.append(
             f"the bottom edge does not carry the game's object frame ({frame_ratio:.2f}× "
@@ -2226,7 +2226,7 @@ def final_art_issues(
             f"the hero and panel-1 background share the same hue family "
             f"({hero_bg_hue_gap:.0f}° apart; need ≥{HERO_BG_HUE_GAP_MIN:.0f}°). "
             "Move the broad background mass to a contrasting colour instead of "
-            "covering character and scenery with one yellow/amber grade")
+            "covering character and backdrop with one yellow/amber grade")
     elif (hero_bg_hue_gap is None and hero_bg_value_gap is not None and
           hero_bg_value_gap < HERO_BG_VALUE_GAP_MIN):
         issues.append(
@@ -4223,7 +4223,7 @@ def banner_art_issues(
         issues.append(
             f"the long banner is too dark (luma {metrics['mean_luma']:.2f}, deep "
             f"shadow {metrics['shadow_share'] * 100:.0f}%). It needs a broad, "
-            "readable far plane, not bright trim on crushed scenery")
+            "readable backdrop glow, not bright trim on a crushed backdrop")
     if metrics["saturation"] > SATURATION_MAX:
         issues.append(
             f"the long banner is globally oversaturated "

@@ -33,8 +33,8 @@ as / copy / по референсу" asks) and recorded in `design/reference-con
 mechanic that governs play. A reference game must match its sources' character, sprites and
 symbols, frame, background, palette, composition and visual finish closely — and build the casual
 mechanic the detector names, never the casino gameplay a preview shows. A loose reference
-(`binding: loose`, Royal Joker) is a common reference instead: keep its character, and design the
-background, symbols and composition for the game rather than copying its backdrop every time. Pass the actual reference
+(`binding: loose`, Royal Joker) is a common reference instead: keep its character, design the symbols and composition for the game, and give it an abstract
+slot-style background rather than copying its backdrop every time. Pass the actual reference
 images into image generation when the tool supports it, and compare the runtime game beside the
 references. See `.claude/docs/visual-context.md` and `.claude/docs/game-concept-examples.md` for
 the reference contract and limits.
@@ -83,8 +83,9 @@ as a tidy row or a lower-left pile.
 Gameplay may appear on any panel, span the right two, or span all three. Noncritical board
 structure may cross seams; protect faces, inscriptions and decisive symbols from gaps.
 A narrower field is valid when its proportions or readability require it. Preserve the
-bottom spill and add recognizable flying/falling game objects at varied depths above it. Choose
-an expressive marketing background when the theme benefits, with the far plane subordinate.
+bottom spill and add recognizable flying/falling game objects at varied depths above it. Backgrounds — in the game and in marketing — are abstract slot style: gradients, glows, light
+rays, bokeh and the game's own objects out of focus, never a place such as a street, city,
+castle or palace (`.claude/docs/visual-context.md` → "Backgrounds — abstract slot style").
 Matching `examples-games/` previews are default references; other relevant `examples/` images may also guide composition;
 record what is borrowed and keep the actual game's assets, mechanics and Design DNA authoritative.
 Store-screenshot generation preserves the actual game's existing menu, gameplay, splash, and shared

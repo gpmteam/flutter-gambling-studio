@@ -34,9 +34,17 @@ composition and rendering style — and build the casual mechanic listed for it,
 gameplay the image shows. Use the actual images as generation references and compare the runtime
 result beside them (`.claude/docs/game-concept-examples.md` → "How close to the reference — match
 it"). Royal Joker (and a plain Joker request) is a loose reference instead: the jester can be the
-same, while the background, symbol designs and composition are the game's own — the background is
-not copied from the previews every time ("Loose references" in the same document). Read
-`.claude/docs/visual-context.md` and `.claude/docs/game-concept-examples.md` for lead
+same, while the symbol designs and composition are the game's own and the background is not the
+previews' backdrop every time ("Loose references" in the same document).
+
+**Backgrounds are abstract, slot style.** Every game and store background is colour and light —
+gradients, glows, light rays, bokeh, sparkles and the game's own objects out of focus — never a
+place: no streets, cities, castles, palaces, temples, landscapes or interiors. The theme shows
+through the objects, palette and light. Only a setting the user asks for, or an exact reference
+whose own background is a place, overrides this (`.claude/docs/visual-context.md` → "Backgrounds —
+abstract slot style"; style references in `examples-games/slot-backgrounds/`).
+
+Read `.claude/docs/visual-context.md` and `.claude/docs/game-concept-examples.md` for lead
 kinds, flexible store composition, board topology, Joker tone, combo markers and the five required
 store-only combo balls. The reference's visual language is authoritative; reject unrequested style
 substitutions.

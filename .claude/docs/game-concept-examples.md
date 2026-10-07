@@ -23,7 +23,7 @@ mechanic, lead kind and topology decision in the generated concept before produc
 | Request family | Preview | Reference gameplay | Build as (Classification) | Lead and assets | Store starting composition |
 |---|---|---|---|---|---|
 | Book of Ra / Book of Ra game | `examples-games/book-of-ra.png` | Casino slot — look only | **G2 / E / B2** triple tile tray: relic tiles stacked in layers inside the temple frame, a 7-slot tray | Character; reference-matched desert archaeologist, enchanted book, ankhs, scarabs, falcons, Egyptian relics as tiles | Large reference-matched explorer on the first panel; the layered relic pile and tray occupy the right; sunset temple depth and relic spill support the gameplay |
-| Royal Joker / Joker / Joker game | `examples-games/royal-joker/` — all three files: `rj_key-art.jpeg` (the jester to keep), `rj_store-set-1.jpeg` (symbol family, gold frame, lightning), `rj_store-set-2.jpeg` (second jester pose, cherries and sevens) — **loose: a common reference, not a recreation** | Casino slot — look only | **G1 / C / B1** tap blast on a 7×8 grid in a gold frame | Character; the reference's grinning, mischievous jester — the same character — with fruit, sevens, crowns, stars and gems as tiles | Large jester on the first panel over a background designed for this game; the blast board spans the right two; fruit and gold light carry the motion |
+| Royal Joker / Joker / Joker game | `examples-games/royal-joker/` — all three files: `rj_key-art.jpeg` (the jester to keep), `rj_store-set-1.jpeg` (symbol family, gold frame, lightning), `rj_store-set-2.jpeg` (second jester pose, cherries and sevens) — **loose: a common reference, not a recreation** | Casino slot — look only | **G1 / C / B1** tap blast on a 7×8 grid in a gold frame | Character; the reference's grinning, mischievous jester — the same character — with fruit, sevens, crowns, stars and gems as tiles | Large jester on the first panel over an abstract slot-style backdrop of this game's own colours; the blast board spans the right two; fruit and gold light carry the motion |
 | Joker Jewels / Joker's Jewels / joker-jewels | `examples-games/joker-jewels/` — all four files: `jj_reference.jpeg` (key-art staging), `jj_gameplay.jpeg` (symbol family, purple reel-strip columns and frame), `jj_character-reference.jpeg` and `jj_character-reference2.jpeg` (jester lead) | Casino slot — look only | **G1 / A / B1** swap match-3 on a 7×8 grid whose columns wear the purple reel-strip backing | Character; reference-matched belled-cap jester in a striped costume, plus faceted red and cyan gems, blue orb, lute, juggling clubs, jester shoes, crown special tile | Large reference-matched jester on the first panel; the match-3 board occupies the right; gems, bunting and confetti spill through the foreground |
 | Shining Crown / Shining Crown game | `examples-games/shining-crown.jpeg` | Casino slot — look only | **G3 / I / B3** slide merge on a 4×4 grid: ruby → clover gem → star → … → the Shining Crown at the top of the tier chain | Object; crown, jewel star, clover gem, ruby, gold medallions as tiers | No invented player or mascot; slides 1–2 show the jewel board at a three-quarter/3D angle, with the crown and jewels across the foreground |
 | Plinko / Plinko game | `examples-games/plinko.jpeg` | Casino plinko — look only | **G4 / N / B4** peg clear: aim glossy balls through the tilted peg field to clear target pegs; a moving catch bucket replaces prize buckets | Mechanic; glossy colored balls, pegs, the tilted board, glowing trails | Active tilted peg field can fill all three panels; trajectories carry motion; no invented person or mascot |
@@ -94,11 +94,12 @@ the game its character and its world, not its whole look:
   lemons, grapes), sevens, crowns, stars and gems — the gold trim and the glossy 2.5D slot-art
   finish set the tone; the exact symbol set, its silhouettes, the frame and the composition of the
   menu and store art are this game's own.
-- **The background is free.** Design it for the game's concept and vary it from game to game. The
-  previews' red diamond-pattern backdrop is one possibility, not a template — do not copy it every
-  time. Do not fall back to the old palace or ballroom staging either.
+- **The background is abstract slot style** (`.claude/docs/visual-context.md` → "Backgrounds — abstract slot style"),
+  in this game's own colours and varied from game to game. The previews' red diamond-pattern
+  backdrop is one possibility, not a template — do not copy it every time. Never a palace,
+  ballroom or any other place.
 - **Gates.** AR11 and V21 hold the character to the sources and check that the symbols and finish
-  fit; the background is not compared with the previews.
+  fit; the background is checked against the abstract slot style, not against the previews.
 - Images the user attaches still bind exactly, even alongside Royal Joker.
 
 The next section applies to exact references: every other mapped family and attached images.
@@ -178,7 +179,7 @@ spill. x2/x5 combo badges appear when one swipe makes several merges. G3 / I / B
 **Royal Blast:** A tap-blast board of cherries, plums, oranges, sevens, crowns and stars in a
 gold frame; Royal Joker's grinning jester in his purple-and-gold belled cap hosts from the left and
 reacts to big blasts. The jester is the previews' own; the symbol designs and the background are
-this game's — pick a setting for the concept rather than the previews' red backdrop. Keep the
+this game's — an abstract slot-style backdrop in the game's own colours rather than the previews' red one. Keep the
 mischievous expression rather than drifting toward an elegant host.
 Groups of five or more leave a jester-cap rocket; level goals ask for cherries or sevens collected
 within a move budget. G1 / C / B1.

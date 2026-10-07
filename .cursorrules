@@ -61,8 +61,8 @@ Six game categories (`.claude/docs/game-categories.md`):
 ## Visual references
 
 Follow `.claude/docs/visual-context.md` and `.claude/docs/game-concept-examples.md`: inspect
-matching previews and reproduce their look exactly (Royal Joker is a loose reference: keep its
-jester, vary the background); build the casual mechanic the family lists.
+matching previews and reproduce their look exactly (Royal Joker is a loose reference: keep its jester, vary the background). Backgrounds are
+abstract slot style — gradients, glows, light, bokeh — never streets, cities or castles; build the casual mechanic the family lists.
 Character-led games open with their character; object/mechanic-led games need no mascot.
 x2/x5/x10 combo badges only for real points combos.
 Joker is mischievous and slightly vicious, playful rather than horror or an elegant host.

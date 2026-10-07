@@ -52,8 +52,13 @@ generated art.
 A value names this game's own subjects, in plain words, from the concept, Design DNA, asset
 manifest, the reference contract (`design/reference-contract.md`) and the real gameplay capture:
 
-- `environment` — the setting as the game's background and art direction describe it; for a
-  reference game, the reference's setting, read off the source image.
+- `environment` — the backdrop, abstract slot style by default (`.claude/docs/visual-context.md` →
+  "Backgrounds — abstract slot style"): two or three of the game's hues as a gradient, the glow
+  or light burst, light rays and streaks, bokeh and sparkles, and which of the game's objects
+  drift out of focus — e.g. "a violet-to-magenta gradient with a gold radial glow, light streaks,
+  bokeh and out-of-focus cherries and sevens". Never a place (no street, city, castle, palace,
+  temple, landscape or interior), unless the user asked for a setting or an exact reference's
+  own background is one; then name that place, read off the source image.
 - `character` — who the lead is and the traits that identify them (costume colours and pattern,
   headwear, face) — the same words as the reference ledger.
 - `lead` — the lead object, or for a mechanic lead the angled gameplay surface.
@@ -103,7 +108,7 @@ the planned topology.
 ```prompt panorama-character
 One continuous, fully illustrated horizontal game panorama for a mobile casual game with premium
 key-art visuals, composed to be cut into {{panels}} side-by-side portrait store screenshots that
-together read as one complete picture, set in the game's own world: {{environment}}. Compose it
+together read as one complete picture, set against the game's backdrop: {{environment}}. Compose it
 on the attached composition guide, a layout diagram rather than art: its red bands mark where the
 picture is cut into the {{panels}} portrait panels and its darkened edges are cropped away, so keep
 every face, hand, held object, ball label and decisive symbol out of both, and place the
@@ -122,8 +127,7 @@ angle: {{gameplay}}. Match the attached gameplay reference's mechanic, topology,
 state, and render the board housing, tiles and symbols from the attached game assets; this is the
 game's field as players will see it, so it must be readable, complete and believable as a real
 game, and the reference is context only and never appears as a flat pasted picture. Keep faces,
-ball labels and decisive symbols away from the panel boundaries; the board and the scenery may
-continue across them. Paint five multiplier balls modeled on the attached ball asset, all
+ball labels and decisive symbols away from the panel boundaries; the board and the backdrop may continue across them. Paint five multiplier balls modeled on the attached ball asset, all
 required, clearly airborne and flying around the character and across the scene at varied
 heights, depths and horizontal positions, with at least one ball in each of the {{panels}}
 portrait panels and none resting on an object. Letter each ball on its face with exactly one of
@@ -152,7 +156,7 @@ should look exciting and premium before compositor grading.
 ```prompt panorama-object
 One continuous, fully illustrated horizontal game panorama for a mobile casual game with premium
 key-art visuals, composed to be cut into {{panels}} side-by-side portrait store screenshots that
-together read as one complete picture, set in the game's own world: {{environment}}. Compose it
+together read as one complete picture, set against the game's backdrop: {{environment}}. Compose it
 on the attached composition guide, a layout diagram rather than art: its red bands mark where the
 picture is cut into the {{panels}} portrait panels and its darkened edges are cropped away, so keep
 every ball label and decisive symbol out of both, and place the lead, the game field, the five
@@ -166,8 +170,7 @@ meaningful play visible in both: {{gameplay}}. Match the attached gameplay refer
 topology, symbols and state, and render the board housing, tiles and symbols from the attached
 game assets; this is the game's field as players will see it, so it must be readable, complete
 and believable as a real game, and the reference is context only and never appears as a flat
-pasted picture. Keep ball labels and decisive symbols away from the panel boundaries; the board
-and the scenery may continue across them. Paint five multiplier balls modeled on the attached
+pasted picture. Keep ball labels and decisive symbols away from the panel boundaries; the board and the backdrop may continue across them. Paint five multiplier balls modeled on the attached
 ball asset, all required, clearly airborne and flying around the lead and across the scene at
 varied heights, depths and horizontal positions, with at least one ball in each of the
 {{panels}} portrait panels and none resting on an object. Letter each ball on its face with
@@ -196,8 +199,7 @@ all-over haze. The scene should look exciting and premium before compositor grad
 
 ```prompt banner-character
 One continuous, fully illustrated horizontal key-art banner for a mobile casual game with
-premium key-art visuals, set in the world of the attached panorama — the same environment,
-palette, lighting, board housing, lower-edge treatment and multiplier-ball look — in a new
+premium key-art visuals, set in the world of the attached panorama — the same backdrop, palette, lighting, board housing, lower-edge treatment and multiplier-ball look — in a new
 horizontal composition: {{environment}}. Reproduce the supplied original character asset
 faithfully: it is the identity authority for the face, silhouette, costume and colors; the
 panorama is world context, not the character reference, and the other images are context. The
@@ -209,8 +211,7 @@ from behind the foreground objects. Leave visible open space above the entire he
 at least 2% of the image height. Beside the character, the game's real gameplay is part of the
 scene at a three-quarter/3D angle: {{gameplay}}. Match the attached gameplay capture's mechanic,
 topology, symbols and state; the capture is context only and never appears as a flat pasted
-screenshot. The environment runs edge to edge, and the right third continues the scene with
-background, housing and foreground running through it, but no face or decisive symbol sits in
+screenshot. The backdrop runs edge to edge, and the right third continues the scene with backdrop, housing and foreground running through it, but no face or decisive symbol sits in
 that right third. Paint five multiplier balls modeled on the attached ball asset, all required,
 clearly airborne and flying around the character and across the gameplay at varied heights,
 depths and horizontal positions, none resting on an object and none in the right third. Letter
@@ -238,15 +239,13 @@ and premium before compositor grading.
 
 ```prompt banner-object
 One continuous, fully illustrated horizontal key-art banner for a mobile casual game with
-premium key-art visuals, set in the world of the attached panorama — the same environment,
-palette, lighting, board housing, lower-edge treatment and multiplier-ball look — in a new
+premium key-art visuals, set in the world of the attached panorama — the same backdrop, palette, lighting, board housing, lower-edge treatment and multiplier-ball look — in a new
 horizontal composition: {{environment}}. There is no character in this game: do not add a person, hand,
 animal, mascot, deity or player silhouette anywhere. The lead, {{lead}}, appears large on the
 left at a three-quarter/3D angle, reproduced faithfully from the attached shipped asset. Beside
 it, the game's real gameplay is part of the scene at a three-quarter/3D angle: {{gameplay}}. Match
 the attached gameplay capture's mechanic, topology, symbols and state; the capture is context only
-and never appears as a flat pasted screenshot. The environment runs edge to edge, and the right
-third continues the scene with background, housing and foreground running through it, but no
+and never appears as a flat pasted screenshot. The backdrop runs edge to edge, and the right third continues the scene with backdrop, housing and foreground running through it, but no
 decisive symbol sits in that right third. Paint five multiplier balls modeled on the attached ball
 asset, all required, clearly airborne and flying around the lead and across the gameplay at
 varied heights, depths and horizontal positions, none resting on an object and none in the right
@@ -274,8 +273,7 @@ compositor grading.
 
 ## Game background templates
 
-The game background is the picture the player lives inside and the picture behind every phone on
-the store's real-capture slides. It is rendered right after the user approves the concept
+The game background is the backdrop behind the whole game and behind every phone on the store's real-capture slides. It is rendered right after the user approves the concept
 carousel, in the approved panorama's world. It is a runtime asset, so it carries no multiplier balls, no
 lettering, no board and no UI: the live game draws the board and controls over it, and a
 promotional `x100` behind real gameplay would read as a payout claim. It keeps the campaign's
@@ -283,7 +281,7 @@ world and, for a character-led game, the character — whole, inside the phone f
 
 ```prompt background-character
 One fully illustrated portrait background for a mobile game screen held upright, 9:19.5, set in
-the world of the attached panorama: the same environment, palette, lighting, materials and depth,
+the world of the attached panorama: the same backdrop, palette, lighting and materials,
 in a new composition made for a phone screen: {{environment}}. Reproduce the supplied original
 character asset faithfully; the panorama is world context, not the character reference. The main
 character, {{character}}, is large and fits entirely inside the frame: the whole head, hair and
@@ -303,14 +301,14 @@ devices, and no text, letters, numbers, logos, labelled coins or multiplier ball
 it as vivid mobile-game key art from the game's authentic palette: {{palette}}. Separate warm and
 cool hues, add clean specular highlights to polished materials, theme-appropriate rim light on the
 character, and reflected color between nearby objects. Keep shadows rich in color and midtones
-saturated. Keep the environment luminous but subordinate to the character through softer focus
+saturated. Keep the backdrop luminous but subordinate to the character through softer focus
 and lower local contrast. Preserve the source asset colors; avoid a global color wash, muddy
 shadows, flat lighting and all-over haze.
 ```
 
 ```prompt background-object
 One fully illustrated portrait background for a mobile game screen held upright, 9:19.5, set in
-the world of the attached panorama: the same environment, palette, lighting, materials and depth,
+the world of the attached panorama: the same backdrop, palette, lighting and materials,
 in a new composition made for a phone screen: {{environment}}. There is no character in this
 game: do not add a person, hand, animal, mascot, deity or player silhouette anywhere. The lead,
 {{lead}}, reproduced faithfully from the attached shipped asset, is large and whole in the upper
@@ -324,14 +322,14 @@ board, reels, grid, cards, table, buttons, panels, HUD, frames, phones or device
 letters, numbers, logos, labelled coins or multiplier balls anywhere. Light it as vivid
 mobile-game key art from the game's authentic palette: {{palette}}. Separate warm and cool hues,
 add clean specular highlights to polished materials, and reflected color between nearby objects.
-Keep shadows rich in color and midtones saturated. Keep the environment luminous but subordinate
+Keep shadows rich in color and midtones saturated. Keep the backdrop luminous but subordinate
 to the lead through softer focus and lower local contrast. Preserve the source asset colors; avoid
 a global color wash, muddy shadows, flat lighting and all-over haze.
 ```
 
 ```prompt background-mechanic
 One fully illustrated portrait background for a mobile game screen held upright, 9:19.5, set in
-the world of the attached panorama: the same environment, palette, lighting, materials and depth,
+the world of the attached panorama: the same backdrop, palette, lighting and materials,
 in a new composition made for a phone screen: {{environment}}. There is no character in this
 game: do not add a person, hand, animal, mascot, deity or player silhouette anywhere. The upper
 half is carried by {{focus}}, whole inside the edges of the image. A soft band of the game's own

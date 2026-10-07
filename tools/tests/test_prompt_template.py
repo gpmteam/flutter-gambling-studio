@@ -16,7 +16,7 @@ prompt_template = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(prompt_template)
 
 BANNER_VALUES = {
-    "environment": "a purple carnival stage with bunting and confetti",
+    "environment": "a violet-to-magenta gradient with a gold radial glow, light streaks and confetti bokeh",
     "character": "a belled-cap jester in a red and gold striped costume",
     "gameplay": "a 7x8 match board of jester, crown, lute and gem tiles with a cleared three-tile match",
     "label_color": "warm gold",
@@ -24,7 +24,7 @@ BANNER_VALUES = {
     "ball_fx": "confetti sparkle ring",
     "objects": "a red faceted gem, a cyan faceted gem, a blue orb, a gold crown, a lute",
     "foreground_pieces": "glossy gem tiles",
-    "palette": "purple, gold and cyan under warm stage lights",
+    "palette": "purple, gold and cyan under a warm golden glow",
 }
 
 

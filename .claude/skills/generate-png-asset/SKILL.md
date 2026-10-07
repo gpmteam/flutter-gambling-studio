@@ -84,7 +84,7 @@ Manifest classes:
 
 | Class | When to use | Consumption GPT Images 2.0 |
 |-------|-----------------|-----------------------|
-| `generate` | Unique silhouette of game symbol, hero object or full screen scene | 1 successful source |
+| `generate` | Unique silhouette of game symbol, hero object or full-screen background | 1 successful source |
 | `derive` | Crop, scale, safe color option or local animation phase of an existing asset | 0 |
 | `code` | UI, text, buttons, panels, icons, frames, shadows, glow, particles and VFX | 0 |
 | `reuse` | Already validated source without changing its game meaning | 0 |
@@ -261,11 +261,17 @@ NO style substitution, 1024x1024 PNG.
 
 ### Prompt for background (without cutting out the background)
 
+Backgrounds are abstract slot style (`.claude/docs/visual-context.md` → "Backgrounds — abstract slot style"): attach one or two
+`examples-games/slot-backgrounds/` images as style references. Only an exact reference whose own
+background is a place, or a setting the user asked for, replaces the abstract part with that place.
+
 ```
-9:16 mobile game background matching [REFERENCE IMAGE OR SCENE from concept & DNA].
-[2D OR 2.5D STYLE ANCHOR], [SCENE LANDMARKS AND PLACEMENT],
-[DNA mood & palette], [SOURCE LIGHTING], no foreground characters, no UI, no text,
-calm readable empty area in the vertical center for gameplay, high quality PNG.
+9:16 mobile game background in abstract slot style: [GRADIENT OF 2-3 DNA HUES],
+[RADIAL GLOW OR LIGHT BURST], [LIGHT RAYS AND STREAKS], [BOKEH, SPARKLES, SOFT PATTERN],
+[2-4 OF THE GAME'S OBJECTS FLOATING OUT OF FOCUS], [2D OR 2.5D STYLE ANCHOR], [SOURCE LIGHTING],
+no place or scenery (no streets, buildings, castles, palaces, temples, landscapes or interiors),
+no foreground characters, no UI, no text, calm readable empty area in the vertical center for
+gameplay, high quality PNG.
 ```
 
 ### After generation
@@ -414,7 +420,7 @@ echo "✓ ${OUTPUT_DIR}/${ASSET_NAME}.png"
 | diamond | symbol | `blue diamond gemstone, crystal faceted, game icon, flat solid green #00FF00 background, glossy` |
 | wild | wild | `golden star wild, glowing rainbow aura, game icon, flat solid green #00FF00 background` |
 | scatter | scatter | `purple hexagon lightning bolt, scatter symbol, game icon, flat solid green #00FF00 background` |
-| main_menu_bg | background | `[DNA theme] background, [DNA palette], atmospheric, no characters` - brightness and peace from DNA, not an “always dark casino” |
+| main_menu_bg | background | `abstract slot-style background, [DNA hues] gradient, radial glow, light streaks, bokeh, [game objects] out of focus, no place or scenery, no characters` - brightness and peace from DNA, not an “always dark casino” |
 
 ### Peculiarities:
 - In Codex, for simple assets, ask for a flat key background immediately, then `tools/cutout.py`
@@ -486,7 +492,7 @@ no style substitution, transparent-ready, 1024x1024.
 | `special` (casual board) | premium accent symbol; effect (glow/shine/no) - from DNA |
 | `blocker` (casual board) | a level obstacle with a clear state, visually highlighted using DNA |
 | `ui` button | shape from shape language DNA; effect (glow/shadow/flat) from DNA, no text |
-| `background` | peace and **brightness** from DNA (not “always dark casino”), does not distract from the playing field |
+| `background` | abstract slot style — gradient, glow, light, bokeh, never a place; peace and **brightness** from DNA (not “always dark casino”), does not distract from the playing field |
 
 > **Important for transparent backgrounds:** legacy Imagen/Gemini does not always generate RGBA.
 > If alpha doesn't work, cut out the background using `tools/cutout.py` in Step 5.

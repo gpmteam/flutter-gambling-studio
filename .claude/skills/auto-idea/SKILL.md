@@ -171,7 +171,7 @@ The archetype sets the MECHANICS. To make two games of the same archetype look a
 
 | Axis | Examples of meanings (choose varied) |
 |-----|------------------------------------------|
-| **Setting/world** | underwater, space, ancient Egypt, Olympus, carnival, enchanted forest, candy land, royal treasury, wild west, zen garden, steampunk, myths, coffee shop |
+| **Theme** | underwater, space, ancient Egypt, Olympus, carnival, enchanted forest, candy land, royal treasury, wild west, zen garden, steampunk, myths, coffee shop — shown through the objects, palette and light; backgrounds stay abstract slot style, never the place itself |
 | **Mood/mood** | energetic, cozy, epic, ironic, mystical, upbeat, meditative |
 | **Palette family** | warm earthy, jewel tones, pastel, monochrome+1 accent, royal gold and purple, burnt retro |
 | **Brightness** | light / dark / twilight - NOT always dark |
@@ -179,8 +179,9 @@ The archetype sets the MECHANICS. To make two games of the same archetype look a
 | **Art finish and depth** | slot-style key-art 2.5D (the studio signature), crisp 2D illustration, hand-drawn, cut paper, shallow layers; use the mapped reference's actual finish when present |
 | **Audience/tone** | relaxed casual, competitive score-chaser, children's, premium elegant, retro nostalgia |
 
-> Goal: even two "A" match-3 games should look like DIFFERENT games - one warm Egyptian light,
-> another cool Olympus sky, with different interaction and composition signatures.
+> Goal: even two "A" match-3 games should look like DIFFERENT games - one warm amber glow
+> with Egyptian relics, another cool electric-blue light with lightning bolts, with different
+> interaction and composition signatures.
 >
 > **Against "casino-slop"**: neon + black + gold IS a default, not a style. Casino-grade *assets*
 > (jewels, gold trim, glossy symbols) are the studio look; a dark-neon *interface* on every game is not.
@@ -206,7 +207,7 @@ The archetype sets the MECHANICS. To make two games of the same archetype look a
    ```
 4. **Define the category and balance model** of the archetype by
    `.claude/docs/game-categories.md`. This is the first thing that will be included in the concept.
-5. **Build and compare the Design Signature**: setting / mood / field framing / control topology /
+5. **Build and compare the Design Signature**: theme / mood / field framing / control topology /
    HUD behavior / information density / menu / overlays / palette / brightness / motion / art style.
    Compare it with recent or nearest games and change at least four material axes when the mechanic
    and reference do not justify repetition.
@@ -437,7 +438,7 @@ surfaces: no shop, no balance, no paytable/odds, no daily spin, no age gate.**
 
 ### Screen 2: Main Menu
 - Elements: title, PLAY / Continue level N, level map, settings, how to play
-- Background: [description of atmospheric background]
+- Background: [abstract slot-style background: gradient hues, glow/light, bokeh, objects out of focus — not a place]
 - Transitions: → Level Map, → Game Screen, → Settings, → Help
 
 ### Screen 3: Level Map / Mode Select
@@ -512,10 +513,11 @@ manifesto literally.
   concept's chosen finish]
 - Lighting: [single source, for example soft top-left key + subtle rim]
 - Palette: [semantic color roles from the Design Signature; use the number this game needs]
-- Camera/composition: single centered hero object for sprites/icons; 9:16 layered scene for backgrounds
+- Camera/composition: single centered hero object for sprites/icons; 9:16 abstract slot-style
+  layers for backgrounds (gradient, glow, light, bokeh, objects out of focus — no place)
 - Cutout policy: sprites/icons/tiles/items = generate on a flat solid chroma-key background
   (default pure magenta #FF00FF; pure green #00FF00 if the palette contains magenta/pink/purple),
-  then cut with `tools/cutout.py`; backgrounds = full scene, no alpha removal
+  then cut with `tools/cutout.py`; backgrounds = full frame, no alpha removal
 - Negative prompt: [exclude styles and artifacts that conflict with this game's reference or DNA],
   no unintended logo or text, no sprite sheet, no casino UI (reels, bet panels, coin payouts),
   no generic neon unless explicitly intended
@@ -534,8 +536,10 @@ manifesto literally.
 - ui_icon_info.png — help icon
 
 ### Backgrounds (assets/images/backgrounds/)
-- background_menu.png — 9:16 background of the main menu; peace, depth and brightness from DNA
-- background_game.png — 9:16 background of the game screen; quiet center area, does not argue with the field
+- background_menu.png — 9:16 background of the main menu; abstract slot style (gradient, glow,
+  light, bokeh, the game's objects out of focus — never a place); brightness from DNA
+- background_game.png — 9:16 background of the game screen; the same abstract treatment, quiet
+  center area, does not argue with the field
 
 ### Audio (assets/audio/) — sound effects only, no background music
 - assets/audio/sfx/sfx_action.wav - main action (tap/swap/shoot/drop)

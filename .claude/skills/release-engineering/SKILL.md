@@ -65,7 +65,8 @@ The icon MUST be raster 1024×1024 with no alpha channel for iOS. Sources, in or
    **No drawn frame, bezel, ring, or rounded-square backdrop in generated icon art.** Google Play
    and iOS apply their own mask over the square source; a baked-in border doubles up with that
    mask or gets cropped unevenly. Prompt for the hero character/object/emblem filling the square
-   edge-to-edge on its own themed background — no illustrated frame around it. Check
+   edge-to-edge on an abstract slot-style background of its own colours (gradient, glow, light
+   rays — never a place) — no illustrated frame around it. Check
    `store_icon_512.png` against a circular/squircle mask before shipping.
 
    This is an opaque full-bleed square scene, not a chroma-key cutout sprite: do not use the flat

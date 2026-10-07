@@ -79,10 +79,11 @@ light areas. For `background` and full-screen scenes, do not remove the backgrou
    - `ui`: buttons / panels / frames / icons. The shape comes from the DNA's shape language (a
      rounded rectangle is fine). Effects (`<feDropShadow>` / glow) ONLY if the DNA has them;
      a flat/minimal style has none at all.
-   - `background`: a full-screen (9:16 mobile) background. The theme, the pattern and the
-     **brightness come from the DNA** (a warm light forest / cold space / pastel candy — NOT
-     "always a dark casino"). It must not distract from the play field; make sure it contrasts
-     with the HUD.
+   - `background`: a full-screen (9:16 mobile) background in abstract slot style
+     (`.claude/docs/visual-context.md` → "Backgrounds — abstract slot style"): a gradient in the DNA's hues,
+     glow, light rays, bokeh and the game's objects out of focus — never a place. The
+     **brightness comes from the DNA** (warm and light / cool and deep / pastel — NOT "always a
+     dark casino"). It must not distract from the play field; make sure it contrasts with the HUD.
 
 > **UNIFIED SVG STYLE CONSTRAINTS (MANDATORY)**:
 > Every SVG asset must be perfectly consistent with the others.

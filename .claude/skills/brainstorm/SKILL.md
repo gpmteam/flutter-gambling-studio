@@ -49,8 +49,10 @@ When this skill is invoked:
    Then the specific archetype inside the category (or a hybrid at the seam of two categories).
 
    **Phase 1: theme and emotion**
-   - What atmosphere are we creating? (A jewel carnival, Olympus, an Egyptian temple, a royal
-     treasury, a candy land, a cosmic arcade, a cosy café?)
+   - What theme and atmosphere are we creating? (A jewel carnival, Olympus gods, Egyptian relics,
+     royal treasure, candy, a cosmic arcade, a cosy café?) The theme lives in the objects, palette
+     and light; backgrounds stay abstract slot style, never a place
+     (`.claude/docs/visual-context.md` → "Backgrounds — abstract slot style").
    - Is there a reference to match (a named `examples-games/` family or an image)?
    - Who is our target audience? (Relaxed casual or competitive score-chaser?)
    - ⚠️ Casino-grade *assets* are the studio look; a dark-neon *interface* on every game is slop.

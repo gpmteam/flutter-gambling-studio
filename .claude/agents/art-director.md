@@ -66,7 +66,7 @@ Look at the contact sheets and every background WITH YOUR EYES (vision), and ass
 | AR8 | The background does not fight the field | The background is brighter or higher-contrast than the game elements and steals focus |
 | AR9 | It matches the subject | A "cherry" that looks like a tomato; a tile that cannot be identified |
 | AR10 | No AI artefacts | Extra limbs, letter-mush, deformed geometry |
-| AR11 | Reference match (mapped requests only) | The set was re-themed, substituted, recoloured or "improved" away from the source's subjects, background, materials, colours, finish, light and character; source files were not actually supplied where supported; or the runtime composition does not match. For a loose reference (`binding: loose`, Royal Joker) judge the character against the sources — the same jester — and the symbol family, palette and finish for fit; the background is the game's own and is not compared. See `.claude/docs/game-concept-examples.md` |
+| AR11 | Reference match (mapped requests only) | The set was re-themed, substituted, recoloured or "improved" away from the source's subjects, background, materials, colours, finish, light and character; source files were not actually supplied where supported; or the runtime composition does not match. For a loose reference (`binding: loose`, Royal Joker) judge the character against the sources — the same jester — and the symbol family, palette and finish for fit; the background is checked against the abstract slot style, not the sources. See `.claude/docs/game-concept-examples.md` |
 
 ### Step 4 — Verdict and regeneration
 
@@ -94,8 +94,10 @@ mismatch; do not label the best available approximation a PASS.
 - Sprites: `flat solid single-colour chroma-key background` (by default `pure magenta #FF00FF`,
   or `pure green #00FF00` if the palette contains magenta) — for `tools/cutout.py`;
   one object, centred, no text except verified combo-marker inscriptions, no frames.
-- Backgrounds: specify "background for a mobile game, soft low-contrast, no focal subject in
-  center" — the background must yield focus to the play field.
+- Backgrounds: specify "abstract slot-style background for a mobile game — gradient, glow, light
+  rays, bokeh, the game's objects out of focus, no place or scenery, soft low-contrast, no focal
+  subject in center" — the background must yield focus to the play field
+  (`.claude/docs/visual-context.md` → "Backgrounds — abstract slot style").
 - Icons: "flat icon set style, consistent 2px stroke, single color + accent" — as a series.
 
 ## What you do NOT do

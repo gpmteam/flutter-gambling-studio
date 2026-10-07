@@ -111,8 +111,9 @@ class LooseReferenceTests(unittest.TestCase):
         self.assertIn("## Shared world", md)
         self.assertNotIn("Identity ledger", md)
         self.assertIn("The character can be the same", md)
-        self.assertIn("do not copy the sources' red diamond-pattern backdrop every time", md)
-        self.assertIn("not copied from the sources", md)
+        self.assertIn("The background is abstract slot style", md)
+        self.assertIn("not the sources' red diamond-pattern backdrop every time", md)
+        self.assertIn("abstract slot style (`.claude/docs/visual-context.md`", md)
 
     def test_a_plain_joker_request_uses_royal_joker(self) -> None:
         for prompt in ("Make a Joker game", "сделай джокера"):

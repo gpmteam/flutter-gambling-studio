@@ -156,10 +156,10 @@ When `reference` is true:
 recreation. The bullets above apply with these changes — the character is the sources' own and
 is generated from them; the symbol family, palette and finish fit their world, while the symbol
 designs, the composition and the background are designed for this game, so Variety Dimensions and
-the Similarity Check apply to them. Design the background for the concept and vary it between
-games: do not copy the sources' backdrop every time, and do not fall back to the old palace or
-ballroom staging. Complete the contract's "Shared world" section instead of an identity ledger.
-AR11 and V21 hold the character to the sources and do not compare the background
+the Similarity Check apply to them. The background is abstract slot style (`.claude/docs/visual-context.md` → "Backgrounds — abstract slot style"),
+not the sources' backdrop every time and never a place such as a palace or ballroom. Complete the contract's "Shared world" section instead of an identity ledger.
+AR11 and V21 hold the character to the sources and the background to the abstract slot style,
+not to the sources' backdrop
 (`game-concept-examples.md` → "Loose references").
 
 `binding: description` (the user named an unmapped game with no image): match every described
@@ -257,6 +257,9 @@ In PNG mode:
   No text except verified combo-marker inscriptions from `.claude/docs/visual-context.md`.
 - Keep the full set consistent in light direction, materials, palette, perspective, and detail.
 - Use one game background by default; derive menu variants locally unless a genuinely different world/composition is required.
+  It is abstract slot style — gradient, glow, light, bokeh and the game's objects out of focus,
+  never a place — unless the user asked for a setting or an exact reference's own background is
+  one (`.claude/docs/visual-context.md` → "Backgrounds — abstract slot style").
   It is the game's **original** background: the campaign background is rendered from it in the
   approved panorama's world after approval, and both the carousel and that call attach it.
 - Include at least one round game object — a gem, orb, bubble, ball or token from the game's own

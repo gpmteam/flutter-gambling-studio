@@ -104,7 +104,7 @@ height does. Choose how the one composition absorbs that — never by switching 
 | Code | Direction | Description |
 |---|---|---|
 | P1 | Grow the field | Extra height enlarges the mechanic; a short phone shrinks it to its 55% floor, never below. |
-| P2 | Reveal the scene | Extra height shows more of the background art above the field — the campaign character's head and shoulders, the world's sky. The field and controls keep their size. |
+| P2 | Reveal the scene | Extra height shows more of the background art above the field — the campaign character's head and shoulders, more of the background's glow and light. The field and controls keep their size. |
 | P3 | Compress secondary | On a short phone, secondary readouts collapse to compact badges and details move into a sheet; the core loop never scrolls. |
 | P4 | Breathing room | Extra height goes to spacing between the HUD, field and command deck, keeping thumb reach for the primary action. |
 

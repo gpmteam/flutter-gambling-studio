@@ -180,7 +180,10 @@ promises:
   direction, no clearing moment;
 - the gameplay is too small, too dark or too covered to read as a game a player would recognise —
   balls may cover part of it, the field as a whole must stay readable;
-- a reference game's world, character or symbol cast drifts from its sources.
+- a reference game's world, character or symbol cast drifts from its sources;
+- the backdrop is a literal place — a street, city, castle, palace, temple, landscape or
+  interior — instead of abstract slot style, unless the user asked for a setting or an exact
+  reference's own background is one (`.claude/docs/visual-context.md` → "Backgrounds — abstract slot style").
 
 **A field off by one row or one column is a note, not a defect.** The game takes its topology from
 the level data, not from the picture: write the painted count into `gameplay-sample.md`

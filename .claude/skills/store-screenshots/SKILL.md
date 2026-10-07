@@ -33,7 +33,7 @@ the same words.
 
 The horizontal feature banner, with the character on the left, is the last campaign picture: it is
 rendered with the approved panorama attached as **world context**, so the carousel, the feature
-graphic and the game read as one campaign — environment, palette, lighting, board housing,
+graphic and the game read as one campaign — backdrop, palette, lighting, board housing,
 lower-edge band and multiplier-ball look all come from the panorama.
 
 For a character-led kit, the shipped character asset is the canonical player reference in
@@ -312,7 +312,7 @@ sprites, the multiplier reference and matching previews. Label the original char
 **context only**: it establishes the real mechanic, field dimensions, symbol identities, ordering
 and resolving state. Request a complete, coherent image in one generation: the game surface
 itself appears as a scene-native three-quarter/3D view, with its housing, depth, lighting,
-foreground band, labelled multiplier balls and surrounding environment generated together.
+foreground band, labelled multiplier balls and surrounding backdrop generated together.
 Noncritical board structure may cross seams. A rough layout sketch may indicate panel cuts and
 subject positions, but it must not contain a screenshot-shaped opening intended for later fill.
 Do not generate a background, empty board recess or blank ball placeholder to fill later.
@@ -362,7 +362,7 @@ For a game made before the approval gate, preflight made it with
 [references/concept-panorama.md](references/concept-panorama.md) as one complete, coherent image:
 the torso-to-head character, scene-native gameplay at a three-quarter/3D view with the real
 capture as context only, the lower-edge band, all five labelled balls in flight with at least one
-in every panel, and the environment. Attach, in order: the original character asset (identity
+in every panel, and the abstract slot-style backdrop. Attach, in order: the original character asset (identity
 authority), the multiplier reference (ball model), the composition guide
 (`store_compose.py composition-guide --field <capture>`: placement and the panel cuts), the
 gameplay capture (context only), visible shipped sprites, matching previews. When the tool takes custom sizes, `3456x2384` (about 1.45:1)
@@ -376,8 +376,7 @@ already exists in this panorama's world: the prompt is `banner-character` or `ba
 [references/campaign-prompts.md](references/campaign-prompts.md), rendered with this game's values
 and passing `tools/prompt_template.py check`. The template is this section and "First-prompt
 requirements" below written out once for the banner; do not re-adapt them yourself. The approved
-panorama is attached as **world context**, not as a source to extend: the banner inherits its
-environment, palette, lighting, board housing, lower-edge treatment and ball look in a new
+panorama is attached as **world context**, not as a source to extend: the banner inherits its backdrop, palette, lighting, board housing, lower-edge treatment and ball look in a new
 horizontal composition, not an edit, outpaint or crop of the panorama. The character may take a
 different pose, expression, crop or panel than in the panorama, but it stays framed from torso to
 head with no legs visible; identity still comes only from the original asset. For a character-led
@@ -385,7 +384,7 @@ game the character appears large on the left, framed from torso to head: the bot
 foreground band cuts the body through the torso, with no legs or feet visible, and the character
 is neither standing full length nor flying. Object/mechanic leads put the lead object or the
 angled gameplay surface there instead, with no invented character. The mechanic sits at a
-three-quarter/3D angle beside the lead, the environment runs edge to edge, and the lower-edge band
+three-quarter/3D angle beside the lead, the backdrop runs edge to edge, and the lower-edge band
 crosses the full width. The right third continues the scene without a face or decisive symbol,
 because `banner` seats the phone there (centered at 82% of the width, about a third of it wide).
 That area is not an empty reserved zone: background, housing and foreground run through it.
@@ -414,9 +413,9 @@ the banner's versions exist, written out once and literally, as the `panorama-*`
 templates in [references/campaign-prompts.md](references/campaign-prompts.md) — render those,
 never a paraphrase. Adapt it the same way to any showcase background:
 
-> One continuous, fully illustrated game panorama set in the game's own world. Reproduce the
-> supplied original character asset faithfully; it is the identity authority, and every other
-> image is context. If the game has a main character, frame it as a torso-to-head bust (or the
+> One continuous, fully illustrated game panorama set against the game's abstract slot-style
+> backdrop. Reproduce the supplied original character asset faithfully; it is the identity
+> authority, and every other image is context. If the game has a main character, frame it as a torso-to-head bust (or the
 > species-appropriate equivalent): the bottom edge of the image or the large foreground objects
 > cut its body through the torso, so no legs, knees, hips or feet are visible anywhere. The
 > character is not standing full length and is not flying, floating or leaping; its cut torso

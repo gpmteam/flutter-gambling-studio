@@ -23,8 +23,8 @@ category reference. For an exact family, recreate what the preview shows: theme,
 symbol cast, palette, frame and composition are matched, not reinterpreted. The full rule is "How
 close to the reference — match it" in `game-concept-examples.md`, and it governs the whole look of
 the concept. Royal Joker is a loose reference: the jester can be the same, while the
-background, symbol designs and composition are the game's own — vary the background rather than
-copying the previews' backdrop every time (see "Loose references" in that document).
+symbol designs and composition are the game's own and the background is abstract slot style
+(below), not the previews' backdrop every time (see "Loose references" in that document).
 The mechanic is the family's casual "Build as" entry (or the user's casual mechanic, or the
 translation of a gambling ask) — never the casino gameplay a preview shows. Follow the production
 limits in `game-concept-examples.md`; suitable source pixels can be reused, while branding and the
@@ -138,6 +138,33 @@ symbol to invent a new tile identity. Store-only ball labels are never code/comp
 typography: the image model letters them from the exact labels written in the prompt, in the same
 call that paints the scene. Check all five inscriptions at final screenshot size against the
 required visual set.
+
+## Backgrounds — abstract slot style
+
+Game backgrounds are abstract, like slot key art: a mood made of colour and light, not a place.
+This is the default for every background the game and its store art use — the campaign/game
+background (`bg_campaign_menu`, `bg_campaign_game`), menu and level backgrounds, the backdrop of
+the concept panorama, the banner and the phone slides.
+
+- **Build it from** saturated colour gradients in two or three of the game's hues (violet to
+  magenta, deep blue to purple, pink to orange, teal to emerald); a radial glow or light burst
+  behind the focal area; light rays, streaks and swooshes; bokeh, sparkles and confetti; a soft
+  pattern where it suits the theme (harlequin diamonds, stripes, rays); and the game's own objects
+  floating out of focus in the depth.
+- **Never a literal place:** no streets, cities or skylines, castles or palaces, temples, villages,
+  landscapes, rooms, interiors or architectural stages. The theme reaches the background through
+  its palette, its light and the game's objects — a pirate game gets deep teal and gold light with
+  drifting compasses and pearls, not a harbour.
+- **Style references:** `examples-games/slot-backgrounds/` shows the treatment. Attach one or two of
+  these images to background generation as style references. They show background treatment only:
+  ignore their text, logos, multiplier badges, coins and boards, and the faint skyline in
+  `sb_neon-violet.jpeg`.
+- **Exceptions:** a setting the user explicitly asks for, and an exact reference family whose own
+  background is a place (Book of Ra's sunset temple) — exact references are recreated. A loose
+  reference such as Royal Joker uses this abstract treatment.
+
+"The game's world" elsewhere in these documents means its palette, light, objects and character,
+rendered against this kind of background — never a location to depict.
 
 ## Flexible store composition
 

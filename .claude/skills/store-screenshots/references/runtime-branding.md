@@ -45,8 +45,9 @@ background guard protects the campaign background already integrated in the game
 **Launcher icon.** If no suitable square icon art exists yet (`assets/branding/app_icon.png` or a
 game-world emblem crop from `art/panorama.png`), generate one with the same Codex GPT
 Images 2.0 path as the rest of the asset set (`generate-png-asset/SKILL.md`); follow the
-store skill's correction loop until the icon passes: a full-bleed square composition of the game's hero character/object/emblem
-on its own themed background, matching the Design DNA.
+store skill's correction loop until the icon passes: a full-bleed square composition of the
+game's hero character/object/emblem on an abstract slot-style background of its own colours
+(gradient, glow, light rays — never a place), matching the Design DNA.
 
 **No drawn frame, bezel, ring, or rounded-square backdrop in the icon art.** Google Play and
 iOS apply their own mask (circle, squircle, adaptive shape) on top of the square source; a
@@ -55,8 +56,8 @@ as a second competing edge. The subject fills the frame edge-to-edge with its ow
 background — no illustrated ring/frame/plate around it, unlike in-game symbol icons which may use
 themed edging per `anti-slop-design.md`.
 
-This launcher-icon art is an **opaque full-bleed square scene** (hero subject + themed
-background), not a chroma-key cutout sprite: do not generate it with the flat magenta/green key
+This launcher-icon art is an **opaque full-bleed square scene** (hero subject + abstract
+slot-style background), not a chroma-key cutout sprite: do not generate it with the flat magenta/green key
 background used for `symbol`/`sprite`-class assets in `generate-png-asset/SKILL.md`, and do not
 run `tools/cutout.py` on the 1024 master. Only the separate `app_icon_fg.png` adaptive-foreground
 crop needs a transparent background (generate or derive it with alpha, or cut it with
