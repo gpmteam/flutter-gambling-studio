@@ -22,9 +22,9 @@ Jewels**, **Shining Crown**, or **Plinko** must use the local reference mapping 
 category reference. For an exact family, recreate what the preview shows: theme, character,
 symbol cast, palette, frame and composition are matched, not reinterpreted. The full rule is "How
 close to the reference — match it" in `game-concept-examples.md`, and it governs the whole look of
-the concept. Royal Joker is a loose reference: the game shares its world and its fiery,
-diamond-patterned backdrop (never a palace) with its own jester and symbol designs — see "Loose
-references" in that document.
+the concept. Royal Joker is a loose reference: the jester can be the same, while the
+background, symbol designs and composition are the game's own — vary the background rather than
+copying the previews' backdrop every time (see "Loose references" in that document).
 The mechanic is the family's casual "Build as" entry (or the user's casual mechanic, or the
 translation of a gambling ask) — never the casino gameplay a preview shows. Follow the production
 limits in `game-concept-examples.md`; suitable source pixels can be reused, while branding and the

@@ -89,8 +89,8 @@ class Family:
     aliases: tuple[str, ...]
     # Families whose match makes this one redundant (Joker inside Joker Jewels).
     shadowed_by: tuple[str, ...] = ()
-    # "exact": recreate the sources. "loose": a common reference — the game shares the sources'
-    # world and background treatment, with its own character, symbols and composition.
+    # "exact": recreate the sources. "loose": a common reference — the character follows the
+    # sources, while the background, symbol designs and composition are the game's own.
     fidelity: str = "exact"
     # Family-specific direction carried into the contract and the worker's directive.
     guidance: str = ""
@@ -137,13 +137,13 @@ FAMILIES: tuple[Family, ...] = (
         name="Royal Joker",
         files=(
             RefFile("examples-games/royal-joker/rj_key-art.jpeg",
-                    "jester lead and backdrop: grinning jester in a purple-and-gold belled cap "
-                    "over a warm red diamond-pattern glow with flames and gold light"),
+                    "the jester to keep: grinning face, purple-and-gold belled cap, red-and-gold "
+                    "costume (its backdrop is not a requirement)"),
             RefFile("examples-games/royal-joker/rj_store-set-1.jpeg",
-                    "symbol family and mood: plums, oranges, cherries, stars, crowns, jester "
-                    "medallions and a gold frame under lightning on a red-to-violet glow"),
+                    "jester pose; symbol family and finish: plums, oranges, cherries, stars, "
+                    "crowns, jester medallions, gold frame"),
             RefFile("examples-games/royal-joker/rj_store-set-2.jpeg",
-                    "second jester pose; cherries, sevens and card suits in gold light streaks"),
+                    "second jester pose; cherries, sevens and card suits in gold light"),
         ),
         classification="G1 / C / B1",
         topology="7x8",
@@ -156,12 +156,13 @@ FAMILIES: tuple[Family, ...] = (
                  r"jokers?", r"джокер\w*"),
         shadowed_by=("joker-jewels",),
         fidelity="loose",
-        guidance=("A common reference, not a recreation: keep its world — a grinning, mischievous "
-                  "jester lead, fruit, seven, crown, star and gem symbols, gold trim and glow — "
-                  "and design the character, symbols and composition fresh. The background is "
-                  "the reference's own: a warm red-orange-to-magenta glow with a diamond pattern, "
-                  "flames, gold light streaks and lightning. Never a palace, castle, ballroom, "
-                  "throne room or curtained stage."),
+        guidance=("The character can be the same: keep the grinning, mischievous jester in the "
+                  "purple-and-gold belled cap as the sources draw him. Fruit, seven, crown, star "
+                  "and gem symbols and the glossy gold-trimmed finish set the world; the symbol "
+                  "designs and composition are this game's own. The background is free: design "
+                  "it for this game's concept and vary it between games — do not copy the "
+                  "sources' red diamond-pattern backdrop every time, and do not fall back to the "
+                  "old palace or ballroom staging."),
     ),
     Family(
         id="book-of-ra",
@@ -517,9 +518,10 @@ def to_markdown(result: dict) -> str:
         return "\n".join(lines)
     binding = {
         "exact": "EXACT — the finished game's art must read as the same world as these sources",
-        "loose": "LOOSE — a common reference, not a recreation: the game shares these sources' "
-                 "world, mood, palette, light and background treatment; its character, symbols "
-                 "and composition are designed fresh within that world",
+        "loose": "LOOSE — a common reference, not a recreation: the character follows these "
+                 "sources and the symbol family, palette and finish fit their world; the "
+                 "background, symbol designs and composition are designed for this game, and the "
+                 "sources' backdrop is not copied by default",
     }.get(result["binding"], "DESCRIPTION — the user named a game with no local image; match "
                              "every described visual trait and record that no pixels were "
                              "available")
@@ -579,11 +581,12 @@ def loose_contract_lines() -> list[str]:
     """The rest of the contract for a common reference: shared traits instead of a copy ledger."""
     return [
         "", "## Shared world (fill in at full size before Phase 3)", "",
-        "- Character: the lead's archetype, attitude and signature colours kept from the sources; "
-        "what is designed fresh (face, pose, costume details):",
+        "- Character: kept from the sources — costume colours and pattern, headwear, face, "
+        "expression — source:",
         "- Symbol family: the kinds of objects kept (they become tiles, pieces, balls or targets); "
         "the game's own set and how it differs:",
-        "- Background and environment: the sources' own treatment, followed closely:",
+        "- Background and environment: designed for this game's concept, not copied from the "
+        "sources — what it is and why:",
         "- Palette and light:",
         "- Finish (2D/2.5D, linework, shading, texture):",
         "", "## Not carried over (production limits)", "",
@@ -592,15 +595,15 @@ def loose_contract_lines() -> list[str]:
         "SPIN/AUTOPLAY, paytables, prize wheels and payout figures",
         "- Object-for-object copies: a loose reference is not recreated asset by asset",
         "", "## Gates", "",
-        "- [ ] Phase 3: the sources are attached to generation as style references (editing a "
-        "source is allowed, not required); assets are designed for this game",
-        "- [ ] Phase 3.6 AR11 (loose): the set reads as the sources' world — character archetype, "
-        "symbol family, palette, light, background — without one-for-one copies: PASS",
-        "- [ ] Runtime V21 (loose): the menu and gameplay share that world and its background "
-        "treatment: PASS",
+        "- [ ] Phase 3: the character is generated from its source images; the other assets use "
+        "the sources as style references and are designed for this game",
+        "- [ ] Phase 3.6 AR11 (loose): the character reads as the sources' jester; the symbol "
+        "family, palette and finish fit their world; the background is not compared: PASS",
+        "- [ ] Runtime V21 (loose): the menu and gameplay show the same character; the "
+        "background is the game's own: PASS",
         "- [ ] `.claude/rules/no-gambling.md`: no wager, currency or chance-based reward",
-        "- [ ] Campaign art: sources attached to the banner and background calls; the background "
-        "follows the sources' treatment",
+        "- [ ] Campaign art: sources attached for the character; the background follows this "
+        "game's concept, not the sources' backdrop",
         "",
     ]
 

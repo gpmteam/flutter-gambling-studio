@@ -33,9 +33,10 @@ reference matches the request, recreate its character, symbol cast, frame, backg
 composition and rendering style — and build the casual mechanic listed for it, not the casino
 gameplay the image shows. Use the actual images as generation references and compare the runtime
 result beside them (`.claude/docs/game-concept-examples.md` → "How close to the reference — match
-it"). Royal Joker (and a plain Joker request) is a loose reference instead: the game shares its
-world and its fiery, diamond-patterned backdrop — never a palace — while the jester, symbols and
-composition are designed fresh ("Loose references" in the same document). Read `.claude/docs/visual-context.md` and `.claude/docs/game-concept-examples.md` for lead
+it"). Royal Joker (and a plain Joker request) is a loose reference instead: the jester can be the
+same, while the background, symbol designs and composition are the game's own — the background is
+not copied from the previews every time ("Loose references" in the same document). Read
+`.claude/docs/visual-context.md` and `.claude/docs/game-concept-examples.md` for lead
 kinds, flexible store composition, board topology, Joker tone, combo markers and the five required
 store-only combo balls. The reference's visual language is authoritative; reject unrequested style
 substitutions.

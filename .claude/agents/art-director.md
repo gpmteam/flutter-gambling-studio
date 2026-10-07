@@ -66,7 +66,7 @@ Look at the contact sheets and every background WITH YOUR EYES (vision), and ass
 | AR8 | The background does not fight the field | The background is brighter or higher-contrast than the game elements and steals focus |
 | AR9 | It matches the subject | A "cherry" that looks like a tomato; a tile that cannot be identified |
 | AR10 | No AI artefacts | Extra limbs, letter-mush, deformed geometry |
-| AR11 | Reference match (mapped requests only) | The set was re-themed, substituted, recoloured or "improved" away from the source's subjects, background, materials, colours, finish, light and character; source files were not actually supplied where supported; or the runtime composition does not match. For a loose reference (`binding: loose`, Royal Joker) judge the same world — character archetype, symbol family, palette, light and the sources' background treatment — not object-for-object identity. See `.claude/docs/game-concept-examples.md` |
+| AR11 | Reference match (mapped requests only) | The set was re-themed, substituted, recoloured or "improved" away from the source's subjects, background, materials, colours, finish, light and character; source files were not actually supplied where supported; or the runtime composition does not match. For a loose reference (`binding: loose`, Royal Joker) judge the character against the sources — the same jester — and the symbol family, palette and finish for fit; the background is the game's own and is not compared. See `.claude/docs/game-concept-examples.md` |
 
 ### Step 4 — Verdict and regeneration
 

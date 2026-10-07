@@ -20,9 +20,9 @@ family is built as; Joker Jewels resolves to every file in `examples-games/joker
 the swap match-3 board, not to the Royal Joker row. For an exact family, recreate what the preview
 shows — theme, character, symbol cast, palette, frame and composition are matched, not
 reinterpreted, and Variety Dimensions are not scrolled. Royal Joker is a loose reference: keep its
-world and its fiery, diamond-patterned backdrop (never a palace) and design the jester, symbols
-and composition fresh ("Loose references" in that document). Follow the source-quality and branding limits in `game-concept-examples.md`. Never
-add a character to Shining Crown or Plinko.
+jester, and design the background, symbols and composition for the game — do not copy the
+previews' backdrop every time ("Loose references" in that document). Follow the source-quality and
+branding limits in `game-concept-examples.md`. Never add a character to Shining Crown or Plinko.
 
 Don't ask the user questions! Create `design/gdd/game-concept.md` completely autonomously.
 

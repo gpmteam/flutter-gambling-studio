@@ -153,13 +153,13 @@ When `reference` is true:
   rendering style does.
 
 `binding: loose` (Royal Joker, or a plain Joker): the sources are a common reference, not a
-recreation. The bullets above apply with these changes — the game shares the sources' world
-(character archetype, symbol family, palette, light, finish) and follows their background
-treatment closely, a fiery red-to-magenta glow and never a palace; the character, symbols and
-composition are designed fresh for this game, so Variety Dimensions and the Similarity Check
-apply within that world. Complete the contract's "Shared world" section instead of an identity
-ledger. Attach the sources to generation as style references; a source-image edit is allowed, not
-required. AR11 and V21 judge the same world, not object-for-object identity
+recreation. The bullets above apply with these changes — the character is the sources' own and
+is generated from them; the symbol family, palette and finish fit their world, while the symbol
+designs, the composition and the background are designed for this game, so Variety Dimensions and
+the Similarity Check apply to them. Design the background for the concept and vary it between
+games: do not copy the sources' backdrop every time, and do not fall back to the old palace or
+ballroom staging. Complete the contract's "Shared world" section instead of an identity ledger.
+AR11 and V21 hold the character to the sources and do not compare the background
 (`game-concept-examples.md` → "Loose references").
 
 `binding: description` (the user named an unmapped game with no image): match every described

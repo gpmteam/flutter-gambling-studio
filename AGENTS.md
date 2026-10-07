@@ -33,8 +33,8 @@ as / copy / по референсу" asks) and recorded in `design/reference-con
 mechanic that governs play. A reference game must match its sources' character, sprites and
 symbols, frame, background, palette, composition and visual finish closely — and build the casual
 mechanic the detector names, never the casino gameplay a preview shows. A loose reference
-(`binding: loose`, Royal Joker) is a common reference instead: share its world and background
-treatment, and design the character, symbols and composition fresh. Pass the actual reference
+(`binding: loose`, Royal Joker) is a common reference instead: keep its character, and design the
+background, symbols and composition for the game rather than copying its backdrop every time. Pass the actual reference
 images into image generation when the tool supports it, and compare the runtime game beside the
 references. See `.claude/docs/visual-context.md` and `.claude/docs/game-concept-examples.md` for
 the reference contract and limits.

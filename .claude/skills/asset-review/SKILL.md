@@ -92,8 +92,10 @@ family (`.claude/docs/game-concept-examples.md`) or images the user attached. Op
 beside the contact sheet and compare
 object for object: the same subjects, the same materials and colours, the same light, the same
 character and finish. Anything re-themed, substituted, recoloured or "improved" fails AR11 and
-is corrected toward the reference. For a loose reference (`binding: loose`, Royal Joker) judge the same world — character archetype, symbol family, palette, light and the sources' background treatment — not object-for-object identity. A fresh design within that world passes; a
-different world, palette or background — a palace for Royal Joker — fails. Verify each source image appears in the ledger and that relevant
+is corrected toward the reference. For a loose reference (`binding: loose`, Royal Joker) the
+character is held to the sources — the same jester — while the symbol family, palette and finish
+only need to fit that world; fresh symbol designs pass, and the background is the game's own and
+is not compared. Verify each source image appears in the ledger and that relevant
 images were actually supplied to generation or directly reused with provenance. When the game is
 runnable, review the real runtime screen beside the reference; in pre-production, mark this check
 pending for runtime verification. Follow the production limits in

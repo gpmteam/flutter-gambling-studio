@@ -110,7 +110,9 @@ class LooseReferenceTests(unittest.TestCase):
         self.assertIn("Binding: LOOSE", md)
         self.assertIn("## Shared world", md)
         self.assertNotIn("Identity ledger", md)
-        self.assertIn("Never a palace", md)
+        self.assertIn("The character can be the same", md)
+        self.assertIn("do not copy the sources' red diamond-pattern backdrop every time", md)
+        self.assertIn("not copied from the sources", md)
 
     def test_a_plain_joker_request_uses_royal_joker(self) -> None:
         for prompt in ("Make a Joker game", "сделай джокера"):
