@@ -141,6 +141,32 @@ class CompositionGuideTests(unittest.TestCase):
             else:
                 self.assertAlmostEqual(y0, 1024 - y1, delta=1)
 
+    def test_bottom_anchored_concept_export_keeps_the_panorama_foreground(self) -> None:
+        # The concept runbook must use the same vertical bias for its guide and export.
+        runbook = (SCRIPT.parents[1] / ".claude/skills/store-screenshots/references/"
+                   "concept-panorama.md").read_text(encoding="utf-8")
+        self.assertIn("composition-guide --size play --canvas 1536x1024", runbook)
+        self.assertIn("--offset-y 1", runbook)
+        self.assertIn("triptych --src production/store-art/concept/panorama.png", runbook)
+        self.assertIn("--seam-snap off --offset-y 1 --lead-kind character", runbook)
+
+        with tempfile.TemporaryDirectory() as tmp:
+            folder = Path(tmp)
+            source = Image.new("RGB", (360, 240), (40, 60, 90))
+            ImageDraw.Draw(source).rectangle((0, 220, 359, 239), fill=(20, 220, 40))
+            src = folder / "panorama.png"
+            source.save(src)
+            out = folder / "panels"
+            result = subprocess.run(
+                [sys.executable, str(SCRIPT), "triptych", "--src", str(src),
+                 "--out", str(out), "--panels", "3", "--size", "240x427",
+                 "--seam-snap", "off", "--offset-y", "1", "--pop", "off"],
+                capture_output=True, text=True, timeout=120)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            for i in (1, 2, 3):
+                with Image.open(out / f"store-0{i}.png") as panel:
+                    self.assertEqual(panel.getpixel((120, 426)), (20, 220, 40))
+
     def test_five_balls_one_per_panel_none_on_a_cut_or_over_the_bust(self) -> None:
         w, h = self.PANEL
         gutter = store_compose.parse_gutter("auto", w)

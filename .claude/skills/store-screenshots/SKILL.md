@@ -641,8 +641,10 @@ FLAGS=$(cat production/store-art/concept/export-flags.txt)
 Use `--lead-kind character` or `object` as applicable for a legacy game. Export each set from the
 same complete source; never resize one set into the other. The approved set keeps the recorded
 flags unchanged: they are the crop the user approved. The Play set's 9:16 panels crop about 18%
-of a 1.45:1 panorama's height, centred by default, and `--offset-y` (-1 keeps the top, +1 the
-bottom) brings a clipped board row or the headroom back without new art. The App Store panels
+of a 1.45:1 panorama's height. The concept export records `--offset-y 1` so its lower-edge
+foreground survives; a legacy panorama with no recorded flags still centres the crop by default.
+`--offset-y` (-1 keeps the top, +1 the bottom) moves a clipped board row or headroom back without
+new art. The App Store panels
 take back the height the Play crop trimmed. On a 3:2 source their cuts land within a percent of
 the width of the Play cuts, so the recorded flags normally fit them too. A 16:9 source moves them
 about 3% of the width: a label or character cut in an App Store panel is fixed with that set's own
