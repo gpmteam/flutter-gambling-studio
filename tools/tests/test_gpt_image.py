@@ -129,3 +129,40 @@ class EditReferenceTests(unittest.TestCase):
         args = gpt_image._parser().parse_args(
             ["edit", "--prompt", "x", "--image", "a.png", "--out", "b.png"])
         self.assertEqual(args.fidelity, "high")
+
+
+class UsageLogTests(unittest.TestCase):
+    """The web service prices image renders from the log the bridge leaves behind."""
+
+    def test_usage_is_appended_only_when_the_service_asks(self) -> None:
+        import json
+        import os
+        from unittest import mock
+
+        usage = {"input_tokens": 300, "output_tokens": 4160,
+                 "input_tokens_details": {"text_tokens": 100, "image_tokens": 200}}
+        with tempfile.TemporaryDirectory() as tmp:
+            log = Path(tmp) / "images.jsonl"
+            with mock.patch.dict(os.environ, {"FGWS_USAGE_LOG": str(log)}):
+                gpt_image._record_usage("edits", {"usage": usage, "data": []}, "req_1")
+                gpt_image._record_usage("generations", {"data": []}, None)
+            lines = [json.loads(line) for line in log.read_text().splitlines()]
+            self.assertEqual([line["endpoint"] for line in lines], ["edits", "generations"])
+            self.assertEqual(lines[0]["usage"], usage)
+            self.assertEqual(lines[0]["model"], gpt_image.MODEL)
+            self.assertIsNone(lines[1]["usage"])
+
+            # Unset: nothing is written anywhere.
+            with mock.patch.dict(os.environ, {"FGWS_USAGE_LOG": ""}):
+                gpt_image._record_usage("edits", {"usage": usage}, None)
+            self.assertEqual(len(log.read_text().splitlines()), 2)
+
+    def test_an_unwritable_log_never_fails_a_paid_render(self) -> None:
+        import os
+        from unittest import mock
+
+        with tempfile.TemporaryDirectory() as tmp:
+            missing = Path(tmp) / "no-such-dir" / "images.jsonl"
+            with mock.patch.dict(os.environ, {"FGWS_USAGE_LOG": str(missing)}):
+                gpt_image._record_usage("generations", {"usage": {}}, None)
+            self.assertFalse(missing.exists())

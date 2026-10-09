@@ -373,6 +373,31 @@ def _png_dimensions(image: bytes) -> tuple[int, int]:
     return width, height
 
 
+def _record_usage(endpoint: str, response: dict[str, Any], request_id: str | None) -> None:
+    """Append this render's billing to $FGWS_USAGE_LOG, when the web service asked for it.
+
+    The service runs the bridge inside its Codex runs and prices image renders separately from
+    the model's own tokens. A render is already paid for by the time this runs, so a log that
+    cannot be written must never fail it.
+    """
+    target = os.environ.get("FGWS_USAGE_LOG", "").strip()
+    if not target:
+        return
+    usage = response.get("usage")
+    line = {
+        "model": MODEL,
+        "endpoint": endpoint,
+        "usage": usage if isinstance(usage, dict) else None,
+        "request_id": request_id,
+        "at": int(time.time()),
+    }
+    try:
+        with open(target, "a", encoding="utf-8") as handle:
+            handle.write(json.dumps(line) + "\n")
+    except OSError:
+        pass
+
+
 def _write_atomic(path: Path, image: bytes) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     temp_path: Path | None = None
@@ -425,6 +450,7 @@ def _generate(args: argparse.Namespace) -> int:
         timeout=args.timeout,
         max_attempts=args.max_attempts,
     )
+    _record_usage("generations", response, request_id)
     image = _decode_image(response)
     width, height = _png_dimensions(image)
     output = Path(args.out)
@@ -464,6 +490,7 @@ def _edit(args: argparse.Namespace) -> int:
         timeout=args.timeout,
         max_attempts=args.max_attempts,
     )
+    _record_usage("edits", response, request_id)
     image = _decode_image(response)
     width, height = _png_dimensions(image)
     output = Path(args.out)
