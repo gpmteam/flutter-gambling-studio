@@ -63,8 +63,11 @@ Plinko need no invented mascot or character-only opening. When the game has a ma
 it is mandatory to show that character from torso to head in the banner and the panorama. The
 bottom edge or the foreground band cuts the body through the torso, so no legs or feet are
 visible, and the character is never standing full length or flying. Leave visible space above the
-complete head/headwear in the final panel crop (at least 2% of panel height). Keep attached forms
-clear of the first seam. Animal framing fits the species but also shows no legs or feet.
+complete head/headwear in the final panel crop (at least 2% of panel height). Preserve the
+character's original build and proportions; do not narrow it to fit one panel. Anchor it on the
+first panel, but allow a shoulder, sleeve, cape or torso to overlap the gameplay area on panel 2
+when needed. Keep the face, head, hands and held objects clear of the first cut band and decisive
+gameplay cells readable. Animal framing fits the species but also shows no legs or feet.
 Real game objects form the cropped bottom frame and fall through the picture, while the far
 background stays broad, smooth, and subordinate so
 those subjects lead. Store grading is restrained and theme-led by default: preserve the Design DNA's

@@ -288,13 +288,16 @@ enough torso to read the costume and pose. Humanoids crop through the torso; ani
 the body in species-appropriate terms. In both cases the bottom frame edge or the lower-edge
 foreground objects hide everything below the cut: no legs, knees, hips or feet. Never pose the
 character standing full length, flying, floating or leaping. Leave visible open space above the
-complete head/headwear in the final panel crop, at least 2% of panel height, and protect
-attached forms from the first seam.
-Character-led Joker/chicken games default to a large real character on panel 1. Use
+complete head/headwear in the final panel crop, at least 2% of panel height. Keep the original
+character's build and proportions: do not narrow or reshape it to fit inside one panel. Anchor
+it on panel 1, but let a noncritical shoulder, sleeve, cape or torso extend a little into the
+gameplay area on panel 2 when its natural width needs the space. The face, head, hands and held
+objects stay clear of the first cut band; decisive gameplay cells remain readable.
+Character-led Joker/chicken games default to a large real character anchored on panel 1. Use
 `--character-framing bust` for humanoids and `mascot` for a compact chicken/animal. Both are
 torso-to-head framings with no legs or feet; mascot mode only measures prominence by area rather
-than humanoid height, and still protects the head, first-panel placement and attached
-silhouette. A left crop is allowed and a bottom crop through the torso is expected; preserve the
+than humanoid height, and still protects the head, first-panel placement and critical features
+at the cut. A left crop is allowed and a bottom crop through the torso is expected; preserve the
 mascot's recognizable head and body. Joker is a mischievous, slightly vicious
 playful trickster, not an elegant courtier or horror figure. Object/mechanic scenes have no empty
 character berth and no anatomy constraints. Keep a strong game anchor in every panel; a continuous

@@ -55,6 +55,9 @@ class TemplateFileTests(unittest.TestCase):
         self.assertIn("torso-to-head bust", character)
         self.assertIn("no legs, knees, hips or feet are visible", character)
         self.assertIn("keep every ball clear of the character's silhouette", character)
+        self.assertIn("never narrow, stretch, reshape or change the character just to fit inside one panel", character)
+        self.assertIn("may extend a little into the gameplay area on the second panel", character)
+        self.assertIn("leave the decisive gameplay cells readable", character)
         obj = templates["panorama-object"]
         self.assertIn("do not add a person, hand, animal, mascot", obj)
         self.assertIn("leads the first two portrait panels", obj)

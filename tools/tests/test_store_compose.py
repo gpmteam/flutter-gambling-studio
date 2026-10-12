@@ -87,6 +87,30 @@ class CompositionGuideTests(unittest.TestCase):
         return subprocess.run([sys.executable, str(SCRIPT), "composition-guide", *args],
                               capture_output=True, text=True, timeout=120)
 
+    def test_wide_character_can_overlap_field_beyond_first_cut(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            folder = Path(tmp)
+            hero = folder / "hero.png"
+            field = folder / "field.png"
+            guide = folder / "guide.png"
+            Image.new("RGBA", (200, 200), (250, 20, 20, 255)).save(hero)
+            Image.new("RGBA", (600, 500), (20, 30, 250, 255)).save(field)
+            result = self.run_cli("--size", "play", "--canvas", "1536x1024",
+                                  "--offset-y", "1", "--lead-kind", "character",
+                                  "--lead", str(hero), "--field", str(field),
+                                  "--out", str(guide))
+            self.assertEqual(result.returncode, 0, result.stderr)
+            gutter = store_compose.parse_gutter("auto", self.PLAY[0])
+            geo = store_compose.guide_geometry((1536, 1024), 3, *self.PLAY,
+                                               gutter, offset_y=1)
+            # The field and bust meet on panel 2, with the bust painted in front.
+            x = round(geo["to_x"](geo["spans"][1][0] + 0.14 * self.PLAY[0])
+                      * max(1, store_compose.GUIDE_MIN_WIDTH / 1536))
+            y = round(geo["to_y"](0.50 * self.PLAY[1])
+                      * max(1, store_compose.GUIDE_MIN_WIDTH / 1536))
+            with Image.open(guide) as painted:
+                self.assertEqual(painted.getpixel((x, y)), (250, 20, 20))
+
     def test_a_line_on_the_guide_cut_is_hidden_by_the_export_and_one_beside_it_is_not(self) -> None:
         for panel, canvas in itertools.product((self.PANEL, self.PLAY),
                                                ((1536, 1024), (1672, 941), (3456, 2384))):
@@ -873,10 +897,10 @@ class FinalArtGateTests(unittest.TestCase):
         self.assertIn("too dark", joined)
         self.assertIn("too detailed", joined)
         self.assertIn("bottom edge", joined)
-        # y=0 crops the head, and the box runs from 0.04 to 0.40 of a panorama
-        # whose first panel ends at 0.333 — straight through the first seam.
+        # y=0 crops the head. The body may cross the first seam if its face and
+        # other decisive features remain safe in a panel.
         self.assertIn("the top of the frame crops or crowds the hero", joined)
-        self.assertIn("crosses the first carousel seam", joined)
+        self.assertNotIn("crosses the first carousel seam", joined)
 
     def test_final_art_requires_a_measured_complete_hero(self) -> None:
         pano = Image.new(
@@ -1896,13 +1920,25 @@ class MascotFramingTests(unittest.TestCase):
             ((0.0, 0.125, 0.10, 0.15), "mascot is too small"),
             ((0.15, 0.125, 0.17, 0.55), "not on the left"),
             ((0.0, 0.0, 0.30, 0.45), "top of the frame crops"),
-            ((0.0, 0.125, 0.38, 0.45), "crosses the first carousel seam"),
         ):
             with self.subTest(bounds=bounds):
                 issues = store_compose.final_art_issues(
                     self._canvas(), store_compose.uniform_spans(3, 180, 0),
                     bounds, character_framing="mascot")
                 self.assertTrue(any(message in issue for issue in issues), issues)
+
+    def test_character_body_may_cross_seam_but_protected_face_may_not(self) -> None:
+        canvas = self._canvas()
+        spans = store_compose.uniform_spans(3, 180, 0)
+        hero = (0.0, 0.125, 0.38, 0.45)
+        issues = store_compose.final_art_issues(
+            canvas, spans, hero, character_framing="mascot")
+        self.assertFalse(any("carousel seam" in issue for issue in issues), issues)
+        issues = store_compose.final_art_issues(
+            canvas, spans, hero, character_framing="mascot",
+            protected_bounds=[(0.31, 0.18, 0.08, 0.10)])
+        self.assertTrue(any("protected region 1 crosses a carousel seam" in issue
+                            for issue in issues), issues)
 
     def test_banner_accepts_prominent_mascot_and_blocks_tiny_or_clipped_one(self) -> None:
         canvas = BannerZoneTests()._compliant_canvas()

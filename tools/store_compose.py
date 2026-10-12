@@ -2110,14 +2110,13 @@ def final_art_issues(
 
     ``hero_bounds`` is the tight normalized box around the protagonist as the
     integrated picture actually shows it, including anything held, worn, or
-    visually attached. Requiring a human/vision measurement after integration
-    closes the hole left by checking only the draft sprite: an image model can
-    grow a hat, book, weapon, or hand across the seam.
+    visually attached. ``protected_bounds`` marks the face, hands, held objects
+    and other decisive details that must survive inside a single panel.
 
     The bust is *expected* to reach the left and bottom edges — that is the crop
     the reference banners take. What is checked is that it starts on the left,
-    stays large, keeps at least 2% clear space above the complete head/headwear,
-    and keeps its silhouette off the first carousel seam.
+    stays large and keeps at least 2% clear space above the complete head/headwear.
+    A noncritical part of the silhouette may cross the first seam into gameplay.
     """
     if character_framing not in CHARACTER_FRAMINGS:
         die(f"unknown character framing {character_framing!r}")
@@ -2276,10 +2275,8 @@ def final_art_issues(
             "bottom edges, but the complete face, hair and headwear must survive the "
             "thumbnail strip")
     if hx1 > right - margin_x:
-        add_blocker(
-            "the hero silhouette crosses the first carousel seam. Hat, hands, "
-            "book/weapon, cape and any held reward stay inside panel 1 — the store's "
-            "gutter cuts there, and it will cut through the character")
+        info("the hero extends beyond panel 1; inspect the cut and mark face, "
+             "hands and held objects with --protected-bounds")
     return issues
 
 
@@ -3639,7 +3636,7 @@ GUIDE_MIN_WIDTH = 2400      # drawn at least this wide so the pasted assets stay
 GUIDE_BAND_TOP = 0.76       # the lower-edge band of large game objects, as a fraction of height
 GUIDE_BUST_TALL = 1.4       # a lead asset taller than this (h/w) is a full-length figure …
 GUIDE_BUST_KEEP = 0.58      # … whose top part — head to torso — is all the guide shows
-GUIDE_BUST_BLEED = 1.3      # a bust may be this much wider than its berth, bleeding off the left
+GUIDE_BUST_BLEED = 1.3      # preserve aspect ratio; a wide bust may cross the first cut
 # Where the field's centre sits across the panels it spans. Centred, a two-panel field puts its
 # middle column — usually where the clearing group is — under the cut; left of centre, the cut
 # crosses its right-hand columns and the clearing cells on the left stay whole.
@@ -3725,8 +3722,8 @@ def _guide_paste(canvas: Image.Image, path: str, box: tuple[float, float, float,
     x0, y0, x1, y1 = box
     bw, bh = max(1.0, x1 - x0), max(1.0, y1 - y0)
     if mode == "bust":
-        # A store bust fills the panel's height; a wide one may bleed off the picture's left
-        # edge (a left crop is allowed) but never grows toward the cut on its right.
+        # A store bust fills the panel's height at its original aspect ratio. The berth
+        # extends into panel 2 so a wide costume can overlap the board instead of shrinking.
         scale = min(bh / art.height, GUIDE_BUST_BLEED * bw / art.width)
     else:
         scale = min(bw / art.width, bh / art.height)
@@ -3808,21 +3805,7 @@ def cmd_composition_guide(args) -> None:
     shapes = ImageDraw.Draw(canvas, "RGBA")
 
     lead_panel, field = guide_roles(n, args.lead_kind)
-    if lead_panel is not None:
-        left = span(lead_panel)[0]
-        if args.lead_kind == "character":
-            box = (px(left + 0.05 * w), py(0.19 * h), px(left + 0.82 * w), py(h))
-            mode = "bust"
-        else:
-            box = (px(left + 0.14 * w), py(0.22 * h), px(left + 0.86 * w), py(0.74 * h))
-            mode = "contain"
-        if args.lead:
-            _guide_paste(canvas, args.lead, box, mode)
-        else:
-            shapes.rounded_rectangle(box, radius=round(0.04 * (box[2] - box[0])),
-                                     fill=(214, 168, 96, 90), outline=(214, 168, 96, 220),
-                                     width=4)
-    elif args.lead:
+    if lead_panel is None and args.lead:
         warn("--lead ignored: a mechanic lead is the angled field itself (--field)")
 
     margin = 0.06 if args.lead_kind == "mechanic" else 0.10
@@ -3841,6 +3824,23 @@ def cmd_composition_guide(args) -> None:
     else:
         shapes.rounded_rectangle(field_box, radius=24, fill=(90, 150, 220, 70),
                                  outline=(90, 150, 220, 220), width=4)
+
+    if lead_panel is not None:
+        left = span(lead_panel)[0]
+        if args.lead_kind == "character":
+            # The first-panel berth is a visual anchor, not a width limit. A wide bust
+            # can cross the cut and sit in front of noncritical gameplay housing.
+            box = (px(left + 0.05 * w), py(0.19 * h), px(left + 1.25 * w), py(h))
+            mode = "bust"
+        else:
+            box = (px(left + 0.14 * w), py(0.22 * h), px(left + 0.86 * w), py(0.74 * h))
+            mode = "contain"
+        if args.lead:
+            _guide_paste(canvas, args.lead, box, mode)
+        else:
+            shapes.rounded_rectangle(box, radius=round(0.04 * (box[2] - box[0])),
+                                     fill=(214, 168, 96, 90), outline=(214, 168, 96, 220),
+                                     width=4)
 
     band = (px(0), py(GUIDE_BAND_TOP * h), px(geo["pano"][0]), py(h))
     if args.object:
@@ -4619,7 +4619,7 @@ def add_composition_args(parser: argparse.ArgumentParser) -> None:
                              "not a reason to invent a mascot")
     parser.add_argument("--character-framing", choices=CHARACTER_FRAMINGS, default="bust",
                         help="bust for humanoids; mascot for chicken/animal proportions. "
-                             "Mascots retain first-panel/head/seam protection with "
+                             "Mascots retain first-panel/head/critical-feature protection with "
                              "area prominence instead of a humanoid height minimum")
     parser.add_argument("--lead-bounds", metavar="X,Y,W,H",
                         help="normalized focal object/field box in the FINAL crop; "
@@ -4690,8 +4690,8 @@ def main() -> None:
                    help="tight normalized box around the hero as the FINAL render "
                         "shows it, including held/worn/attached props. An opt-in strict "
                         "gate uses it to prove the bust starts on the left, stays "
-                        f"large, keeps at least {HERO_SAFE_Y * 100:.0f}%% clear headroom, "
-                        "and keeps its silhouette off the first carousel seam.")
+                        f"large and keeps at least {HERO_SAFE_Y * 100:.0f}%% clear headroom. "
+                        "Use --protected-bounds for faces, hands and held props at seams.")
     t.add_argument("--art-gate", choices=("strict", "warn", "off"), default="off",
                    help="optional numeric composition diagnostics. `off` (default) "
                         "exports directly; `warn` reports findings; `strict` blocks "

@@ -366,7 +366,8 @@ is still off published as known issues), the `triptych` export with the store's 
 gameplay sample and its spec, and `tools/concept_gate.py publish`.
 
 This is the store panorama, made now so the user can see the game before it is built. It obeys
-every `/store-screenshots` rule — torso-to-head character on the first panel (or a gameplay-led
+every `/store-screenshots` rule — a torso-to-head character anchored on the first panel at its
+original proportions, allowed to overlap the gameplay area a little when needed (or a gameplay-led
 opening for an object/mechanic game, never an invented character), the field at a
 three-quarter/3D angle caught mid-clear, all five labelled `x5`–`x100` balls in flight with at
 least one per panel, the close-up lower-edge band, vivid key-art lighting — because after

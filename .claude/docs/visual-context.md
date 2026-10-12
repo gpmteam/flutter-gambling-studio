@@ -197,9 +197,12 @@ For humanoids, crop through the torso; for animal mascots, crop through the body
 species-appropriate terms. The bottom edge or the foreground band hides everything below the cut:
 no legs, knees, hips or feet. The character is never standing full length and never flying,
 floating or leaping. Keep visible open space above the complete head and hair/headwear in the
-final panel crop, at least 2% of panel height. Protect the head and attached silhouette from the
-first seam; a left crop is allowed and a bottom crop through the torso is expected.
-Character-led concepts default to a large character on the first panel.
+final panel crop, at least 2% of panel height. Preserve the original character's build and
+proportions instead of narrowing it to fit one panel. Anchor it on the first panel, allowing a
+noncritical shoulder, sleeve, cape or torso to overlap the gameplay area on panel 2 when needed.
+Keep the face, head, hands and held objects clear of the first cut band and decisive gameplay
+cells readable; a left crop is allowed and a bottom crop through the torso is expected.
+Character-led concepts default to a large character anchored on the first panel.
 Object/mechanic leads have prominence and readability checks, not anatomy requirements when
 the game has no main character.
 

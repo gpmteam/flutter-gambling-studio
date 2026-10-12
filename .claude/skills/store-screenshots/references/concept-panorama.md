@@ -109,8 +109,9 @@ the Google Play size (`--size play`, 1080×1920):
 Red bands are the cuts (the hidden allowance plus a safety margin), darkened edges are what the
 cover crop trims — on a 3:2 render, a band along the top, because Play's 9:16
 panels take the picture's whole width and the crop is anchored to the bottom. The real assets sit where
-the panorama needs them: the torso-to-head bust on
-panel 1 (or the lead object on the last panel; a mechanic lead is the field itself), the field
+the panorama needs them: the torso-to-head bust anchored on panel 1, with its natural width allowed
+to extend a little into the gameplay area on panel 2 (or the lead object on the last panel; a
+mechanic lead is the field itself), the field
 across the remaining panels, one ball per panel, two over the board, the lower-edge objects. Look
 at it once: a clearing cell under a red band means moving `--win` left, or the field with
 `--field-x`. It is context only, like the draft — attached, never composited into any art.
@@ -182,6 +183,10 @@ promises:
 - the gameplay is too small, too dark or too covered to read as a game a player would recognise —
   balls may cover part of it, the field as a whole must stay readable;
 - a reference game's world, character or symbol cast drifts from its sources;
+- the character is narrowed, stretched or redrawn to fit panel 1; compare its build and silhouette
+  with the original asset. Let noncritical shoulder, sleeve, cape or torso cross into panel 2 and
+  overlap board housing when needed, while the face, head, hands and held objects stay clear of
+  the cut band and decisive gameplay cells stay readable;
 - the backdrop is a literal place — a street, city, castle, palace, temple, landscape or
   interior — instead of abstract slot style, unless the user asked for a setting or an exact
   reference's own background is one (`.claude/docs/visual-context.md` → "Backgrounds — abstract slot style").

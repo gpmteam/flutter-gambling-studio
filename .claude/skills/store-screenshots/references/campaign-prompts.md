@@ -115,14 +115,18 @@ every face, hand, held object, ball label and decisive symbol out of both, and p
 character, the game field, the five balls and the lower-edge objects where the guide places them;
 never draw the guide's bands, outlines or flat background into the scene. Reproduce
 the supplied original character asset faithfully: it is the identity authority for the face,
-silhouette, costume and colors, and the other images are context. The main character,
-{{character}}, appears large on the first portrait panel at the left, framed as a torso-to-head
-bust: the bottom edge of the image or the large foreground objects cut its body through the
-torso, so no legs, knees, hips or feet are visible anywhere. The character is not standing full
-length and is not flying, floating or leaping; its cut torso rises from the bottom of the image or
+silhouette, costume, colors and natural proportions, and the other images are context. The main
+character, {{character}}, is anchored on the first portrait panel at the left and appears large,
+framed as a torso-to-head bust. Keep the character's original build and width; never narrow,
+stretch, reshape or change the character just to fit inside one panel. A shoulder, sleeve, cape
+or part of the torso may extend a little into the gameplay area on the second panel and overlap
+noncritical board housing. Keep the face, head, hands and held objects clear of the red cut band,
+and leave the decisive gameplay cells readable. The bottom edge of the image or the large
+foreground objects cut its body through the torso, so no legs, knees, hips or feet are visible
+anywhere. The character is not standing full length and is not flying, floating or leaping; its
+cut torso rises from the bottom of the image or
 from behind the foreground objects. Leave visible open space above the entire head and headwear,
-at least 2% of the image height, and keep the head, hands and anything the character holds clear
-of the first panel boundary. The game's real gameplay is part of the scene at a three-quarter/3D
+at least 2% of the image height. The game's real gameplay is part of the scene at a three-quarter/3D
 angle: {{gameplay}}. Match the attached gameplay reference's mechanic, topology, symbols and
 state, and render the board housing, tiles and symbols from the attached game assets; this is the
 game's field as players will see it, so it must be readable, complete and believable as a real
