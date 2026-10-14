@@ -101,7 +101,7 @@ Examples:
       --type-mood epic --caption-color "#FFF6DC" --caption-color2 "#F0B34A"
   python3 tools/store_compose.py showcase ... --size play   # 9:16 set for Play
   python3 tools/store_compose.py banner --keyart art/long-banner-integrated.png \\
-      --shot raw/03-spin.png --frame ios --hero-bounds 0.02,0.04,0.38,0.92 \\
+      --shot raw/03-spin.png --frame android --hero-bounds 0.02,0.04,0.38,0.92 \\
       --base-out art/long-banner-source.png \\
       --out store/feature-graphic-1024x500.png
   python3 tools/store_compose.py icon --src icon_art.png --fg-src emblem.png \\
@@ -4302,7 +4302,7 @@ def cmd_banner(args) -> None:
     if not getattr(args, "shot", None):
         die("--shot is required: the feature graphic always carries one phone on the "
             "right holding a real gameplay capture")
-    if getattr(args, "frame", "ios") not in DEVICE_FRAMES:
+    if getattr(args, "frame", "android") not in DEVICE_FRAMES:
         die(f"--frame {args.frame!r}: the feature graphic needs a drawn phone "
             f"({' or '.join(DEVICE_FRAMES)}), not a bare screenshot rectangle")
 
@@ -4808,8 +4808,8 @@ def main() -> None:
     b.add_argument("--shot", required=True,
                    help="the real in-game capture shown on the phone at the right "
                         "(active play or a win moment, not the menu)")
-    b.add_argument("--frame", choices=DEVICE_FRAMES, default="ios",
-                   help="phone style; the feature graphic always draws a device")
+    b.add_argument("--frame", choices=DEVICE_FRAMES, default="android",
+                   help="phone style (default: android); the feature graphic always draws a device")
     b.add_argument("--zoom", type=float, default=1.0,
                    help="oversample factor (>1) creating slack for --offset")
     b.add_argument("--offset", type=float, default=0.0,

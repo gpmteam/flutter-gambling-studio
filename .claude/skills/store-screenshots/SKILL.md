@@ -113,8 +113,8 @@ gameplay/meta captures with optional device frames and captions, set on the
 game background from the campaign art — the same picture the captured game shows (see Phase 5).
 With `--keep-runtime-background` they sit on the panorama's opening panel instead. Produce `store/`
 at 1320×2868 and `store-play/` at 1080×1920 independently, not by resizing one set into the other.
-Include a dedicated text-free 1024×500 feature graphic: the banner scene plus one phone on the
-right holding a real screenshot, with no title or copy on the left or anywhere else (see Phase 5),
+Include a dedicated text-free 1024×500 feature graphic: the banner scene plus one Android-style
+phone on the right holding a real screenshot, with no title or copy anywhere (see Phase 5),
 icon masters/platform densities (1024 launcher master, 512×512 Play listing icon, frame-free —
 see Phase 3), transparent emblem, `STORE_BRIEF.md`, `STORE_INFO.md`, and ZIP under `project_zip/`.
 `--no-play-set` omits Play screenshots. `--panels 0` skips panorama work and uses real captures
@@ -734,11 +734,15 @@ Feature example:
   --out "$STORE_DIR/feature-graphic-1024x500.png" \
   --base-out "$ART_DIR/long-banner-source-1024x500.png" --size 1024x500 --pop soft \
   --lead-kind character --banner-layout free --banner-gate off \
-  --shot "$RAW_DIR/03-game-action.png" --frame "${DEVICE_FRAME:-ios}"
+  --shot "$RAW_DIR/03-game-action.png" --frame android
 ```
 
 Use the appropriate `--lead-kind` for the game. Review the final banner with the phone once; do
 not run focal bounds, gameplay bounds or numeric banner gates.
+
+The feature phone always uses `--frame android`: slim bezels and a centered punch-hole camera,
+with no iPhone notch or Dynamic Island. The skill's `--frame` option and `DEVICE_FRAME` apply
+only to screenshot slides; never carry their iOS or frameless setting into the feature banner.
 
 **The feature graphic is a banner with one phone on the right and no text.** It carries no
 title, tagline, logo, wordmark, caption, badge or call to action — not on the left, not over the
@@ -765,7 +769,7 @@ the one shipped with the phone composited in. Do not ship a feature graphic with
 Run `store_compose.py check --dir "$OUT_DIR" --store appstore` and, when enabled, the equivalent
 Play check. Verify RGB PNGs, dimensions, no store-screenshot transparency, file sizes, aspect,
 numbering/counts and feature dimensions. In the final passing visual review from Phase 2, confirm the
-feature graphic has no title, tagline, logo or other copy and exactly one framed phone on the
+feature graphic has no title, tagline, logo or other copy and exactly one Android-style phone on the
 right; do not repeat the image review here.
 Read `.claude/rules/no-gambling.md`; check captions, metadata and art for gambling controls,
 currency, chance-based prizes and misleading scoring claims. Metadata describes the casual
