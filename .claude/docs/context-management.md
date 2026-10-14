@@ -88,7 +88,11 @@ When creating a GDD or an ADR (multi-section documents):
 
 ## Delegating to sub-agents
 
-Use sub-agents to protect the main context:
+In the production pipeline only `/autocreate-implement` (Session 2) delegates — its persona
+passes and Session 3. `/autocreate` Session 1, `/store-screenshots` and the asset-only skills are
+one thread each: a sub-agent for one of their phases re-reads the same runbooks from an empty
+context and doubles the request count. Outside the pipeline, use sub-agents to protect the main
+context:
 - Research across many files → an Explore sub-agent
 - Deep analysis → a Plan sub-agent
 - Code review → `/code-review` (which uses several agents)

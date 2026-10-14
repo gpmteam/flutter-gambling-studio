@@ -66,6 +66,12 @@ is unavailable, write the handoff and continue in the same session by reading th
 not copy full history into a phase agent; give it only the handoff path, skill path, and exit
 criterion. Session 1 hands control to nobody: it ends at the gate.
 
+**Session 1 is one thread.** Phases 0–3.10 run in this session, in this context; nothing is
+delegated to a sub-agent — not the concept, not the assets, not the data, not the carousel. A
+fresh thread for one of these phases would only re-read the same documents from an empty
+context (a Session 1 that delegated its four phases cost 2.1× the single-thread run for the same
+carousel). Sub-agents are Session 2's tool.
+
 The product is a **portrait phone game** for Android and iOS, played by touch
 (`.claude/docs/mobile-first-contract.md`). Every concept, recipe, asset and screen is designed for
 a phone held upright — there is no tablet, desktop or landscape layout at any stage. Chrome/Web is

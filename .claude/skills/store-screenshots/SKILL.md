@@ -128,8 +128,11 @@ which follows `.claude/docs/mobile-first-contract.md` (portrait phone only).
 
 ## Phase 0 — context and preflight
 
-Read the runbook and relevant references once. Reuse already-read guidance and extracted game
-facts; reread only changed files or the specific section needed for a new decision. Keep learning
+This run is one thread: every phase below runs here, and nothing — not the banner, not the
+review, not the exports — is delegated to a sub-agent (a fresh thread would only re-read this
+runbook and the game's files from an empty context). Read the runbook and relevant references
+once. Reuse already-read guidance and extracted game facts; reread only changed files or the
+specific section needed for a new decision. Keep learning
 observations pending for a separate task, including when an art gate blocks delivery.
 
 Select and verify an existing interpreter before installing dependencies. A missing import in

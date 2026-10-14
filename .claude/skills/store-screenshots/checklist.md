@@ -1,9 +1,10 @@
 # /store-screenshots checklist
 
 Read this after a compaction instead of `SKILL.md`; open a `SKILL.md` section by its heading only
-when a step is unclear. The panorama is the approved concept and is never re-rendered; the
-banner, icon and emblem each have a correction budget; the kit ships one ZIP that passes
-`check_store_kit.py`.
+when a step is unclear. **This run is one thread**: every phase below runs here; no sub-agents,
+no delegated banner, review or export. The panorama is the approved concept and is never
+re-rendered; the banner, icon and emblem each have a correction budget; the kit ships one ZIP
+that passes `check_store_kit.py`.
 
 | Phase | Do | Exit |
 |-------|----|------|

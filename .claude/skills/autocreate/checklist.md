@@ -2,7 +2,8 @@
 
 Read this after a compaction instead of `SKILL.md`; open a `SKILL.md` section by its heading only
 when a step is unclear. Phases, commands and exit criteria only — the rules themselves stay in
-the runbook and in the documents each phase names.
+the runbook and in the documents each phase names. **Session 1 is one thread**: every phase
+below runs here; no sub-agents, no delegated phase.
 
 | Phase | Do | Exit |
 |-------|----|------|
