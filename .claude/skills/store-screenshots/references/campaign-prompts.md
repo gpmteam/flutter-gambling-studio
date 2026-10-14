@@ -88,7 +88,7 @@ and a value that repeats the template's words beside it.
 |---|---|---|
 | `panorama-*` | the original character asset (identity authority; character lead only) or the lead object asset, the multiplier reference (ball model), the composition guide (`store_compose.py composition-guide`: placement and the panel cuts, layout only), the gameplay reference (context only: the layout draft before the game exists, a real capture afterwards), visible shipped sprites (symbols, board frame, tile backing), the game's original background, the reference sources from `design/reference-contract.md` or matching previews | `3456x2384`; the built-in tool's `1536x1024` |
 | `background-*` | the original character asset or lead object asset (identity authority; not for mechanic), the approved panorama (world context — not a character reference), the game's original (pre-campaign) background — never an earlier campaign background, the reference sources | `1328x2880` |
-| `banner-*` | the original character asset (identity authority; character lead only), the approved panorama (world context — not a character reference), the multiplier reference (ball model), the real gameplay capture (context only), visible shipped sprites, the reference sources | `3840x1872` |
+| `banner-*` | the original character asset (identity authority; character lead only), the approved panorama (world context — not a character reference), the banner guide (`store_compose.py banner-guide`: the phone seat, the delivered crop, the lead, the field and the ball spots, layout only), the multiplier reference (ball model), the real gameplay capture (context only), visible shipped sprites, the reference sources | `3840x1872` |
 
 The approved panorama is the campaign's world authority and the only generated picture any
 other campaign call may receive; it is never the character reference — the character's identity
@@ -238,7 +238,12 @@ around real light sources or verified magical effects. Keep shadows rich in colo
 saturated, and a few highlights near white. Keep the background luminous but subordinate through
 softer focus and lower local contrast. Preserve the source asset colors; avoid a global color
 wash, muddy shadows, flat lighting, matte gems and all-over haze. The scene should look exciting
-and premium before compositor grading.
+and premium before compositor grading. Place everything on the attached layout guide, a diagram
+rather than art: its red block on the right is where a phone will be placed over the
+finished picture and its grey margins are trimmed by the delivery crop, so keep the character's
+face and hands, every ball label and every decisive symbol out of the red block and the grey
+margins; its ball spots show where the five balls may fly, and its lead berth and field box show
+where the character and the gameplay sit. Do not copy the guide's colours, shapes or lettering.
 ```
 
 ```prompt banner-object
@@ -272,7 +277,12 @@ verified magical effects. Keep shadows rich in color, midtones saturated, and a 
 near white. Keep the background luminous but subordinate through softer focus and lower local
 contrast. Preserve the source asset colors; avoid a global color wash, muddy shadows, flat
 lighting, matte gems and all-over haze. The scene should look exciting and premium before
-compositor grading.
+compositor grading. Place everything on the attached layout guide, a diagram rather than
+art: its red block on the right is where a phone will be placed over the finished picture and its
+grey margins are trimmed by the delivery crop, so keep every ball label and every decisive symbol
+out of the red block and the grey margins; its ball spots show where the five balls may fly, and
+its lead berth and field box show where the lead and the gameplay sit. Do not copy the guide's
+colours, shapes or lettering.
 ```
 
 ## Game background templates

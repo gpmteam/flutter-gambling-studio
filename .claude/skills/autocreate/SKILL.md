@@ -8,6 +8,9 @@ allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Agent
 
 # AutoCreate — Zero-to-Production Complete Game Factory
 
+> **Phase checklist:** [checklist.md](checklist.md). After a compaction re-read that file for the
+> phase in progress, not this one; open a section here by its heading when a step is unclear.
+
 Read `.claude/docs/visual-context.md` before planning or reviewing visuals. Whether this is a
 reference request — and which mechanic governs play — is decided by `tools/reference_detect.py`
 in Phase 0, not by reading the table by eye. For a reference request, inspect every source it

@@ -23,6 +23,93 @@ store_compose = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(store_compose)
 
 
+class BannerGuideTests(unittest.TestCase):
+    """The banner is rendered knowing where the phone will sit and what the 1024×500 crop keeps."""
+
+    DELIVERY = (1024, 500)
+
+    def run_cli(self, *args: str) -> subprocess.CompletedProcess:
+        return subprocess.run([sys.executable, str(SCRIPT), "banner-guide", *args],
+                              capture_output=True, text=True, timeout=120)
+
+    @staticmethod
+    def reddish(pixel: tuple[int, ...]) -> bool:
+        r, g, b = pixel[:3]
+        return r > 100 and r > g + 40 and r > b + 30
+
+    def test_the_cli_draws_the_seat_and_the_crop_at_the_render_size(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            folder = Path(tmp)
+            hero = Image.new("RGBA", (200, 520), (0, 0, 0, 0))
+            ImageDraw.Draw(hero).rectangle((40, 0, 160, 520), fill=(30, 200, 60, 255))
+            hero.save(folder / "hero.png")
+            Image.new("RGBA", (700, 800), (40, 60, 120, 255)).save(folder / "field.png")
+            ball = Image.new("RGBA", (120, 120), (0, 0, 0, 0))
+            ImageDraw.Draw(ball).ellipse((4, 4, 116, 116), fill=(60, 110, 230, 255))
+            ball.save(folder / "ball.png")
+            guide = folder / "banner-guide.png"
+            result = self.run_cli("--out", str(guide), "--canvas", "1536x1024",
+                                  "--lead", str(folder / "hero.png"),
+                                  "--field", str(folder / "field.png"),
+                                  "--ball", str(folder / "ball.png"))
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertIn("the phone covers", result.stdout)
+            self.assertIn("Context only", result.stdout)
+            self.assertIn("trims it a lot", result.stdout, "a 3:2 render is warned about")
+            geo = store_compose.banner_guide_geometry((1536, 1024), *self.DELIVERY)
+            k = max(1.0, store_compose.BANNER_GUIDE_MIN_WIDTH / 1536)
+            with Image.open(guide) as image:
+                self.assertGreaterEqual(image.width, store_compose.BANNER_GUIDE_MIN_WIDTH)
+                self.assertAlmostEqual(image.width / image.height, 1536 / 1024, places=2)
+                rgb = image.convert("RGB")
+                # The phone seat is painted red at the device centre …
+                # (sampled above the PHONE label, whose stroke sits at the seat's centre)
+                sx = round(geo["to_x"](store_compose.BANNER_DEVICE_CENTER_X * 1024) * k)
+                sy = round(geo["to_y"](0.22 * 500) * k)
+                self.assertTrue(self.reddish(rgb.getpixel((sx, sy))), rgb.getpixel((sx, sy)))
+                # … the rows the 2.05:1 crop trims from a 3:2 render are greyed out …
+                top = rgb.getpixel((image.width // 2, 2))
+                self.assertLess(max(top), 40, top)
+                # … and the bust rises from behind the lower-edge band on the left.
+                px = np.asarray(rgb, dtype=np.int16)
+                green = (px[..., 1] > 170) & (px[..., 0] < 80)
+                y = round(geo["to_y"](0.70 * 500) * k)
+                self.assertTrue(green[y].any(), "the bust does not reach the band")
+
+    def test_over_marks_a_candidate_at_its_own_size(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            folder = Path(tmp)
+            Image.new("RGB", (3840, 1872), (30, 40, 90)).save(folder / "candidate.png")
+            out = folder / "candidate-seat.png"
+            result = self.run_cli("--over", str(folder / "candidate.png"), "--out", str(out))
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertIn("hidden by the phone", result.stdout)
+            with Image.open(out) as image:
+                self.assertEqual(image.size, (3840, 1872))
+                rgb = image.convert("RGB")
+                self.assertTrue(self.reddish(rgb.getpixel((round(3840 * 0.82), round(1872 * 0.22)))))
+                self.assertFalse(self.reddish(rgb.getpixel((round(3840 * 0.20), round(1872 * 0.22)))))
+
+    def test_ball_spots_cover_the_field_and_stay_out_of_the_phone_seat(self) -> None:
+        w, h = self.DELIVERY
+        seat_left = store_compose.banner_seat()[0] - store_compose.BANNER_SEAT_SAFE
+        fx0, fy0, fx1, fy1 = store_compose.BANNER_FIELD_BOX
+        over_field = 0
+        for x, y, r in store_compose.BANNER_BALL_SPOTS:
+            self.assertLess(x + r * h / w, seat_left, (x, y, r))
+            self.assertGreater(y - r, 0.0)
+            if fx0 <= x <= fx1 and fy0 <= y <= fy1:
+                over_field += 1
+        self.assertGreaterEqual(over_field, 2, "at least two balls must cross the gameplay")
+        self.assertEqual(len(set(store_compose.BANNER_BALL_LABELS)), 5)
+
+    def test_the_runbooks_draw_the_banner_guide_before_rendering(self) -> None:
+        root = SCRIPT.parents[1] / ".claude/skills/store-screenshots"
+        for name in ("SKILL.md", "references/campaign-art.md", "references/campaign-prompts.md"):
+            with self.subTest(file=name):
+                self.assertIn("banner-guide", (root / name).read_text(encoding="utf-8"))
+
+
 class StoreScreenshotRunbookSafetyTests(unittest.TestCase):
     def test_triptych_cli_help_loads(self) -> None:
         result = subprocess.run(

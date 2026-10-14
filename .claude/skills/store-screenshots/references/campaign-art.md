@@ -220,10 +220,16 @@ another panorama — is stale and remade. A remake is a **fresh** render from th
 references and the approved panorama: never an edit of the old banner, and the old banner is not
 attached.
 
-Render and check the prompt. Use `banner-character` for a character lead and `banner-object` for
-an object or mechanic lead (see [campaign-prompts.md](campaign-prompts.md)):
+Draw the banner guide first — the phone seat, the 1024×500 delivery crop, the lead's berth, the
+field and the five ball spots, as a layout diagram the model sees with the prompt — then render
+and check the prompt. Use `banner-character` for a character lead and `banner-object` for an
+object or mechanic lead (see [campaign-prompts.md](campaign-prompts.md)):
 
 ```bash
+"$STORE_PYTHON" tools/store_compose.py banner-guide --canvas 3840x1872 \
+  --lead "$CHARACTER_ASSET" --field production/store-art/context-capture.png \
+  --ball "$MULTIPLIER_REF" --object "$OBJECT_1" --object "$OBJECT_2" \
+  --out production/store-art/banner-guide.png   # --canvas 1536x1024 for the built-in tool
 python3 tools/prompt_template.py render --template "$TPL" --id banner-character \
   --set environment="..." --set character="..." --set gameplay="..." --set label_color="..." \
   --set accent="..." --set ball_fx="..." --set objects="..." --set foreground_pieces="..." \
@@ -231,12 +237,12 @@ python3 tools/prompt_template.py render --template "$TPL" --id banner-character 
 python3 tools/prompt_template.py check --template "$TPL" --id banner-character \
   --prompt production/store-art/banner-prompt.txt || exit 1
 python3 tools/gpt_image.py edit --prompt-file production/store-art/banner-prompt.txt \
-  --image "$CHARACTER_ASSET" --image "$PANORAMA" --image "$MULTIPLIER_REF" \
-  --image production/store-art/context-capture.png --image "$SPRITE_1" ... \
+  --image "$CHARACTER_ASSET" --image "$PANORAMA" --image production/store-art/banner-guide.png \
+  --image "$MULTIPLIER_REF" --image production/store-art/context-capture.png --image "$SPRITE_1" ... \
   --size 3840x1872 --fidelity high --out production/store-art/long-banner.png
 python3 tools/art_lineage.py record --file production/store-art/long-banner.png --role banner \
-  --made fresh --ref "$CHARACTER_ASSET" --ref "$PANORAMA" --ref "$MULTIPLIER_REF" \
-  --ref production/store-art/context-capture.png --ref "$SPRITE_1" ... \
+  --made fresh --ref "$CHARACTER_ASSET" --ref "$PANORAMA" --ref production/store-art/banner-guide.png \
+  --ref "$MULTIPLIER_REF" --ref production/store-art/context-capture.png --ref "$SPRITE_1" ... \
   --prompt production/store-art/banner-prompt.txt
 ```
 

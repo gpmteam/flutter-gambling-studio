@@ -8,6 +8,9 @@ allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Agent
 
 # Context-based store kit
 
+> **Phase checklist:** [checklist.md](checklist.md). After a compaction re-read that file for the
+> phase in progress, not this one; open a section here by its heading when a step is unclear.
+
 Read `.claude/docs/visual-context.md`, `.claude/docs/game-concept-examples.md`,
 `.claude/docs/art-lineage.md`, and the game's concept, art direction, asset manifest, math config,
 the approved concept (`production/store-art/concept/`) and runtime evidence. Inspect matching
@@ -254,9 +257,10 @@ Write `STORE_BRIEF.md` before any generation call:
   The feature graphic is text-free: record the chosen capture for its right-side phone, not a
   title or tagline.
 - One initial attempt per scene this run makes (the banner, a legacy game's panorama, any
-  `--panels 0` showcase background and any icon), followed by correction until the required
-  exports pass. Fresh renders restart from the original assets, plus the approved panorama for
-  later scenes; local defects are repaired region by region on the current candidate, never by
+  `--panels 0` showcase background and any icon), followed by correction within the scene's
+  budget — three fresh renders and five region repairs, never the same method twice on one
+  defect (see "Correcting a generated scene"). Fresh renders restart from the original assets,
+  plus the approved panorama for later scenes; local defects are repaired region by region on the current candidate, never by
   re-editing an edited frame. The approved panorama itself is never one of these scenes. Follow
   the correction policy below. Reuse accepted art and preserve evidence of failed attempts.
 
@@ -397,10 +401,22 @@ shipped graphic shows all five, and never keep balls off the gameplay to preserv
 logo, wordmark, tagline, device, UI or copy space; a left side left blank for text is a failed
 banner. The banner must look finished alone.
 
+**Draw the banner guide before the first render.** The phone seat is why banners used to need
+three renders: a label or a hand under the phone is invisible until the feature graphic is
+composed. The guide shows the model, as a layout diagram, the 1024×500 delivery crop, the phone's
+block on the right, the lead's berth, the field and five ball spots outside the seat:
+
+```bash
+"$STORE_PYTHON" tools/store_compose.py banner-guide --canvas 3840x1872 \
+  --lead "$CHARACTER_ASSET" --field production/store-art/context-capture.png \
+  --ball "$MULTIPLIER_REF" --object "$OBJECT_1" --object "$OBJECT_2" ... \
+  --out production/store-art/banner-guide.png      # --canvas 1536x1024 for the built-in tool
+```
+
 Attach, in order: the original character asset (identity authority), the approved panorama (world
-context — not a character reference), the multiplier reference (ball model), the gameplay capture
-(context only), visible shipped sprites, matching previews. When the tool takes custom sizes,
-`3840x1872` matches the 1024×500 delivery aspect. The banner is made after Phase 3's captures, so
+context — not a character reference), the banner guide (layout only), the multiplier reference
+(ball model), the gameplay capture (context only), visible shipped sprites, matching previews.
+When the tool takes custom sizes, `3840x1872` matches the 1024×500 delivery aspect. The banner is made after Phase 3's captures, so
 its gameplay context is the current game — which was built to match the panorama's gameplay
 sample. Copy the accepted `production/store-art/long-banner.png` to `$ART_DIR/long-banner.png`.
 
@@ -479,17 +495,23 @@ labels or missing balls, forbidden character framing, character drift, balls ove
 character, incorrect board dimensions or symbol ordering, and links that change the captured
 move or scoring state. Preserve the real mechanic, topology, symbols, and state.
 
-A failed visual review starts a correction loop; it does not end the pipeline. Continue until
-all requested exports pass, without a fixed number of fresh retries, targeted edits, or crop
-adjustments. Reuse accepted artwork and correct only failed scenes. Never declare PASS or
-package rejected art to end the loop.
+A failed visual review starts a correction loop; it does not end the pipeline. Reuse accepted
+artwork and correct only failed scenes. Never declare PASS or package rejected art to end the
+loop. **The loop is bounded per scene this run makes**: three fresh renders and five region
+repairs (the budget the concept panorama already has, `tools/concept_gate.py budget`), and the
+same defect is never attacked twice by the same method — a fresh render with the correction
+written into the prompt and the guide attached, then a region repair of the defect box, then
+the crop and the phone seat (`--zoom`, `--offset`; a ball label under the phone needs no new
+art). A measured store run spent six image calls and eleven minutes on one banner by repeating
+fresh renders for a phone-seat problem the guide now prevents. Past the budget, render nothing
+more: ship the best candidate if it passes every objective check, otherwise stop and report the
+delivery incomplete with the evidence under `production/store-art/failed-delivery/`.
 
-The one exception is the **concept panorama before approval** (`/autocreate` Phase 3.9 and
-`--revise`): the user reviews it the moment it is published, so its loop is bounded — three fresh
-renders and five region repairs per revision (`tools/concept_gate.py budget`, enforced by the
-lineage ledger), after which the best candidate is published with its remaining defects named as
-known issues ([references/concept-panorama.md](references/concept-panorama.md) → Step 4). It never
-declares those defects fixed; it hands them to the user.
+The **concept panorama before approval** (`/autocreate` Phase 3.9 and `--revise`) has the same
+budget, enforced by the lineage ledger, with one difference: the user reviews it the moment it is
+published, so the best candidate is published with its remaining defects named as known issues
+([references/concept-panorama.md](references/concept-panorama.md) → Step 4). It never declares
+those defects fixed; it hands them to the user.
 
 The approved panorama is corrected only by crop, and by a region repair for an objective defect
 the concept review missed. A composition or taste note against it is not a defect: the user
@@ -564,13 +586,17 @@ approach. Recheck the complete export contact sheet after composition changes; a
 audits of unchanged art.
 
 Preserve failure evidence under `production/store-art/failed-delivery/` while continuing repairs.
-BLOCKED is reserved for an unavailable required input/tool/service or an explicit user resource
-limit that prevents further work; an attempt count or failed visual review alone is not a blocker.
+BLOCKED is reserved for an unavailable required input/tool/service, an explicit user resource
+limit, or an objective defect still present when a scene's correction budget is spent; a failed
+visual review inside the budget is not a blocker, it is the next correction.
 Stop at the user's request. If an external blocker prevents continuing, save the exact cause and
 resume state, finish independent work, and report the incomplete delivery accurately.
 
 ## Phase 2 — visual review criteria (apply after exports)
 
+Review a banner candidate first with `"$STORE_PYTHON" tools/store_compose.py banner-guide --over
+<candidate> --out <candidate>-seat.png`: it draws the phone seat and the 1024×500 trim over the
+render, so a label, hand or face under the phone is caught in one view, before any export.
 After the first full export, inspect one contact sheet showing the final App Store and Play crops,
 plus the feature graphic. The approved panorama's art was reviewed before the user approved it:
 here its crops are reviewed (a label or head cut by a seam, a board row lost by the Play crop),
@@ -604,9 +630,17 @@ untouched.
 
 ## Phase 3 — branding and current captures
 
-Follow [references/runtime-branding.md](references/runtime-branding.md) for icon/emblem application,
-platform-density checks and background guards. Honor no-apply/no-wire-logo. The icon and emblem
-are generated with the approved panorama as world context. The game background is the campaign's
+Finalization Phase 10.45 already rendered the launcher icon and the emblem in the approved
+panorama's world and applied them (`assets/branding/app_icon.png`,
+`assets/images/ui/ui_game_logo.png`, ledger roles `icon` and `emblem`). Validate them against this
+panorama (`python3 tools/art_lineage.py verify --file assets/branding/app_icon.png`, the same for
+the emblem) and reuse them — a reused branding changes no Dart and no `pubspec.yaml`, so the
+project stays as finalization verified it. Generate and apply only what is missing or was made in
+another world, following [references/runtime-branding.md](references/runtime-branding.md) for
+icon/emblem application, platform-density checks and background guards; read the implementation
+rules only then, and only `.claude/rules/ui-code.md` §4–5 for the one-widget wiring. Honor
+no-apply/no-wire-logo. The icon and emblem are generated with the approved panorama as world
+context. The game background is the campaign's
 and stays as campaign art wired it; `--apply-backdrop` is retired, and
 `--confirm-game-background-replacement` belongs to campaign-art.md alone.
 

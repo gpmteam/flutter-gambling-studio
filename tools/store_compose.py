@@ -4368,6 +4368,173 @@ def cmd_banner(args) -> None:
     ok(f"{Path(args.out).name}  {w}×{h}  {size // 1024} KB (feature graphic)")
 
 
+# ── banner guide: the phone seat and the delivery crop, drawn before the banner is rendered ──
+#
+# The feature graphic is the banner cover-cropped to 1024×500 with one phone composited on the
+# right (`banner`: centred at BANNER_DEVICE_CENTER_X, 32 % of the width, 86 % of the height).
+# A banner rendered without knowing that put ball labels and the character's hand under the
+# phone, and every discovery cost another render. The guide shows the image model — as a layout
+# diagram, never as art — what the delivery crop keeps, what the phone hides, where the lead and
+# the field sit and where the five balls may fly, the same way `composition-guide` shows the
+# panorama's cuts.
+BANNER_GUIDE_MIN_WIDTH = 2400
+BANNER_DEVICE_WIDTH = 0.32      # `banner` fits the phone into this share of the width …
+BANNER_DEVICE_HEIGHT = 0.86     # … and this share of the height, centred at BANNER_DEVICE_CENTER_X
+BANNER_SEAT_SAFE = 0.025        # kept clear around the phone, per banner width
+BANNER_BAND_TOP = 0.76          # the lower-edge band of large game objects, per delivered height
+BANNER_LEAD_BOX = (0.03, 0.12, 0.42, 1.00)     # a character bust, rising from the bottom edge
+BANNER_OBJECT_BOX = (0.05, 0.20, 0.36, 0.74)   # a lead object
+BANNER_FIELD_BOX = (0.38, 0.17, 0.64, BANNER_BAND_TOP)
+BANNER_BALL_LABELS = ("x25", "x100", "x10", "x50", "x5")
+# (x, y, r): the centre as fractions of the delivered width and height, the radius as a fraction
+# of its height. Three cross the field, one flies beside the lead's head, none enters the seat.
+BANNER_BALL_SPOTS = ((0.36, 0.12, 0.085), (0.50, 0.30, 0.080), (0.58, 0.60, 0.085),
+                     (0.42, 0.54, 0.075), (0.57, 0.12, 0.080))
+
+
+def banner_seat() -> tuple[float, float, float, float]:
+    """The phone's box in the delivered banner, as fractions of its width and height."""
+    half_w, half_h = BANNER_DEVICE_WIDTH / 2, BANNER_DEVICE_HEIGHT / 2
+    return (BANNER_DEVICE_CENTER_X - half_w, 0.5 - half_h,
+            BANNER_DEVICE_CENTER_X + half_w, 0.5 + half_h)
+
+
+def banner_guide_geometry(canvas: tuple[int, int], w: int, h: int, zoom: float = 1.0,
+                          offset: float = 0.0) -> dict:
+    """Where `banner` crops a render of `canvas` size to w×h, in the render's own pixels."""
+    _, _, left, top, scale = cover_geometry(canvas[0], canvas[1], w, h, bias_x=offset, zoom=zoom)
+    to_x = lambda x: (x + left) / scale  # noqa: E731 - delivered → render pixels
+    to_y = lambda y: (y + top) / scale   # noqa: E731
+    return {"to_x": to_x, "to_y": to_y, "visible": (to_x(0), to_y(0), to_x(w), to_y(h))}
+
+
+def _banner_guide_marks(canvas: Image.Image, geo: dict, k: float, w: int, h: int) -> None:
+    """Grey where the delivery crop trims the render, red where the phone sits and the
+    right-third line past which no face or decisive symbol belongs."""
+    overlay = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
+    draw = ImageDraw.Draw(overlay)
+    vx0, vy0, vx1, vy1 = (v * k for v in geo["visible"])
+    W, H = canvas.size
+    for box in ((0, 0, vx0, H), (vx1, 0, W, H), (0, 0, W, vy0), (0, vy1, W, H)):
+        if box[2] - box[0] >= 1 and box[3] - box[1] >= 1:
+            draw.rectangle(box, fill=(10, 10, 12, 200))
+    px = lambda x: geo["to_x"](x * w) * k  # noqa: E731
+    py = lambda y: geo["to_y"](y * h) * k  # noqa: E731
+    sx0, sy0, sx1, sy1 = banner_seat()
+    pad_y = BANNER_SEAT_SAFE * w / h
+    seat = (px(sx0 - BANNER_SEAT_SAFE), py(max(0.0, sy0 - pad_y)),
+            px(min(1.0, sx1 + BANNER_SEAT_SAFE)), py(min(1.0, sy1 + pad_y)))
+    line = max(3, round(W / 900))
+    draw.rounded_rectangle(seat, radius=round((seat[2] - seat[0]) * 0.06),
+                           fill=(235, 30, 70, 110), outline=(255, 40, 80, 255), width=line)
+    x = px(2 / 3)
+    draw.line(((x, vy0), (x, vy1)), fill=(255, 40, 80, 255), width=line)
+    canvas.alpha_composite(overlay)
+    _guide_label(canvas, ((seat[0] + seat[2]) / 2, (seat[1] + seat[3]) / 2), "PHONE",
+                 (seat[2] - seat[0]) * 0.28)
+
+
+def _banner_guide_report(geo: dict, canvas: tuple[int, int], w: int, h: int) -> None:
+    sx0, sy0, sx1, sy1 = banner_seat()
+    info(f"the phone covers {sx0:.0%}–{sx1:.0%} of the delivered width and {sy0:.0%}–{sy1:.0%} of "
+         "its height (red); nothing decisive right of the two-thirds line")
+    vx0, vy0, vx1, vy1 = geo["visible"]
+    trimmed = [f"{name} {value:.1%}" for name, value in (
+        ("left", vx0 / canvas[0]), ("right", 1 - vx1 / canvas[0]),
+        ("top", vy0 / canvas[1]), ("bottom", 1 - vy1 / canvas[1])) if value >= 0.005]
+    if trimmed:
+        info(f"the {w}×{h} delivery crop trims " + ", ".join(trimmed) + " (grey)")
+
+
+def cmd_banner_guide(args) -> None:
+    w, h = parse_size(args.size)
+
+    if args.over:
+        canvas = load_image(args.over, "candidate").convert("RGBA")
+        geo = banner_guide_geometry(canvas.size, w, h, args.zoom, args.offset)
+        _banner_guide_marks(canvas, geo, 1.0, w, h)
+        save_png(canvas.convert("RGB"), Path(args.out))
+        ok(f"{Path(args.out).name}  {canvas.width}×{canvas.height}  the phone seat and the "
+           f"{w}×{h} crop over {Path(args.over).name}")
+        _banner_guide_report(geo, canvas.size, w, h)
+        info("A face, hand, ball label or decisive symbol inside the red block is hidden by the "
+             "phone; inside the grey it is cropped away. Fix it by crop first (--zoom/--offset, "
+             "the same flags on `banner`), by a region repair second — a fresh render only for "
+             "composition.")
+        return
+
+    cw, ch = parse_size(args.canvas)
+    k = max(1.0, BANNER_GUIDE_MIN_WIDTH / cw)
+    gw, gh = round(cw * k), round(ch * k)
+    geo = banner_guide_geometry((cw, ch), w, h, args.zoom, args.offset)
+    px = lambda x: geo["to_x"](x * w) * k  # noqa: E731 - delivered → guide pixels
+    py = lambda y: geo["to_y"](y * h) * k  # noqa: E731
+
+    # A neutral ground: the guide is a diagram, and its colours must not read as a palette.
+    ramp = np.linspace(58, 34, gh, dtype=np.float32)[:, None, None]
+    ground = np.broadcast_to(ramp * np.array([1.0, 1.06, 1.16], dtype=np.float32), (gh, gw, 3))
+    canvas = Image.fromarray(np.clip(ground, 0, 255).astype(np.uint8), "RGB").convert("RGBA")
+    shapes = ImageDraw.Draw(canvas, "RGBA")
+
+    band = (px(0), py(BANNER_BAND_TOP), px(1), py(1))
+    if args.object:
+        size = (band[3] - band[1]) * 1.25
+        count = len(args.object)
+        for i, path in enumerate(args.object):
+            cx = band[0] + (band[2] - band[0]) * (0.07 + 0.86 * (i / max(1, count - 1)))
+            cy = band[1] + size * 0.62 + (size * 0.06 if i % 2 else 0)
+            _guide_paste(canvas, path, (cx - size / 2, cy - size / 2, cx + size / 2,
+                                        cy + size / 2), "contain")
+    else:
+        shapes.rectangle(band, fill=(232, 182, 80, 70))
+
+    fx0, fy0, fx1, fy1 = BANNER_FIELD_BOX
+    if args.lead_kind == "mechanic":
+        fx0 = 0.30
+    field_box = (px(fx0), py(fy0), px(fx1), py(fy1))
+    if args.field:
+        _guide_paste(canvas, args.field, field_box, "contain")
+    else:
+        shapes.rounded_rectangle(field_box, radius=24, fill=(90, 150, 220, 70),
+                                 outline=(90, 150, 220, 220), width=4)
+
+    if args.lead_kind == "mechanic":
+        if args.lead:
+            warn("--lead ignored: a mechanic lead is the angled field itself (--field)")
+    else:
+        lx0, ly0, lx1, ly1 = BANNER_LEAD_BOX if args.lead_kind == "character" else BANNER_OBJECT_BOX
+        box = (px(lx0), py(ly0), px(lx1), py(ly1))
+        mode = "bust" if args.lead_kind == "character" else "contain"
+        if args.lead:
+            _guide_paste(canvas, args.lead, box, mode)
+        else:
+            shapes.rounded_rectangle(box, radius=round(0.04 * (box[2] - box[0])),
+                                     fill=(214, 168, 96, 90), outline=(214, 168, 96, 220),
+                                     width=4)
+
+    for (x, y, r), label in zip(BANNER_BALL_SPOTS, BANNER_BALL_LABELS):
+        cx, cy = px(x), py(y)
+        rad = py(y + r) - cy
+        box = (cx - rad, cy - rad, cx + rad, cy + rad)
+        if args.ball:
+            _guide_paste(canvas, args.ball, box, "contain")
+        else:
+            shapes.ellipse(box, fill=(236, 190, 70, 235), outline=(70, 46, 20, 255), width=5)
+        _guide_label(canvas, (cx, cy), label, rad)
+
+    _banner_guide_marks(canvas, geo, k, w, h)
+    save_png(canvas.convert("RGB"), Path(args.out))
+    ok(f"{Path(args.out).name}  {gw}×{gh}  banner guide — a {cw}×{ch} render delivered at "
+       f"{w}×{h} with the phone on the right ({args.lead_kind} lead)")
+    _banner_guide_report(geo, (cw, ch), w, h)
+    if abs(math.log((cw / ch) / (w / h))) > math.log(1.12):
+        warn(f"a {cw}×{ch} render is {cw / ch:.2f}:1 and the feature graphic is {w / h:.2f}:1 — "
+             "the delivery crop trims it a lot. Ask the image tool for a 2:1 landscape render "
+             "or render headless at 3840x1872, and draw the guide for that size")
+    info("Context only: attach it to the banner call after the identity asset and the approved "
+         "panorama, and say so in the prompt. It is never pasted, warped or composited into art.")
+
+
 BACKDROP_VARIANTS = {
     "menu": "full-strength key art behind the main menu / lobby",
     "game": "the same picture calmed so the live field, HUD and buttons win the eye",
@@ -4834,6 +5001,30 @@ def main() -> None:
     for dead in ("--title", "--tagline", "--logo"):
         b.add_argument(dead, default="", help=argparse.SUPPRESS)
     b.set_defaults(func=cmd_banner)
+
+    bg = sub.add_parser("banner-guide",
+                        help="context-only placement sketch of the banner render: the phone "
+                             "seat, the delivered crop, the lead, the field and the ball spots")
+    bg.add_argument("--out", required=True)
+    bg.add_argument("--size", default="1024x500", help="the delivered feature-graphic size")
+    bg.add_argument("--canvas", default="3840x1872", metavar="WxH",
+                    help="the size the image tool returns: 3840x1872 headless (the default), "
+                         "1536x1024 from the built-in tool. The crop is that of `banner` on a "
+                         "render of this size")
+    bg.add_argument("--zoom", type=float, default=1.0, help="as banner --zoom")
+    bg.add_argument("--offset", type=float, default=0.0, help="as banner --offset")
+    bg.add_argument("--lead-kind", choices=("character", "object", "mechanic"),
+                    default="character")
+    bg.add_argument("--lead", default=None,
+                    help="the original character asset (bust on the left) or the lead object")
+    bg.add_argument("--field", default=None, help="a real gameplay capture (context only)")
+    bg.add_argument("--ball", default=None, help="the multiplier reference")
+    bg.add_argument("--object", action="append", default=[],
+                    help="a lower-edge object, repeatable, in left-to-right order")
+    bg.add_argument("--over", default=None, metavar="PNG",
+                    help="draw only the seat and the crop, over a rendered candidate at its "
+                         "own size")
+    bg.set_defaults(func=cmd_banner_guide)
 
     d = sub.add_parser(
         "backdrop",

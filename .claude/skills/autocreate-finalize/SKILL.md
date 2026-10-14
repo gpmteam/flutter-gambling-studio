@@ -8,6 +8,9 @@ allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Agent, Skill
 
 # AutoCreate Finalize — Session 3 of the pipeline
 
+> **Phase checklist:** [checklist.md](checklist.md). After a compaction re-read that file for the
+> phase in progress, not this one; open a section here by its heading when a step is unclear.
+
 **Purpose**: finish `/autocreate` after Session 2 (`autocreate-implement`) has brought the
 project to `dart analyze` 0 errors + `flutter test` green. In this session:
 - **campaign check** (Phase 10.4): the game background Session 2 rendered in the approved concept
@@ -38,8 +41,8 @@ project to `dart analyze` 0 errors + `flutter test` green. In this session:
 
 **What it does NOT do:**
 - It does NOT rewrite game logic or change balance; Phase 10.4's background export/wiring (only
-  for a project that lacks it) is the one sanctioned art change, recorded in the manifest and art
-  direction
+  for a project that lacks it) and Phase 10.45's launcher icon and emblem are the sanctioned art
+  changes, recorded in the manifest, the art direction and the lineage ledger
 - It does NOT generate a banner or a panorama, and never touches `production/store-art/concept/`
 - It does NOT create new screens
 - It does NOT run Phases 1–10 — Session 2 already did those
@@ -54,7 +57,7 @@ project to `dart analyze` 0 errors + `flutter test` green. In this session:
 3. ✅ Reads `.claude/docs/mobile-first-contract.md` (portrait phone only — no desktop, tablet
    or landscape design) and `.claude/docs/gameplay-screen-contract.md` before runtime capture and
    treats every V13–V23 defect as a HIGH release blocker
-4. ✅ Runs Phases 10.4 → 10.5 → 10.6 → 11 → 11.5 → 12 → 13 in that order
+4. ✅ Runs Phases 10.4 → 10.45 → 10.5 → 10.6 → 11 → 11.5 → 12 → 13 in that order
 5. ✅ Returns the final report to the parent session (or prints it for the user) and writes
    `production/session-state/finalize-verdict.json`
 
@@ -63,7 +66,8 @@ project to `dart analyze` 0 errors + `flutter test` green. In this session:
   the balance and content are frozen
 - ❌ Rewriting whole screens — only targeted runtime auto-fixes are allowed
   (overflow, setState after dispose, a missing asset path, a null ValueNotifier), plus the
-  targeted background integration explicitly required by Phase 10.4
+  targeted background integration explicitly required by Phase 10.4 and the one-widget emblem
+  wiring of Phase 10.45
 - ❌ Generating a release upload keystore — Phase 11.5 runs ONLY with `--no-keystore`;
   a signed AAB is the user's explicit `/release-engineering`
 - ❌ Calling `/release-package` — packaging is a separate, explicit run
@@ -136,9 +140,64 @@ production-ready.
 
 ---
 
+## Phase 10.45 — branding: the launcher icon and the emblem [~4 min]
+
+The store kit used to render and apply the icon and emblem after the game was verified, which
+reopened a finished project: Dart and `pubspec.yaml` changed, the tests ran again, the preview
+was rebuilt, and the store run read the whole implementation rule bundle for a three-line edit.
+They are made here instead, before runtime verification captures the menu, so the matrix proves
+them along with everything else and the store kit only reuses them.
+
+Follow [runtime-branding.md](../store-screenshots/references/runtime-branding.md) — the same
+rules, the same tools — with the approved panorama as world context and the original shipped
+identity assets as the identity authority (never the banner, which does not exist yet):
+
+1. **Reuse first.** An icon and emblem already recorded in `production/store-art/lineage.json`
+   with roles `icon` and `emblem` for the current approved panorama (`python3
+   tools/art_lineage.py verify --file assets/branding/app_icon.png`) are kept.
+2. **Render** the launcher-icon art (an opaque full-bleed square: the hero on an abstract
+   slot-style background of its own colours, no drawn frame or bezel) and the transparent
+   emblem, one fresh render each; record both with `tools/art_lineage.py record --role icon|emblem
+   --made fresh --ref <identity asset> --ref production/store-art/concept/panorama.png`. Budget:
+   one fresh render and two region repairs per picture; a defect past that is a known issue in
+   `campaign.md`, not another render.
+3. **Apply**: `"$STORE_PYTHON" tools/store_compose.py icon` for the 1024 master, the 512 listing
+   icon and the adaptive foreground; `flutter_launcher_icons` in `pubspec.yaml`; `dart run
+   flutter_launcher_icons`; the emblem to `assets/images/ui/ui_game_logo.png`, registered, with
+   one responsive `Image.asset` on the main menu (not a rewrite of the screen).
+4. **Prove**: `dart format`, `dart analyze lib/` 0 errors, `flutter test` green; the background
+   guard of runtime-branding.md shows the runtime backgrounds UNCHANGED. Record the icon, the
+   emblem and their lineage in `campaign.md` ("Branding: ACCEPTED").
+
+If image generation is unavailable, record `Branding: BLOCKED` with the cause in `campaign.md`
+and continue; the store kit makes them then. Phase 11.5's release prep finds the icon already
+applied and does not generate another.
+
+---
+
 ## Phase 10.5 — runtime emulator verification [~8 min]
 
 Call the `/emulator-test --quick` skill (see `.claude/skills/emulator-test/SKILL.md`).
+
+### 10.5.0 — one compile, one matrix
+
+A measured finalization ran `flutter build web --release` five times and thirty-five Chrome
+tours because every small fix was followed by a rebuild and a full re-capture. The order below
+costs one compile and one matrix:
+
+1. **Static audits first, before any server starts**: 10.5.2d (`check_asset_stretch.py`),
+   10.5.2e (`check_menu_lead.py`), 10.5.2f (`check_gameplay_center.py`) and the `rg -n
+   'bg_campaign' lib` check of 10.4 read the code and the assets, not a running game. Run them
+   now, fix every HIGH they report (the 10.5.3 table), `dart analyze lib/`.
+2. **Then one dev server and one matrix** (10.5.2): `flutter run -d web-server` compiles the
+   game once; the canonical tour, the three other phones, the wide host and the soak run against
+   it in one pass, and the vision review reads every capture at once.
+3. **After a fix** (10.5.3), restart the dev server — it recompiles — and re-run only the tour
+   that covers the changed screen at 390×844 (and 360×640 when the fix was a layout fix). The
+   final smoke after the last fix is that one tour, not the matrix again.
+4. **Never `flutter build web` here.** The dev server is the verification build, and the web
+   service builds the preview after the run. The only native build in this session is the
+   compile-only `flutter build apk --debug` of 10.5.2c, and only on `--platform android`.
 
 ### 10.5.1 — preflight (web-first, headless, no display)
 
@@ -569,7 +628,8 @@ Run the `.claude/skills/playtest/SKILL.md` runbook (if the web path was SKIPPED 
 10.5 went down the Android compile-only path, this phase is honestly SKIPPED too — that is not an
 error: playtest needs a genuinely running instance over CDP, and compile-only launches nothing):
 
-- The tour + gameplay load (`web_verify.mjs --soak 60`) → the **P1–P10** checks
+- The tour + gameplay load (`web_verify.mjs --soak 60`, once, against the dev server 10.5 left
+  running — start it again only if it was stopped) → the **P1–P10** checks
   (vision comparison of frames: the move changes the field, the HUD numbers change, clear/combo
   feedback is visible, and active-state motion communicates the result; a deliberately still idle
   state is valid; manifest: 0 consoleErrors, suspectLeak=false).
@@ -674,8 +734,9 @@ flutter pub get >/dev/null 2>&1 || true
 #   (do NOT run flutter build appbundle/apk here — that is /release-package's job)
 ```
 
-> If the source icon `assets/branding/app_icon.png` is missing, generate it from the branded
-> logo/sprite (rasterise the SVG at 1024×1024) before running launcher_icons.
+> Phase 10.45 rendered and applied the icon. If `assets/branding/app_icon.png` is still missing
+> (branding was BLOCKED there), rasterise the branded logo/sprite at 1024×1024 as a stand-in
+> before running launcher_icons and say so in the report — the store kit renders the real one.
 
 **Exit criterion:** the icons and splash are generated and `store/` exists. The artifacts
 (AAB/APK) are NOT built — `/release-package` builds those. For a signed Play AAB, the user runs
@@ -816,6 +877,7 @@ render the banner in its world. Return the ZIP path, the check_store_kit.py resu
 |-------|----------------|----------------|
 | 0. Preflight | The handoff exists + `dart analyze` 0 errors | 1 (fail-fast) |
 | 10.4. Campaign check | The approved concept passes `concept_gate.py check`; the background (rendered in the approved panorama's world, character whole in frame) is ACCEPTED and selected by every screen; campaign.md complete; analyzer/tests pass | Only when missing: fresh renders from original references + the approved panorama; at most one whole-frame edit; region repairs for local defects (art-lineage.md) |
+| 10.45. Branding | The launcher icon and emblem are rendered in the approved panorama's world (or reused from the ledger), applied, wired with one widget, analyzer/tests pass, runtime backgrounds UNCHANGED; or `Branding: BLOCKED` recorded with its cause | 1 fresh render + 2 region repairs per picture |
 | 10.5. Runtime Chrome / Android compile | Web: 0 CRITICAL/HIGH visual at every phone size, gameplay-screen contract PASS, no HIGH in the V18 asset-distortion, V19 menu-composition/role, V20 gameplay-centering, V22 campaign-background or V23 approved-gameplay-sample audits, wide host shows the phone column, 0 FATAL in flutter-run.log (+ soak: no leak). Android (`--platform android`): `flutter build apk --debug` exit 0 | 3 (Chrome is always available) / 2 (Android compile) |
 | 10.6. Playtest | PLAYTEST-REPORT.md, verdict ≠ NOT-PLAYABLE (P1–P10) | 2 |
 | 11. Session state | `active.md` updated | 1 |

@@ -8,6 +8,9 @@ allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Agent, Skill
 
 # AutoCreate Implement — Session 2 (implementation)
 
+> **Phase checklist:** [checklist.md](checklist.md). After a compaction re-read that file for the
+> phase in progress, not this one; open a section here by its heading when a step is unclear.
+
 **Purpose**: turn Session 1's pre-production (concept + assets + audio + data) and the concept
 carousel the user approved into fully working, clean, tested game code that looks like the
 carousel's gameplay sample — and hand it to Session 3 for runtime verification. This is the
@@ -105,6 +108,48 @@ Session 2 orchestrator mostly coordinates and runs commands, while the sub-agent
 > **The TPM gate:** at most one sub-agent is active at a time. Each receives only
 > `lib/contracts.md`, the design/data files it needs, its role and a short handoff. Never pass
 > it the parent session's full transcript.
+
+### Sub-agent protocol under Codex
+
+The orchestrator's requests are the expensive part of this session: every one re-reads its whole
+context. A measured build run spent 50 short `wait` polls and then, once the agent pool hit its
+thread limit, ran all of Session 3 inline in that exhausted context. So, per pass:
+
+1. **Spawn** one sub-agent with its brief (`.claude/agents/<role>.md`), `lib/contracts.md`, the
+   data and design files its zone needs, and the rule files from "Per-pass reading" below.
+2. **Wait once**: one blocking `wait_agent` call at the longest timeout the tool allows. Call it
+   again only when it times out. Never a loop of short waits.
+3. **Read the summary** it returns (3–5 lines, written to `production/session-state/active.md`
+   too) and run the phase's exit command (`dart analyze lib/`, `flutter test`).
+4. **Close it** before spawning the next pass, so the pool never reaches its thread limit. If the
+   pool is ever full, close finished agents; do not take over their work in this thread.
+
+The orchestrator never implements, fixes or verifies inline, and Session 3 is always its own
+fresh sub-agent (Phase 10.7) — the fix→rebuild→retour loop belongs in a thread that starts empty.
+
+### Per-pass reading
+
+The shared rule bundle is read **by the role that needs each file**, inside that role's
+sub-agent, never whole by every pass (the seventeen files are 166 KB; a pass that reads them all
+pays for them on every request until its context compacts). `.claude/rules/no-gambling.md` binds
+every pass whether or not it was read.
+
+| Pass | Reads, besides its brief, `lib/contracts.md` and the data it wires |
+|------|---------------------------------------------------------------------|
+| art-director (4.0) | `.claude/docs/visual-context.md`, `references/campaign-art.md`, `.claude/docs/art-lineage.md` |
+| A mechanics | `.claude/rules/game-code.md`, `.claude/rules/engine-code.md`, `.claude/rules/no-gambling.md`, `.claude/docs/coding-standards.md`, `.claude/docs/balance-models.md` (its model only), `.claude/rules/data-files.md` |
+| E meta-systems | `.claude/rules/game-code.md`, `.claude/rules/no-gambling.md`, `.claude/docs/coding-standards.md`, `.claude/rules/data-files.md` |
+| D sound | `.claude/docs/technical-preferences.md` (Sound), `.claude/docs/coding-standards.md` §5 |
+| B ui | `.claude/rules/ui-code.md`, `.claude/rules/anti-slop-design.md`, `.claude/docs/mobile-first-contract.md`, `.claude/docs/gameplay-screen-contract.md`, `.claude/docs/layout-archetypes.md`, `design/art-direction.md`, `.claude/rules/no-gambling.md` §4–5 |
+| C juice | `.claude/docs/quality-bar.md` §2–§4, `.claude/rules/engine-code.md` (particles), `.claude/docs/coding-standards.md` §2 |
+| lead-programmer (5) | `.claude/docs/coordination-rules.md`, `.claude/docs/directory-structure.md`, `design/structure.md`, `.claude/docs/coding-standards.md` |
+| qa-tester (7) | `.claude/rules/test-standards.md`, `.claude/docs/gameplay-screen-contract.md` |
+| ui audit (8) | `.claude/skills/ui-audit/SKILL.md` and what it names |
+| balance-designer (9) | `.claude/docs/balance-models.md`, `.claude/rules/data-files.md` |
+| crash prevention (10) | `.claude/rules/ui-code.md` §2, `.claude/rules/game-code.md` |
+
+`CLAUDE.md`, `.claude/docs/game-categories.md` and `.claude/rules/design-docs.md` were read when
+the concept was written; the concept and `lib/contracts.md` carry what the passes need from them.
 
 ---
 
@@ -262,7 +307,9 @@ asset format and known limits, the approved concept revision and its gameplay sa
 campaign background and where each screen selects it, and the sample-alignment assets. Include
 exact runtime launch and navigation details.
 
-**Spawn a clean-context Session 3 agent** with the following instruction:
+**Close every Session 2 sub-agent first** (the pool must have room), then **spawn a
+clean-context Session 3 agent** with the following instruction and wait for it with one blocking
+`wait_agent` call at the longest timeout:
 
 ```text
 You are Session 3 of /autocreate. First read

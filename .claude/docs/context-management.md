@@ -60,7 +60,11 @@ When creating a GDD or an ADR (multi-section documents):
 1. The `session-start.sh` hook automatically shows `active.md`
 2. Read the full state file to restore context
 3. Read the files that were in flight
-4. Continue from the unfinished task
+4. In a pipeline skill (`/autocreate`, `/autocreate-implement`, `/autocreate-finalize`,
+   `/store-screenshots`), read that skill's `checklist.md` for the phase in progress — not the
+   whole `SKILL.md` again. A measured run re-read a 63 KB runbook three times over after its
+   compactions, and every later request carried those copies.
+5. Continue from the unfinished task
 
 ## Proactive compaction
 
