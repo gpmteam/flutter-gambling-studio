@@ -1,6 +1,6 @@
 ---
 name: autocreate-finalize
-description: "Session 3 of the /autocreate pipeline (Phases 10.4 → 10.5 → 10.6 → 11 → 11.5 → 12 → 13): the campaign check (the game background rendered in the approved concept panorama's world is wired into every screen), runtime + soak verification (Chrome CDP, auto-fix) including V22 (campaign background) and V23 (the live field against the approved gameplay sample), playtest (a real gameplay session, P1–P10), session state, release-engineering PREP (icons/splash/version/store-metadata/CI — WITHOUT building the AAB/APK and without a keystore), the final report and a machine-readable verdict, then the handoff to /store-screenshots, which exports the approved panorama and makes the banner from it. It does NOT build artifacts and does NOT call /release-package — that is an explicit user action. Started automatically through the Agent tool at the end of Session 2 (autocreate-implement), or manually in a new conversation."
+description: "Session 3 of the /autocreate pipeline (Phases 10.4 → 10.5 → 10.6 → 11 → 11.5 → 12 → 13): the campaign check (the game background rendered in the approved concept panorama's world is wired into every screen), runtime + soak verification (Chrome CDP, auto-fix) including V22 (campaign background) and V23 (the live field against the approved gameplay sample), playtest (a real gameplay session, P1–P10), session state, release-engineering PREP (icons/splash/version/store-metadata/CI — WITHOUT building the AAB/APK and without a keystore), the final report and a machine-readable verdict, then the handoff to /store-screenshots, which exports the approved panorama and makes the banner from it. It does NOT build artifacts and does NOT call /release-package — that is an explicit user action. Started at the end of Session 2 (autocreate-implement) — under Codex in that same thread, under Claude Code through the Agent tool — or manually in a new conversation."
 argument-hint: "[--skip-emulator | --no-fix | --no-store-kit]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Agent, Skill
@@ -34,8 +34,9 @@ project to `dart analyze` 0 errors + `flutter test` green. In this session:
 `/release-engineering` with no flags (it mints the upload keystore — an explicit user action).
 
 **When it is called:**
-- Automatically: Session 2 (`autocreate-implement`) calls the Agent tool at the end of Phase 10.7
-  with a prepared prompt (a full-history fork, no subagent_type)
+- Automatically: at the end of Phase 10.7 of Session 2 (`autocreate-implement`) — under Codex
+  the Session 2 orchestrator continues into it in the same thread; under Claude Code it calls the
+  Agent tool with a prepared prompt (a full-history fork, no subagent_type)
 - Manually: the user runs `/autocreate-finalize` in a **new** conversation, if the sub-agent
   crashed, or to repeat the runtime check after edits
 
@@ -378,8 +379,15 @@ timeout 180 node tools/web_verify.mjs --url "$WEB_URL" --out "$SHOT_DIR" --soak 
 
 The sign of a leak: monotonic growth in `JSHeapUsedSize` with no plateau after GC, or a growing
 number of repeated console exceptions. Whatever is found goes into REPORT.md as HIGH (not
-CRITICAL, if the game is playable); a targeted fix (an un-disposed controller/timer/particle
-leak) is permitted.
+CRITICAL, if the game is playable).
+
+**The soak is a probe, not an investigation.** It runs once. A suspected leak gets one look at
+the soak's own output and the code that owns the growing thing: when the owner is plain — an
+un-disposed controller, timer, subscription or particle system (`.claude/rules/ui-code.md` §2.3)
+— fix it and re-run the soak once. Otherwise record it in REPORT.md with the numbers and move on.
+No heap snapshots, no profile-mode or second dev server, no replacement of an audio or input
+backend, and no repeated soaks in Session 3: a debug-mode web heap grows on its own, and one
+build spent 42 minutes chasing that growth through snapshots and backend rewrites.
 
 ### 10.5.2d — asset distortion audit (V18) [~20 s]
 

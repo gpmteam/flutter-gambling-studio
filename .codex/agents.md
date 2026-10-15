@@ -35,8 +35,9 @@ personas. When a task needs specialised behaviour, Codex should:
   `lib/contracts.md` and the rule files `autocreate-implement/SKILL.md` → "Per-pass reading"
   lists for that role; wait with **one** blocking `wait_agent` at the longest timeout (again
   only on a timeout, never a loop of short waits); read its summary; **close it** before
-  spawning the next. Finalization (`autocreate-finalize`) always runs in its own fresh
-  sub-agent, never inline in the orchestrator. See `AGENTS.md` → "Execution economy".
+  spawning the next. Only the Phase 4 passes are delegated: Phases 4.5–10 and finalization
+  (`autocreate-finalize`, Session 3) run in the orchestrator's own thread. See `AGENTS.md` →
+  "Execution economy".
 - Multi-role phases (`/autocreate` Phase 4, `/team-dev`) are **sequential persona passes**:
   read the role file plus `lib/contracts.md`, work only on YOUR file zone, write a
   3–5 line summary of the pass into `production/session-state/active.md`, then move on to

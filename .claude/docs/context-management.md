@@ -88,8 +88,8 @@ When creating a GDD or an ADR (multi-section documents):
 
 ## Delegating to sub-agents
 
-In the production pipeline only `/autocreate-implement` (Session 2) delegates — its persona
-passes and Session 3. `/autocreate` Session 1, `/store-screenshots` and the asset-only skills are
+In the production pipeline only `/autocreate-implement` (Session 2) delegates — its Phase 4
+persona passes; Phases 4.5–10 and Session 3 run in the orchestrator's thread. `/autocreate` Session 1, `/store-screenshots` and the asset-only skills are
 one thread each: a sub-agent for one of their phases re-reads the same runbooks from an empty
 context and doubles the request count. Outside the pipeline, use sub-agents to protect the main
 context:

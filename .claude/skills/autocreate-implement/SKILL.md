@@ -1,6 +1,6 @@
 ---
 name: autocreate-implement
-description: "Session 2 of the /autocreate pipeline (Phases 4.0 → 10): implementation, started only after the user approves the concept carousel. Phase 4.0 renders the campaign game background in the approved panorama's world and aligns the field's assets to its gameplay sample; then five agents in sequence write the code plus the meta systems with the field built to look like that sample, wire up content, integrate, build to 0 errors, run a feel pass, tests, a UI audit (including the no-gambling gate), curve-based balancing and crash prevention. The heavy phases are DELEGATED to fresh sub-agents without a full-history fork, so the orchestrator does not exhaust its context or TPM. At the end it spawns Session 3 (autocreate-finalize). Started by the web service's Approve button, by Session 1 after a standalone approval, or manually."
+description: "Session 2 of the /autocreate pipeline (Phases 4.0 → 10): implementation, started only after the user approves the concept carousel. Phase 4.0 renders the campaign game background in the approved panorama's world and aligns the field's assets to its gameplay sample; then five agents in sequence write the code plus the meta systems with the field built to look like that sample, wire up content, integrate, build to 0 errors, run a feel pass, tests, a UI audit (including the no-gambling gate), curve-based balancing and crash prevention. The Phase 4 implementation passes are DELEGATED to fresh sub-agents without a full-history fork; Phases 4.5–10 and then Session 3 (autocreate-finalize) run in the orchestrator's own thread under Codex (through the Agent tool under Claude Code). Started by the web service's Approve button, by Session 1 after a standalone approval, or manually."
 argument-hint: "[--resume]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Agent, Skill
@@ -53,8 +53,8 @@ Session 1 (autocreate)  →[carousel]→  user approves  →  Session 2 (THIS sk
 10. ✅ **Delegates the heavy phases to sub-agents** (see the map below) — the orchestrator does
    NOT read all of `lib/` itself, it works from command output (`dart analyze`/`flutter test`)
    and the agents' summaries
-11. ✅ At the end (Phase 10.7) writes `autocreate-handoff.md` and **spawns Session 3** through
-   the Agent tool
+11. ✅ At the end (Phase 10.7) writes `autocreate-handoff.md` and **runs Session 3** — under
+   Codex in this same thread, under Claude Code through the Agent tool
 
 **Forbidden:**
 - ❌ Starting without an approved concept carousel, or approving it yourself
@@ -68,7 +68,7 @@ Session 1 (autocreate)  →[carousel]→  user approves  →  Session 2 (THIS sk
   gate (`.claude/rules/no-gambling.md`)
 - ❌ Calling `flutter build apk/appbundle/web`, `adb` or `emulator` — that is Session 3 / release-eng
 - ❌ Reporting "done" while `dart analyze` has errors or `flutter test` is red
-- ❌ Finishing without spawning Session 3 (Phase 10.7)
+- ❌ Finishing without running Session 3 (Phase 10.7)
 
 ---
 
@@ -111,9 +111,9 @@ Session 2 orchestrator mostly coordinates and runs commands, while the sub-agent
 
 ### Sub-agent protocol under Codex
 
-The orchestrator's requests are the expensive part of this session: every one re-reads its whole
-context. A measured build run spent 50 short `wait` polls and then, once the agent pool hit its
-thread limit, ran all of Session 3 inline in that exhausted context. So, per pass:
+Every request re-reads the whole context, and every fresh thread first re-reads the runbooks, the
+contracts and the code (5–16 requests before its first edit). So only the **Phase 4
+implementation passes** are sub-agents — 4.0 intake and A → E → D → B → C — and per pass:
 
 1. **Spawn** one sub-agent with its brief (`.claude/agents/<role>.md`), `lib/contracts.md`, the
    data and design files its zone needs, and the rule files from "Per-pass reading" below.
@@ -124,8 +124,12 @@ thread limit, ran all of Session 3 inline in that exhausted context. So, per pas
 4. **Close it** before spawning the next pass, so the pool never reaches its thread limit. If the
    pool is ever full, close finished agents; do not take over their work in this thread.
 
-The orchestrator never implements, fixes or verifies inline, and Session 3 is always its own
-fresh sub-agent (Phase 10.7) — the fix→rebuild→retour loop belongs in a thread that starts empty.
+**From Phase 4.5 on, the orchestrator does the work itself**: wiring, integration, build, feel,
+tests, UI audit, balance and crash prevention, then Session 3 (Phase 10.7), all in this thread.
+Measured on two builds of the same game: the one that finished in its warm orchestrator did
+Phases 4c–12 in 42 minutes and ~240 requests; the one that gave each of those phases a fresh
+sub-agent took 112 minutes and ~435 requests. The roles in the table above still apply — the
+orchestrator reads the role brief before the phase and adopts it, as under "CODEX" below.
 
 ### Per-pass reading
 
@@ -307,9 +311,10 @@ asset format and known limits, the approved concept revision and its gameplay sa
 campaign background and where each screen selects it, and the sample-alignment assets. Include
 exact runtime launch and navigation details.
 
-**Close every Session 2 sub-agent first** (the pool must have room), then **spawn a
-clean-context Session 3 agent** with the following instruction and wait for it with one blocking
-`wait_agent` call at the longest timeout:
+**Under Codex, Session 3 runs in this thread**: close any Session 2 sub-agent still open, read
+`.claude/skills/autocreate-finalize/checklist.md` and the `SKILL.md` sections it names, and carry
+out the instruction below yourself; then report its result. **Under Claude Code**, spawn a
+clean-context Session 3 agent with the instruction below:
 
 ```text
 You are Session 3 of /autocreate. First read
@@ -323,7 +328,7 @@ balance. Do not build an AAB/APK, create an upload keystore or call release-pack
 a separate explicit request. Return the actual checks, evidence paths and any unresolved blockers.
 ```
 
-Once the Session 3 sub-agent returns, pass its final report upward (to the user).
+Once Session 3 finishes (or its sub-agent returns), pass its final report upward (to the user).
 If Session 3 failed, report the reason and the manual restart command: `/autocreate-finalize`.
 
 ---
