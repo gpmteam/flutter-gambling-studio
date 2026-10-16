@@ -34,7 +34,65 @@ class TemplateFileTests(unittest.TestCase):
         self.assertEqual(
             set(templates),
             {"panorama-character", "panorama-object", "banner-character", "banner-object",
-             "background-character", "background-object", "background-mechanic"})
+             "background-character", "background-object", "background-mechanic",
+             "panorama-art-character", "panorama-art-object", "panorama-example",
+             "panorama-example-gameplay", "banner-art-character", "banner-art-object",
+             "icon-character", "icon-object"})
+
+    def test_art_compositions_keep_the_store_contract_without_a_field(self) -> None:
+        templates = prompt_template.load_templates(TEMPLATES)
+        for tid in ("panorama-art-character", "panorama-art-object", "banner-art-character",
+                    "banner-art-object"):
+            body = templates[tid]
+            with self.subTest(template=tid):
+                self.assertIn("there is no game board, grid, field, reels, cards, HUD or interface",
+                              body)
+                self.assertIn('"x5", "x10", "x25", "x50", "x100"', body)
+                self.assertIn("{{hero_objects}}", body)
+                self.assertIn("No floor, fabric, tabletop, podium or drape", body)
+                self.assertNotIn("{{gameplay}}", body)
+        for tid in ("panorama-art-character", "panorama-art-object"):
+            with self.subTest(template=tid):
+                body = templates[tid]
+                self.assertIn("with at least one ball in each of the {{panels}} portrait panels",
+                              body)
+                self.assertIn("on the attached composition guide, a layout diagram rather than art",
+                              body)
+        for tid in ("panorama-art-character", "banner-art-character"):
+            with self.subTest(template=tid):
+                self.assertIn("torso-to-head bust", templates[tid])
+                self.assertIn("no legs, knees, hips or feet are visible", templates[tid])
+                self.assertIn("keep every ball clear of the character's silhouette", templates[tid])
+        for tid in ("panorama-art-object", "banner-art-object"):
+            self.assertIn("do not add a person, hand, animal, mascot", templates[tid])
+
+    def test_example_compositions_keep_the_examples_layout_and_drop_its_identity(self) -> None:
+        templates = prompt_template.load_templates(TEMPLATES)
+        for tid in ("panorama-example", "panorama-example-gameplay"):
+            body = templates[tid]
+            with self.subTest(template=tid):
+                self.assertIn("Keep the example's composition exactly", body)
+                self.assertIn("replace what each one is: {{subjects}}", body)
+                self.assertIn("Nothing of the example's own identity remains", body)
+                self.assertIn("the example guide is layout only", body)
+                self.assertIn("paint an unlettered object from this game's world in its place",
+                              body)
+                self.assertIn("each used at most once", body)
+                self.assertIn("stays across it exactly as the example has it", body)
+        self.assertIn("never appears as a flat pasted picture",
+                      templates["panorama-example-gameplay"])
+        self.assertIn("There is no game board, grid, field, reels", templates["panorama-example"])
+
+    def test_icon_templates_are_mask_ready_squares_with_no_lettering(self) -> None:
+        templates = prompt_template.load_templates(TEMPLATES)
+        for tid in ("icon-character", "icon-object"):
+            body = templates[tid]
+            with self.subTest(template=tid):
+                self.assertIn("no frame, border, ring, bezel, rounded plate", body)
+                self.assertIn("No text, title, letters, numbers, logo", body)
+                self.assertIn("never a place", body)
+                self.assertIn("{{world_source}}", body)
+        self.assertIn("do not add a person, hand, animal, mascot", templates["icon-object"])
 
     def test_panorama_templates_carry_the_store_panorama_contract(self) -> None:
         # The concept carousel the user approves is the store's panorama: same rules, same words.

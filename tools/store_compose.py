@@ -41,6 +41,13 @@ makes (genre/theme agnostic — everything visual comes from the arguments):
             where the carousel cuts it, grey where the export's cover crop trims
             it, and the lead, the field, the five balls and the lower-edge band
             where they belong. `--over` draws the cuts over a rendered candidate.
+  example-guide
+            the composition guide of an example re-skin: the panels of an
+            example carousel the user supplied, each seated in the window this
+            export cuts for that panel, under the same red bands — so a render
+            that keeps every element where the guide shows it keeps it where the
+            example had it. `--grid-out` writes a coordinate grid over the
+            example for reading the panel boxes. Context only, like the guide.
   showcase  a real in-game frame placed inside a drawn phone (bezel, notch,
             home indicator, glass glare, drop shadow) over a themed background,
             with the caption typography that sells the frame.
@@ -3811,7 +3818,16 @@ def cmd_composition_guide(args) -> None:
     margin = 0.06 if args.lead_kind == "mechanic" else 0.10
     field_box = (px(span(field[0])[0] + margin * w), py(0.15 * h),
                  px(span(field[-1])[1] - margin * w), py(GUIDE_BAND_TOP * h))
-    if args.field:
+    if args.hero and args.field:
+        die("--hero is the art composition, which has no field: drop --field (or --hero)")
+    if args.hero:
+        # Key art without a field: the game's hero objects carry the panels the field would
+        # have spanned, one large focal object per panel, cycled when there are fewer.
+        for i, p in enumerate(field):
+            x0, x1 = span(p)
+            box = (px(x0 + 0.08 * w), py(0.20 * h), px(x1 - 0.08 * w), py(0.72 * h))
+            _guide_paste(canvas, args.hero[i % len(args.hero)], box, "contain")
+    elif args.field:
         # Seat the field at --field-x of its span: a box that wide, centred there, and clipped
         # to the span, so a narrow draft lands where the cut crosses its edge, not its middle.
         x0, y0, x1, y1 = field_box
@@ -3894,6 +3910,130 @@ def _guide_report(geo: dict, canvas: tuple[int, int]) -> None:
         ("top", vy0 / canvas[1]), ("bottom", 1 - vy1 / canvas[1])) if value >= 0.005]
     if trimmed:
         info("the export's cover crop trims " + ", ".join(trimmed) + " (grey)")
+
+
+# ── example guide: an example carousel, re-seated on this export's cuts ──
+#
+# A re-skin keeps the example's layout — every element where the example has it, replaced by
+# this game's counterpart. The image model can only keep what it is shown where it is shown, and
+# the example's own panels are cut at the publisher's positions with its gaps between them. So
+# the guide puts each example panel into the window this export will cut for that panel, and
+# the export (`triptych --seam-snap off`, the guide's own geometry) cuts the render back into
+# panels that line up with the example's.
+EXAMPLE_PANEL_TOLERANCE = 0.20   # an example's panels may differ in size by this much
+EXAMPLE_ASPECT_WARN = 0.15       # cover-fitting trims more than this of an example panel
+
+
+def parse_box(text: str, size: tuple[int, int]) -> tuple[int, int, int, int]:
+    """`X0,Y0,X1,Y1` in the example's own pixels."""
+    try:
+        x0, y0, x1, y1 = (int(round(float(part))) for part in str(text).split(","))
+    except ValueError:
+        die(f"--box {text}: expected X0,Y0,X1,Y1 in the example's pixels")
+    if not (0 <= x0 < x1 <= size[0] and 0 <= y0 < y1 <= size[1]):
+        die(f"--box {text}: outside the {size[0]}×{size[1]} example, or empty")
+    return x0, y0, x1, y1
+
+
+def example_boxes(boxes: list[tuple[int, int, int, int]]) -> None:
+    """Refuse boxes that cannot be one carousel: overlapping, out of order or mismatched."""
+    for a, b in zip(boxes, boxes[1:]):
+        if b[0] < a[2]:
+            die(f"--box {','.join(map(str, b))} starts before the previous panel ends — give "
+                "the panels left to right, without overlap")
+    widths = sorted(x1 - x0 for x0, _, x1, _ in boxes)
+    heights = sorted(y1 - y0 for _, y0, _, y1 in boxes)
+    for values, what in ((widths, "width"), (heights, "height")):
+        median = values[len(values) // 2]
+        if any(abs(v - median) > EXAMPLE_PANEL_TOLERANCE * median for v in values):
+            die(f"the example's panels differ in {what} by more than "
+                f"{EXAMPLE_PANEL_TOLERANCE:.0%} ({values}) — a carousel's panels are one size; "
+                "re-read the boxes on the --grid-out image")
+
+
+def _example_grid(example: Image.Image, out: Path, step: int) -> None:
+    """The example with a labelled pixel grid, to read panel boxes off by eye."""
+    if step <= 0:
+        step = max(10, round(max(example.size) / 24 / 10) * 10)
+    canvas = example.convert("RGBA")
+    overlay = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
+    draw = ImageDraw.Draw(overlay)
+    font = _guide_font(max(10, round(step * 0.32)))
+    for x in range(0, canvas.width, step):
+        major = x % (step * 5) == 0
+        draw.line(((x, 0), (x, canvas.height)), fill=(255, 40, 80, 200 if major else 90), width=1)
+        if major:
+            draw.text((x + 2, 2), str(x), font=font, fill=(255, 255, 255, 255),
+                      stroke_width=2, stroke_fill=(0, 0, 0, 255))
+    for y in range(0, canvas.height, step):
+        major = y % (step * 5) == 0
+        draw.line(((0, y), (canvas.width, y)), fill=(60, 200, 255, 200 if major else 90), width=1)
+        if major and y:
+            draw.text((2, y + 2), str(y), font=font, fill=(255, 255, 255, 255),
+                      stroke_width=2, stroke_fill=(0, 0, 0, 255))
+    canvas.alpha_composite(overlay)
+    save_png(canvas.convert("RGB"), out)
+    ok(f"{out.name}  {canvas.width}×{canvas.height}  grid every {step}px (labels every "
+       f"{step * 5}px)")
+    info("Read each panel's X0,Y0,X1,Y1 off this grid — the picture inside the panel, without "
+         "the gaps, the page around it or an icon beside it — and pass one --box per panel, "
+         "left to right.")
+
+
+def cmd_example_guide(args) -> None:
+    example = load_image(args.example, "layout example").convert("RGB")
+    if args.grid_out:
+        _example_grid(example, Path(args.grid_out), args.grid_step)
+        return
+    if not args.out:
+        die("--out is required (or --grid-out to read the panel boxes first)")
+    boxes = [parse_box(box, example.size) for box in args.box]
+    if len(boxes) == 1:
+        die("one --box is one panel: give every panel of the example, or none for an example "
+            "that is already one continuous picture (with --panels)")
+    if boxes:
+        example_boxes(boxes)
+        n = len(boxes)
+    else:
+        n = args.panels
+    if not 2 <= n <= 5:
+        die(f"{n} panels out of range (2..5)")
+    w, h = parse_size(args.size)
+    gutter = parse_gutter(args.gutter, w)
+    cw, ch = parse_size(args.canvas)
+    k = max(1.0, GUIDE_MIN_WIDTH / cw)
+    gw, gh = round(cw * k), round(ch * k)
+    geo = guide_geometry((cw, ch), n, w, h, gutter, args.zoom, args.offset, args.offset_y)
+    px = lambda x: geo["to_x"](x) * k  # noqa: E731 - pano → guide pixels
+    py = lambda y: geo["to_y"](y) * k  # noqa: E731
+
+    ramp = np.linspace(58, 34, gh, dtype=np.float32)[:, None, None]
+    ground = np.broadcast_to(ramp * np.array([1.0, 1.06, 1.16], dtype=np.float32), (gh, gw, 3))
+    canvas = Image.fromarray(np.clip(ground, 0, 255).astype(np.uint8), "RGB").convert("RGBA")
+
+    if boxes:
+        pieces = [(example.crop(box), geo["spans"][i]) for i, box in enumerate(boxes)]
+    else:
+        pieces = [(example, (0, geo["pano"][0]))]
+    for piece, (x0, x1) in pieces:
+        left, top, right, bottom = (round(px(x0)), round(py(0)), round(px(x1)), round(py(h)))
+        tw, th = max(1, right - left), max(1, bottom - top)
+        trim = 1 - min(piece.width / piece.height, tw / th) / max(piece.width / piece.height,
+                                                                  tw / th)
+        if trim > EXAMPLE_ASPECT_WARN:
+            warn(f"an example panel of {piece.width}×{piece.height} is cover-fitted into a "
+                 f"{tw}×{th} window: {trim:.0%} of it is trimmed — check that its key subjects "
+                 "are still in the guide")
+        canvas.paste(cover(piece, tw, th, sharpen=False).convert("RGBA"), (left, top))
+
+    _guide_marks(canvas, geo, k)
+    save_png(canvas.convert("RGB"), Path(args.out))
+    ok(f"{Path(args.out).name}  {gw}×{gh}  example guide — {n} panels of a {cw}×{ch} render, "
+       f"{'one panel per --box' if boxes else 'the whole example'}")
+    _guide_report(geo, (cw, ch))
+    info("Export the render with `triptych --panels %d --seam-snap off` and the same --size, "
+         "--gutter, --zoom, --offset and --offset-y: those are the cuts this guide shows. Context "
+         "only: attach it to the re-skin call, never paste or composite it into art." % n)
 
 
 # ── showcase backdrop: the opening panel, slid until the character is whole ──
@@ -4925,9 +5065,39 @@ def main() -> None:
     cg.add_argument("--ball", default=None, help="the multiplier reference")
     cg.add_argument("--object", action="append", default=[],
                     help="a lower-edge object, repeatable, in left-to-right order")
+    cg.add_argument("--hero", action="append", default=[],
+                    help="the art composition (no field): a hero object that carries one of "
+                         "the panels the field would span, repeatable, left to right")
     cg.add_argument("--over", default=None, metavar="PNG",
                     help="draw only the cuts, over a rendered candidate at its own size")
     cg.set_defaults(func=cmd_composition_guide)
+
+    eg = sub.add_parser("example-guide",
+                        help="context-only guide of an example re-skin: the example's panels "
+                             "seated on this export's cuts")
+    eg.add_argument("--example", required=True,
+                    help="the example carousel or panorama the user supplied")
+    eg.add_argument("--box", action="append", default=[], metavar="X0,Y0,X1,Y1",
+                    help="one panel of the example in its own pixels, repeatable, left to "
+                         "right; none = the example is one continuous picture (--panels)")
+    eg.add_argument("--panels", type=int, default=3,
+                    help="panel count when the example is one continuous picture (default 3)")
+    eg.add_argument("--out", default=None)
+    eg.add_argument("--size", default="play",
+                    help="carousel panel size, as triptych --size (default play)")
+    eg.add_argument("--gutter", default=DEFAULT_GUTTER, metavar="PX|N%|auto",
+                    help="the hidden seam allowance, as triptych --gutter")
+    eg.add_argument("--zoom", type=float, default=1.0, help="as triptych --zoom")
+    eg.add_argument("--offset", type=float, default=0.0, help="as triptych --offset")
+    eg.add_argument("--offset-y", type=float, default=0.0, help="as triptych --offset-y")
+    eg.add_argument("--canvas", default="3456x2384", metavar="WxH",
+                    help="the size the image tool returns, as composition-guide --canvas")
+    eg.add_argument("--grid-out", default=None, metavar="PNG",
+                    help="write only a labelled pixel grid over the example, to read --box "
+                         "values from")
+    eg.add_argument("--grid-step", type=int, default=0,
+                    help="grid spacing in pixels (default: about 1/24 of the long side)")
+    eg.set_defaults(func=cmd_example_guide)
 
     s = sub.add_parser("showcase", help="real game frame in a phone on a themed background")
     s.add_argument("--shot", required=True)

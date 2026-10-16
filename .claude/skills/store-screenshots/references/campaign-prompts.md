@@ -11,6 +11,11 @@ reworded, shortened or "adapted" sentence fails the check; so does an unfilled p
 | Panorama (the concept carousel) | `/autocreate` Phase 3.9 ([concept-panorama.md](concept-panorama.md)) — before any game code, for the user to approve | `/store-screenshots`, only for a game made before the approval gate |
 | Game background | `/autocreate-implement` Phase 4.0 ([campaign-art.md](campaign-art.md)) — right after approval, in the approved panorama's world | `/store-screenshots`, only when the handoff is missing or stale |
 | Banner | `/store-screenshots` ([campaign-art.md](campaign-art.md)) — in the approved panorama's world | — |
+| App icon | `/autocreate-finalize` Phase 10.45 — in the approved panorama's world | the service's asset-only App icon skill |
+
+The web service's asset-only skills (Concept carousel, Carousel from example, App icon, Store kit)
+render the same pictures from these same templates, with no game behind them
+([concept-panorama.md](concept-panorama.md) → "Asset-only carousels").
 
 The panorama templates are the `/store-screenshots` panorama contract (Phase 1's composition
 rules, lower edge, multiplier balls and first-prompt requirements) written out literally; the
@@ -36,6 +41,16 @@ python3 tools/prompt_template.py check --template "$TPL" --id panorama-character
 | Character lead (`lead_kind: character`) | `panorama-character` | `background-character` | `banner-character` |
 | Object lead (crown, coin, capsule) | `panorama-object` | `background-object` | `banner-object` |
 | Mechanic lead (peg clear, target throw) | `panorama-object` | `background-mechanic` | `banner-object` |
+
+The panorama's composition (concept-panorama.md → "Composition kinds") picks among them:
+
+| Composition | Panorama | Banner |
+|---|---|---|
+| `gameplay` (default) | `panorama-character` / `panorama-object` | `banner-character` / `banner-object` |
+| `art` — key art, no field | `panorama-art-character` / `panorama-art-object` | `banner-art-character` / `banner-art-object` |
+| `example` — the layout of a supplied carousel | `panorama-example-gameplay` when the example shows a field, else `panorama-example` | the lead's `banner-*` (gameplay) or `banner-art-*` |
+
+The app icon is `icon-character` or `icon-object`, by the lead.
 
 Never render a character template for a game with no living character in its concept and shipped
 inventory, and never render an object/mechanic template to avoid drawing a character the game has.
@@ -73,6 +88,17 @@ manifest, the reference contract (`design/reference-contract.md`) and the real g
 - `palette` — the game's authentic palette and light sources.
 - `focus` (mechanic background only) — the non-board motif that carries the upper half, taken
   from the game's own objects and light (never a board, a character or a mascot).
+- `hero_objects` (art compositions) — the 2–4 large game objects that carry the panels after the
+  lead, left to right (e.g. "a golden fortune wheel, a heap of crown coins, a cluster of cherries
+  and a jeweled bell").
+- `subjects` (example compositions) — what each element of the example becomes, left to right, in
+  plain words: "the blue wolf on the first panel becomes the jester; the wolf faces meeting at the
+  middle cut become the jester's two masks; the gold coins become crown coins; the sign becomes a
+  jeweled crown". Name every element the example shows; one the value leaves out keeps the
+  example's identity.
+- `world_source` (icon) — the attached world picture: `panorama`, or `banner` for one the user
+  supplied.
+- `accent_objects` (icon) — one to three of the game's objects close around the lead.
 
 Values are descriptions, not instructions: no "ignore", no extra rules, no text for the image to
 letter. Placement — which panel, how far from a cut, how large — is the composition guide's job,
@@ -88,7 +114,10 @@ and a value that repeats the template's words beside it.
 |---|---|---|
 | `panorama-*` | the original character asset (identity authority; character lead only) or the lead object asset, the multiplier reference (ball model), the composition guide (`store_compose.py composition-guide`: placement and the panel cuts, layout only), the gameplay reference (context only: the layout draft before the game exists, a real capture afterwards), visible shipped sprites (symbols, board frame, tile backing), the game's original background, the reference sources from `design/reference-contract.md` or matching previews | `3456x2384`; the built-in tool's `1536x1024` |
 | `background-*` | the original character asset or lead object asset (identity authority; not for mechanic), the approved panorama (world context — not a character reference), the game's original (pre-campaign) background — never an earlier campaign background, the reference sources | `1328x2880` |
-| `banner-*` | the original character asset (identity authority; character lead only), the approved panorama (world context — not a character reference), the banner guide (`store_compose.py banner-guide`: the phone seat, the delivered crop, the lead, the field and the ball spots, layout only), the multiplier reference (ball model), the real gameplay capture (context only), visible shipped sprites, the reference sources | `3840x1872` |
+| `banner-*` | the original character asset (identity authority; character lead only), the approved panorama (world context — not a character reference), the banner guide (`store_compose.py banner-guide`: the phone seat, the delivered crop, the lead, the field and the ball spots, layout only), the multiplier reference (ball model), the real gameplay capture (context only; the layout draft before a game exists; none for `banner-art-*`), visible shipped sprites, the reference sources | `3840x1872` |
+| `panorama-art-*` | as `panorama-*`, with the composition guide drawn with `--hero` (no field) and the hero objects' assets in place of the field's | as `panorama-*` |
+| `panorama-example*` | the identity assets of this game (character or lead object first), the multiplier reference, the example guide (`store_compose.py example-guide`: the example's panels on this export's cuts, layout only), the gameplay reference (`-gameplay` only), the game assets that replace the example's subjects, the reference sources | as `panorama-*`; 4 panels `3840x1920`, 5 panels `3840x1664` headless |
+| `icon-*` | the identity asset (the original character or lead object; for a supplied banner, the banner itself), the world picture (`world_source`) | `1024x1024` |
 
 The approved panorama is the campaign's world authority and the only generated picture any
 other campaign call may receive; it is never the character reference — the character's identity
@@ -199,6 +228,175 @@ source asset colors; avoid a global color wash, muddy shadows, flat lighting, ma
 all-over haze. The scene should look exciting and premium before compositor grading.
 ```
 
+### Art and example compositions
+
+`panorama-art-*` is key art with no field — the lead and the game's hero objects carry the panels
+(concept-panorama.md → "Composition kinds", the user's art-only ask). `panorama-example*`
+re-creates the layout of a carousel the user supplied, element for element, with this game's
+subjects: `panorama-example-gameplay` when the example shows a game field (this game's field takes
+its place), `panorama-example` when it does not. The example's layout outranks the house
+composition (bust framing, field placement, ball count and spots); the identity, no-text,
+no-gambling-UI and lighting rules still hold.
+
+```prompt panorama-art-character
+One continuous, fully illustrated horizontal key-art panorama for a mobile casual game with
+premium key-art visuals, composed to be cut into {{panels}} side-by-side portrait store screenshots
+that together read as one complete picture, set against the game's backdrop: {{environment}}. This
+is key art, not gameplay: there is no game board, grid, field, reels, cards, HUD or interface
+anywhere in it. Compose it on the attached composition guide, a layout diagram rather than art: its
+red bands mark where the picture is cut into the {{panels}} portrait panels and its darkened edges
+are cropped away, so keep every face, hand, held object and ball label out of both, and place the
+character, the hero objects, the five balls and the lower-edge objects where the guide places them;
+never draw the guide's bands, outlines or flat background into the scene. Reproduce the supplied
+original character asset faithfully: it is the identity authority for the face, silhouette,
+costume, colors and natural proportions, and the other images are context. The main character,
+{{character}}, is anchored on the first portrait panel at the left and appears large, framed as a
+torso-to-head bust. Keep the character's original build and width; never narrow, stretch, reshape
+or change the character just to fit inside one panel. A shoulder, sleeve, cape or part of the torso
+may extend a little into the second panel behind the hero objects. Keep the face, head, hands and
+held objects clear of the red cut band. The bottom edge of the image or the large foreground
+objects cut its body through the torso, so no legs, knees, hips or feet are visible anywhere. The
+character is not standing full length and is not flying, floating or leaping; its cut torso rises
+from the bottom of the image or from behind the foreground objects. Leave visible open space above
+the entire head and headwear, at least 2% of the image height. The other panels are carried by the
+game's own hero objects, rendered from the attached assets very large, close to the camera and
+overlapping in depth: {{hero_objects}}. Each panel has its own focal object, and a large object may
+cross a cut so that the panels continue into each other. Paint five multiplier balls modeled on the attached ball asset, all required, clearly airborne
+and flying around the character and across the scene at varied heights, depths and horizontal
+positions, with at least one ball in each of the {{panels}} portrait panels and none resting on an
+object. Letter each ball on its face with exactly one of these inscriptions, each used once: "x5",
+"x10", "x25", "x50", "x100". Make every label big, chunky 3D display numerals in {{label_color}}
+with a dark outline and inner highlight, filling most of the ball face and following its curve.
+Light the balls with the scene: glossy specular highlights, {{accent}} rim light, a glowing
+{{ball_fx}}, and a short motion trail. At least two balls fly in front of the hero objects and
+cover part of them. The balls
+may cover any other scene element; keep every ball clear of the character's silhouette.
+No other text, title, logo, wordmark, tagline, device, UI or empty copy space anywhere in the
+image; the panorama must look finished on its own. Across the whole lower edge, place about 5–7 of
+the game's own objects very large and close to the camera: {{objects}}, overlapping each other in
+depth and cropped by the bottom edge, filling about the lower quarter to third of the image. Under
+and between them, a continuous glittering layer of {{foreground_pieces}} runs the full width. No
+floor, fabric, tabletop, podium or drape, and no miniature clutter. Give the scene vivid, high-impact mobile-game key-art lighting from the game's authentic palette:
+{{palette}}. Separate warm and cool hues, add clean specular highlights to polished materials,
+theme-appropriate rim light on primary subjects, and reflected color between nearby objects. Use
+small star glints selectively and localized bloom around real light sources or verified magical
+effects. Keep shadows rich in color, midtones saturated, and a few highlights near white. Keep the
+background luminous but subordinate through softer focus and lower local contrast. Preserve the
+source asset colors; avoid a global color wash, muddy shadows, flat lighting, matte gems and
+all-over haze. The scene should look exciting and premium before compositor grading.
+```
+
+```prompt panorama-art-object
+One continuous, fully illustrated horizontal key-art panorama for a mobile casual game with
+premium key-art visuals, composed to be cut into {{panels}} side-by-side portrait store screenshots
+that together read as one complete picture, set against the game's backdrop: {{environment}}. This
+is key art, not gameplay: there is no game board, grid, field, reels, cards, HUD or interface
+anywhere in it. Compose it on the attached composition guide, a layout diagram rather than art: its
+red bands mark where the picture is cut into the {{panels}} portrait panels and its darkened edges
+are cropped away, so keep every ball label and the lead's defining details out of both, and place
+the lead, the hero objects, the five balls and the lower-edge objects where the guide places them;
+never draw the guide's bands, outlines or flat background into the scene. There is no character in
+this game: do not add a person, hand, animal, mascot, deity or player silhouette anywhere. The
+lead, {{lead}}, reproduced faithfully from the attached shipped asset, is the largest subject of
+its panel. The other panels are carried by the game's own hero objects, rendered from the attached
+assets very large, close to the camera and overlapping in depth: {{hero_objects}}. Each panel has
+its own focal object, and a large object may cross a cut so that the panels continue into each
+other. Paint five multiplier balls modeled on the attached ball asset, all required, clearly airborne
+and flying around the lead and across the scene at varied heights, depths and horizontal
+positions, with at least one ball in each of the {{panels}} portrait panels and none resting on an
+object. Letter each ball on its face with exactly one of these inscriptions, each used once: "x5",
+"x10", "x25", "x50", "x100". Make every label big, chunky 3D display numerals in {{label_color}}
+with a dark outline and inner highlight, filling most of the ball face and following its curve.
+Light the balls with the scene: glossy specular highlights, {{accent}} rim light, a glowing
+{{ball_fx}}, and a short motion trail. At least two balls fly in front of the hero objects and
+cover part of them. The balls may cover any other scene element.
+No other text, title, logo, wordmark, tagline, device, UI or empty copy space anywhere in the
+image; the panorama must look finished on its own. Across the whole lower edge, place about 5–7 of
+the game's own objects very large and close to the camera: {{objects}}, overlapping each other in
+depth and cropped by the bottom edge, filling about the lower quarter to third of the image. Under
+and between them, a continuous glittering layer of {{foreground_pieces}} runs the full width. No
+floor, fabric, tabletop, podium or drape, and no miniature clutter. Give the scene vivid, high-impact mobile-game key-art lighting from the game's authentic palette:
+{{palette}}. Separate warm and cool hues, add clean specular highlights to polished materials,
+theme-appropriate rim light on primary subjects, and reflected color between nearby objects. Use
+small star glints selectively and localized bloom around real light sources or verified magical
+effects. Keep shadows rich in color, midtones saturated, and a few highlights near white. Keep the
+background luminous but subordinate through softer focus and lower local contrast. Preserve the
+source asset colors; avoid a global color wash, muddy shadows, flat lighting, matte gems and
+all-over haze. The scene should look exciting and premium before compositor grading.
+```
+
+```prompt panorama-example
+One continuous, fully illustrated horizontal key-art panorama for a mobile casual game with
+premium key-art visuals, composed to be cut into {{panels}} side-by-side portrait store screenshots
+that together read as one complete picture. It re-creates the layout of the attached example
+guide with this game's own subjects: the guide shows another game's carousel, its panels seated
+where this picture will be cut, with red bands at the cuts and darkened margins that the export
+crops away. Keep the example's composition exactly — every subject and object in the same place,
+at the same size, angle, depth and overlap, moving in the same direction, with the same framing
+and crop at every panel edge and at the bottom of the image, and the same balance of light and
+dark — and replace what each one is: {{subjects}}. The backdrop becomes the game's own:
+{{environment}}, with its light and glow where the example's are; continue the scene naturally
+into the darkened margins. Nothing of the example's own identity remains: no character, creature,
+symbol, logo, title, lettering or emblem from it, and none of its colors where this game's palette
+differs. Reproduce every attached identity asset faithfully: they are the identity authority for
+the faces, silhouettes, costumes, colors and natural proportions of this game's subjects, and the
+example guide is layout only. Where the example shows a sign, title, logo, word or lettered badge,
+paint an unlettered object from this game's world in its place. Where it shows flying balls,
+medallions or multiplier badges, paint balls modeled on the attached ball asset in those places,
+lettered on their faces with the inscriptions "x5", "x10", "x25", "x50" and "x100", each used at
+most once, as big chunky 3D display numerals in {{label_color}} with a dark outline and inner
+highlight. Other flying coins, gems and tokens become this game's own objects. There is no game board, grid, field, reels, cards, HUD or interface anywhere in
+the picture. Whatever the example places across a cut stays across it exactly as the example has it; keep
+every ball label out of the red bands and the darkened margins, and never draw the guide's bands,
+outlines or flat background into the scene. No device,
+UI or empty copy space anywhere in the image; the panorama must look finished on its own. Give the scene vivid, high-impact mobile-game key-art lighting from the game's authentic palette:
+{{palette}}. Separate warm and cool hues, add clean specular highlights to polished materials,
+theme-appropriate rim light on primary subjects, and reflected color between nearby objects. Use
+small star glints selectively and localized bloom around real light sources or verified magical
+effects. Keep shadows rich in color, midtones saturated, and a few highlights near white. Keep the
+background luminous but subordinate through softer focus and lower local contrast. Preserve the
+source asset colors; avoid a global color wash, muddy shadows, flat lighting, matte gems and
+all-over haze. The scene should look exciting and premium before compositor grading.
+```
+
+```prompt panorama-example-gameplay
+One continuous, fully illustrated horizontal key-art panorama for a mobile casual game with
+premium key-art visuals, composed to be cut into {{panels}} side-by-side portrait store screenshots
+that together read as one complete picture. It re-creates the layout of the attached example
+guide with this game's own subjects: the guide shows another game's carousel, its panels seated
+where this picture will be cut, with red bands at the cuts and darkened margins that the export
+crops away. Keep the example's composition exactly — every subject and object in the same place,
+at the same size, angle, depth and overlap, moving in the same direction, with the same framing
+and crop at every panel edge and at the bottom of the image, and the same balance of light and
+dark — and replace what each one is: {{subjects}}. The backdrop becomes the game's own:
+{{environment}}, with its light and glow where the example's are; continue the scene naturally
+into the darkened margins. Nothing of the example's own identity remains: no character, creature,
+symbol, logo, title, lettering or emblem from it, and none of its colors where this game's palette
+differs. Reproduce every attached identity asset faithfully: they are the identity authority for
+the faces, silhouettes, costumes, colors and natural proportions of this game's subjects, and the
+example guide is layout only. Where the example shows a sign, title, logo, word or lettered badge,
+paint an unlettered object from this game's world in its place. Where it shows flying balls,
+medallions or multiplier badges, paint balls modeled on the attached ball asset in those places,
+lettered on their faces with the inscriptions "x5", "x10", "x25", "x50" and "x100", each used at
+most once, as big chunky 3D display numerals in {{label_color}} with a dark outline and inner
+highlight. Other flying coins, gems and tokens become this game's own objects. Where the example shows a game field, the game's real gameplay takes its place at
+the same position, size and angle: {{gameplay}}. Render the board housing, tiles and symbols from
+the attached game assets and match the attached gameplay reference's mechanic, topology, symbols
+and state; this is the game's field as players will see it, so it must be readable, complete and
+believable as a real game, and the reference is context only and never appears as a flat pasted
+picture. There is no other board, reels, HUD or interface anywhere. Whatever the example places across a cut stays across it exactly as the example has it; keep
+every ball label out of the red bands and the darkened margins, and never draw the guide's bands,
+outlines or flat background into the scene. No device,
+UI or empty copy space anywhere in the image; the panorama must look finished on its own. Give the scene vivid, high-impact mobile-game key-art lighting from the game's authentic palette:
+{{palette}}. Separate warm and cool hues, add clean specular highlights to polished materials,
+theme-appropriate rim light on primary subjects, and reflected color between nearby objects. Use
+small star glints selectively and localized bloom around real light sources or verified magical
+effects. Keep shadows rich in color, midtones saturated, and a few highlights near white. Keep the
+background luminous but subordinate through softer focus and lower local contrast. Preserve the
+source asset colors; avoid a global color wash, muddy shadows, flat lighting, matte gems and
+all-over haze. The scene should look exciting and premium before compositor grading.
+```
+
 ## Banner templates
 
 ```prompt banner-character
@@ -285,6 +483,95 @@ its lead berth and field box show where the lead and the gameplay sit. Do not co
 colours, shapes or lettering.
 ```
 
+`banner-art-*` is the banner of an art-composition panorama: the same banner contract with the
+game's hero objects where the gameplay would be. Its phone, when one is composed later, shows a
+real capture; the scene itself carries no field.
+
+```prompt banner-art-character
+One continuous, fully illustrated horizontal key-art banner for a mobile casual game with
+premium key-art visuals, set in the world of the attached panorama — the same backdrop, palette,
+lighting, hero objects, lower-edge treatment and multiplier-ball look — in a new horizontal
+composition: {{environment}}. This is key art, not gameplay: there is no game board, grid, field,
+reels, cards, HUD or interface anywhere in it. Reproduce the supplied original character asset
+faithfully: it is the identity authority for the face, silhouette, costume and colors; the
+panorama is world context, not the character reference, and the other images are context. The
+main character, {{character}}, appears large on the left, framed as a torso-to-head bust: the
+bottom edge of the image or the large foreground objects cut its body through the torso, so no
+legs, knees, hips or feet are visible anywhere. The character is not standing full length and is
+not flying, floating or leaping; its cut torso rises from the bottom of the image or from behind
+the foreground objects. Leave visible open space above the entire head and headwear, at least 2%
+of the image height. Beside the character, the game's own hero objects fill the middle of the
+scene, very large and overlapping in depth: {{hero_objects}}. The backdrop runs edge to edge, and
+the right third continues the scene with backdrop and foreground running through it, but no face
+or hero object's defining detail sits in that right third. Paint five multiplier balls modeled on
+the attached ball asset, all required, clearly airborne and flying around the character and across
+the scene at varied heights, depths and horizontal positions, none resting on an object and none
+in the right third. Letter each ball on its face with exactly one of these inscriptions, each used
+once: "x5", "x10", "x25", "x50", "x100". Make every label big, chunky 3D display numerals in
+{{label_color}} with a dark outline and inner highlight, filling most of the ball face and
+following its curve. Light the balls with the scene: glossy specular highlights, {{accent}} rim
+light, a glowing {{ball_fx}}, and a short motion trail. The balls may cover any other scene
+element; keep every ball clear of the character's silhouette. No other text, title, logo,
+wordmark, tagline, device, UI or empty copy space anywhere in the image; the banner must look
+finished on its own. Across the whole lower edge, place about 5–7 of the game's own objects very
+large and close to the camera: {{objects}}, overlapping each other in depth and cropped by the
+bottom edge, filling about the lower quarter to third of the image. Under and between them, a
+continuous glittering layer of {{foreground_pieces}} runs the full width. No floor, fabric,
+tabletop, podium or drape, and no miniature clutter. Give the scene vivid, high-impact mobile-game key-art lighting from the game's authentic palette:
+{{palette}}. Separate warm and cool hues, add clean specular highlights to polished materials,
+theme-appropriate rim light on primary subjects, and reflected color between nearby objects. Use
+small star glints selectively and localized bloom around real light sources or verified magical
+effects. Keep shadows rich in color, midtones saturated, and a few highlights near white. Keep the
+background luminous but subordinate through softer focus and lower local contrast. Preserve the
+source asset colors; avoid a global color wash, muddy shadows, flat lighting, matte gems and
+all-over haze. The scene should look exciting and premium before compositor grading. Place everything
+on the attached layout guide, a diagram rather than art: its red block on the right is where a
+phone will be placed over the finished picture and its grey margins are trimmed by the delivery
+crop, so keep the character's face and hands, every ball label and every hero object's defining
+detail out of the red block and the grey margins; its ball spots show where the five balls may
+fly, and its lead berth shows where the character sits. Do not copy the guide's colours, shapes
+or lettering.
+```
+
+```prompt banner-art-object
+One continuous, fully illustrated horizontal key-art banner for a mobile casual game with
+premium key-art visuals, set in the world of the attached panorama — the same backdrop, palette,
+lighting, hero objects, lower-edge treatment and multiplier-ball look — in a new horizontal
+composition: {{environment}}. This is key art, not gameplay: there is no game board, grid, field,
+reels, cards, HUD or interface anywhere in it. There is no character in this game: do not add a
+person, hand, animal, mascot, deity or player silhouette anywhere. The lead, {{lead}}, appears
+large on the left at a three-quarter/3D angle, reproduced faithfully from the attached shipped
+asset. Beside it, the game's own hero objects fill the middle of the scene, very large and
+overlapping in depth: {{hero_objects}}. The backdrop runs edge to edge, and the right third
+continues the scene with backdrop and foreground running through it, but no defining detail of the
+lead or a hero object sits in that right third. Paint five multiplier balls modeled on the
+attached ball asset, all required, clearly airborne and flying around the lead and across the
+scene at varied heights, depths and horizontal positions, none resting on an object and none in
+the right third. Letter each ball on its face with exactly one of these inscriptions, each used
+once: "x5", "x10", "x25", "x50", "x100". Make every label big, chunky 3D display numerals in
+{{label_color}} with a dark outline and inner highlight, filling most of the ball face and
+following its curve. Light the balls with the scene: glossy specular highlights, {{accent}} rim
+light, a glowing {{ball_fx}}, and a short motion trail. The balls may cover any other scene
+element. No other text, title, logo, wordmark, tagline, device, UI or empty copy space anywhere in
+the image; the banner must look finished on its own. Across the whole lower edge, place about 5–7
+of the game's own objects very large and close to the camera: {{objects}}, overlapping each other
+in depth and cropped by the bottom edge, filling about the lower quarter to third of the image.
+Under and between them, a continuous glittering layer of {{foreground_pieces}} runs the full
+width. No floor, fabric, tabletop, podium or drape, and no miniature clutter. Give the scene vivid, high-impact mobile-game key-art lighting from the game's authentic palette:
+{{palette}}. Separate warm and cool hues, add clean specular highlights to polished materials,
+theme-appropriate rim light on primary subjects, and reflected color between nearby objects. Use
+small star glints selectively and localized bloom around real light sources or verified magical
+effects. Keep shadows rich in color, midtones saturated, and a few highlights near white. Keep the
+background luminous but subordinate through softer focus and lower local contrast. Preserve the
+source asset colors; avoid a global color wash, muddy shadows, flat lighting, matte gems and
+all-over haze. The scene should look exciting and premium before compositor grading. Place
+everything on the attached layout guide, a diagram rather than art: its red block on the right is
+where a phone will be placed over the finished picture and its grey margins are trimmed by the
+delivery crop, so keep every ball label and the lead's defining details out of the red block and
+the grey margins; its ball spots show where the five balls may fly, and its lead berth shows where
+the lead sits. Do not copy the guide's colours, shapes or lettering.
+```
+
 ## Game background templates
 
 The game background is the backdrop behind the whole game and behind every phone on the store's real-capture slides. It is rendered right after the user approves the concept
@@ -357,4 +644,52 @@ authentic palette: {{palette}}. Separate warm and cool hues, add clean specular 
 polished materials, and reflected color between nearby objects. Keep shadows rich in color and
 midtones saturated. Preserve the source asset colors; avoid a global color wash, muddy shadows,
 flat lighting and all-over haze.
+```
+
+## App icon templates
+
+The launcher icon of the game, or of an asset-only carousel (the service's App icon skill): one
+opaque square, the lead large on an abstract background of the game's own colours, made for the
+stores' masks. `store_compose.py icon` turns it into the 1024 master, the 512 Play listing icon and
+the adaptive foreground. `world_source` names the attached world picture in plain words — "panorama"
+for a campaign that has one, "banner" for a banner the user supplied. A generated banner is never
+attached ([art-lineage.md](../../../docs/art-lineage.md)): its world is the panorama it was made from.
+
+```prompt icon-character
+One square app icon for a mobile casual game with premium key-art visuals: a single full-bleed
+square illustration in the world of the attached {{world_source}} — the same palette, lighting,
+materials and rendering style — in a new composition made for a launcher icon. Reproduce the
+supplied character faithfully: the attached identity image is the authority for the face,
+silhouette, costume and colors, and the other images are context. The main character,
+{{character}}, fills most of the square as a large head-and-shoulders portrait turned slightly
+toward the viewer, the face in the upper middle of the square and the whole head and headwear
+inside the frame, with {{accent_objects}} close around it. Behind it, an abstract slot-style background of the game's own colours: {{environment}} —
+gradient, glow, light rays and sparkles, never a place. The illustration runs edge to edge as one
+opaque square: no frame, border, ring, bezel, rounded plate, badge outline or drop shadow around it,
+because the stores apply their own mask, and nothing important within the outer tenth of the square
+on any side. No text, title, letters, numbers, logo, wordmark or multiplier balls anywhere. Keep it
+readable at 48 pixels: one dominant subject, a strong silhouette against the background, few
+large shapes and no small clutter. Light it as vivid, high-impact mobile-game key art from the
+game's authentic palette: {{palette}}, with clean specular highlights, theme-appropriate rim light
+on the subject and localized bloom around real light sources. Preserve the source asset colors;
+avoid a global color wash, muddy shadows, flat lighting and all-over haze.
+```
+
+```prompt icon-object
+One square app icon for a mobile casual game with premium key-art visuals: a single full-bleed
+square illustration in the world of the attached {{world_source}} — the same palette, lighting,
+materials and rendering style — in a new composition made for a launcher icon. There is no
+character in this game: do not add a person, hand, animal, mascot, deity or player silhouette
+anywhere. The lead, {{lead}}, reproduced faithfully from the attached identity image, fills most
+of the square at a slight three-quarter angle, whole inside the frame, with {{accent_objects}}
+close around it. Behind it, an abstract slot-style background of the game's own colours: {{environment}} —
+gradient, glow, light rays and sparkles, never a place. The illustration runs edge to edge as one
+opaque square: no frame, border, ring, bezel, rounded plate, badge outline or drop shadow around it,
+because the stores apply their own mask, and nothing important within the outer tenth of the square
+on any side. No text, title, letters, numbers, logo, wordmark or multiplier balls anywhere. Keep it
+readable at 48 pixels: one dominant subject, a strong silhouette against the background, few
+large shapes and no small clutter. Light it as vivid, high-impact mobile-game key art from the
+game's authentic palette: {{palette}}, with clean specular highlights, theme-appropriate rim light
+on the subject and localized bloom around real light sources. Preserve the source asset colors;
+avoid a global color wash, muddy shadows, flat lighting and all-over haze.
 ```

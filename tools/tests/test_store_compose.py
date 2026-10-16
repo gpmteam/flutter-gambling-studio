@@ -164,6 +164,89 @@ class LayoutDraftTests(unittest.TestCase):
             self.assertNotEqual(refused.returncode, 0)
 
 
+class ExampleGuideTests(unittest.TestCase):
+    """An example re-skin keeps the example's layout: its panels sit on this export's cuts."""
+
+    COLOURS = ((220, 40, 40), (40, 200, 60), (40, 80, 230), (230, 200, 40))
+
+    def run_cli(self, *args: str) -> subprocess.CompletedProcess:
+        return subprocess.run([sys.executable, str(SCRIPT), "example-guide", *args],
+                              capture_output=True, text=True, timeout=120)
+
+    def example(self, folder: Path, panels: int) -> tuple[Path, list[str]]:
+        """A carousel screenshot: panels with gaps on a page, and an icon above them."""
+        page = Image.new("RGB", (40 + panels * 290, 640), (12, 14, 40))
+        draw = ImageDraw.Draw(page)
+        draw.rectangle((20, 10, 120, 110), fill=(250, 250, 250))  # the app icon beside them
+        boxes = []
+        for i in range(panels):
+            box = (20 + i * 290, 140, 20 + i * 290 + 270, 140 + 480)
+            draw.rectangle(box, fill=self.COLOURS[i])
+            boxes.append(",".join(map(str, (box[0], box[1], box[2], box[3]))))
+        path = folder / "example.png"
+        page.save(path)
+        return path, boxes
+
+    def test_a_render_that_keeps_the_guide_exports_the_example_panels(self) -> None:
+        for panels, canvas in ((3, (1536, 1024)), (4, (3840, 1920))):
+            with tempfile.TemporaryDirectory() as tmp:
+                folder = Path(tmp)
+                example, boxes = self.example(folder, panels)
+                guide = folder / "guide.png"
+                args = ["--example", str(example), "--canvas", f"{canvas[0]}x{canvas[1]}",
+                        "--offset-y", "1", "--out", str(guide)]
+                for box in boxes:
+                    args += ["--box", box]
+                result = self.run_cli(*args)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertIn(f"{panels} panels", result.stdout)
+                # A render that follows the guide exactly, at the size the tool returns.
+                render = folder / "render.png"
+                with Image.open(guide) as drawn:
+                    drawn.convert("RGB").resize(canvas, Image.NEAREST).save(render)
+                out = folder / "panels"
+                exported = subprocess.run(
+                    [sys.executable, str(SCRIPT), "triptych", "--src", str(render),
+                     "--out", str(out), "--panels", str(panels), "--size", "play",
+                     "--seam-snap", "off", "--offset-y", "1", "--pop", "off",
+                     "--art-gate", "off"], capture_output=True, text=True, timeout=120)
+                self.assertEqual(exported.returncode, 0, exported.stderr)
+                for i in range(panels):
+                    with Image.open(out / f"store-{i + 1:02d}.png") as panel:
+                        centre = panel.convert("RGB").getpixel((panel.width // 2,
+                                                                panel.height // 2))
+                    self.assertTrue(all(abs(a - b) <= 12 for a, b in
+                                        zip(centre, self.COLOURS[i])),
+                                    f"{panels} panels: panel {i + 1} is {centre}, the example's "
+                                    f"panel is {self.COLOURS[i]}")
+
+    def test_boxes_must_read_as_one_carousel(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            folder = Path(tmp)
+            example, boxes = self.example(folder, 3)
+            guide = str(folder / "guide.png")
+            overlap = ["--box", "20,140,300,620", "--box", "200,140,470,620"]
+            result = self.run_cli("--example", str(example), "--out", guide, *overlap)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("left to right", result.stdout + result.stderr)
+            uneven = ["--box", boxes[0], "--box", "310,140,400,620"]
+            result = self.run_cli("--example", str(example), "--out", guide, *uneven)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("one size", result.stdout + result.stderr)
+            result = self.run_cli("--example", str(example), "--out", guide, "--box", boxes[0])
+            self.assertNotEqual(result.returncode, 0)
+
+    def test_the_grid_helps_read_the_boxes(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            folder = Path(tmp)
+            example, _ = self.example(folder, 3)
+            grid = folder / "grid.png"
+            result = self.run_cli("--example", str(example), "--grid-out", str(grid))
+            self.assertEqual(result.returncode, 0, result.stderr)
+            with Image.open(grid) as drawn, Image.open(example) as source:
+                self.assertEqual(drawn.size, source.size)
+
+
 class CompositionGuideTests(unittest.TestCase):
     """The guide's red bands are where `triptych --seam-snap off` really cuts the render."""
 
@@ -197,6 +280,29 @@ class CompositionGuideTests(unittest.TestCase):
                       * max(1, store_compose.GUIDE_MIN_WIDTH / 1536))
             with Image.open(guide) as painted:
                 self.assertEqual(painted.getpixel((x, y)), (250, 20, 20))
+
+    def test_the_art_composition_puts_hero_objects_where_the_field_would_be(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            folder = Path(tmp)
+            hero = folder / "hero.png"
+            wheel = folder / "wheel.png"
+            guide = folder / "guide.png"
+            Image.new("RGBA", (200, 200), (250, 20, 20, 255)).save(hero)
+            Image.new("RGBA", (300, 300), (20, 220, 40, 255)).save(wheel)
+            result = self.run_cli("--size", "play", "--canvas", "1536x1024", "--offset-y", "1",
+                                  "--lead", str(hero), "--hero", str(wheel), "--out", str(guide))
+            self.assertEqual(result.returncode, 0, result.stderr)
+            gutter = store_compose.parse_gutter("auto", self.PLAY[0])
+            geo = store_compose.guide_geometry((1536, 1024), 3, *self.PLAY, gutter, offset_y=1)
+            k = max(1, store_compose.GUIDE_MIN_WIDTH / 1536)
+            x0, x1 = geo["spans"][2]
+            x = round(geo["to_x"]((x0 + x1) / 2) * k)
+            y = round(geo["to_y"](0.46 * self.PLAY[1]) * k)
+            with Image.open(guide) as painted:
+                self.assertEqual(painted.getpixel((x, y)), (20, 220, 40))
+            result = self.run_cli("--size", "play", "--hero", str(wheel), "--field", str(wheel),
+                                  "--out", str(guide))
+            self.assertNotEqual(result.returncode, 0)
 
     def test_a_line_on_the_guide_cut_is_hidden_by_the_export_and_one_beside_it_is_not(self) -> None:
         for panel, canvas in itertools.product((self.PANEL, self.PLAY),

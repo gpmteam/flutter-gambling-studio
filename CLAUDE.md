@@ -58,7 +58,12 @@ banner from it. Its own review is bounded, because the user reviews it next: a c
 (`tools/store_compose.py composition-guide`) shows the image model where the carousel cuts the
 picture, each revision gets three fresh renders and five region repairs (`concept_gate.py budget`,
 enforced by the lineage ledger), and whatever is still off is published as a known issue on the
-approval card. See `.claude/skills/store-screenshots/references/concept-panorama.md`.
+approval card. The carousel shows the gameplay sample by default; an art-only ask (key art, no
+field) or a layout example the user supplies (another game's carousel, re-made element for element
+with this game's subjects) changes its composition, and an example sets the panel count (2–5).
+The web service's asset-only skills make the same carousel with no game behind it
+(`concept_gate.py publish --no-game`). See
+`.claude/skills/store-screenshots/references/concept-panorama.md` → "Composition kinds".
 
 **Generated art stays near its first generation.** Every image-model edit re-paints the whole
 frame and every reference is copied with its artifacts, so a picture edited again and again — or

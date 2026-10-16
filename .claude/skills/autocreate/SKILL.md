@@ -386,6 +386,16 @@ look like it, so render it from the assets the game will draw, in the topology t
 A reference game's carousel is the reference's world: attach its sources, and the AR11 identity
 bar applies to the panorama too.
 
+**Composition.** The carousel shows the gameplay sample by default. Two asks change how it is
+composed (concept-panorama.md → "Composition kinds"): a carousel **without gameplay** ("art
+only", "без геймплея") is the `art` composition, and a **layout example** — another game's
+carousel the user wants re-made for this one, which the service saves under
+`design/references/layout/` and names in its `[Layout example …]` scope — is the `example`
+composition, at the example's own panel count. The layout draft is made either way: when the
+picture shows no field it becomes the gameplay sample the game is built to. A layout example is
+layout only, never a reference for the game's art: Phase 0 does not read it, the reference
+contract does not list it, and the game keeps its own world.
+
 ## Phase 3.10 — the approval gate
 
 End Session 1 with a final report that presents the carousel and asks for a decision:
@@ -434,7 +444,8 @@ change to the game itself goes through the Session 1 phase that owns it (concept
 regenerates only what it affects, fresh from the original references; `concept_gate.py revise`
 archives the shown revision; the panorama is rendered again (fresh, or a region repair for a purely
 local change) and published as the next revision; and the session ends at the approval gate again,
-reporting what changed against the feedback.
+reporting what changed against the feedback. A revision may change the composition — an art-only
+ask, or a layout example attached to the feedback — and is then a fresh render in that composition.
 
 If no concept was ever published (`concept_gate.py status` → NONE or DRAFTING after an interrupted
 first run), treat the message as additional direction: resume Session 1 from the first phase

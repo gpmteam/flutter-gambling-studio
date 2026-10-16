@@ -260,6 +260,71 @@ class ConceptGateTests(unittest.TestCase):
         self.assertFalse((self.root / "concept.json").exists())
         self.assertFalse((self.root / "preview").exists())
 
+    def base_args(self) -> list[str]:
+        root = self.root
+        return ["publish", "--panorama", str(root / "panorama.png"),
+                "--prompt", str(root / "panorama-prompt.txt"), "--panels", str(root / "panels"),
+                "--lead-kind", "character"]
+
+    def test_a_game_concept_needs_its_gameplay_sample_even_without_a_field(self) -> None:
+        self.render()
+        code, message = self.run_cli(*self.base_args(), "--composition", "art")
+        self.assertEqual(code, 1)
+        self.assertIn("layout draft", message)
+        code, message = self.run_cli(*self.base_args(), "--composition", "art",
+                                     "--sample", str(self.root / "gameplay-sample.png"))
+        self.assertEqual(code, 1)
+        self.assertIn("go together", message)
+        sample = ["--sample", str(self.root / "gameplay-sample.png"),
+                  "--sample-spec", str(self.root / "gameplay-sample.md")]
+        code, message = self.run_cli(*self.base_args(), "--composition", "art", *sample)
+        self.assertEqual(code, 0, message)
+        record = self.record()
+        self.assertEqual((record["composition"], record["game"], record["panel_count"]),
+                         ("art", True, 3))
+
+    def test_an_asset_only_carousel_has_no_sample_and_is_never_approved(self) -> None:
+        self.render()
+        code, message = self.run_cli(*self.base_args(), "--composition", "art", "--no-game")
+        self.assertEqual(code, 0, message)
+        record = self.record()
+        self.assertEqual((record["status"], record["game"], record["gameplay_sample"]),
+                         ("PENDING", False, None))
+        status = json.loads(self.run_cli("status", "--json")[1])
+        self.assertEqual((status["game"], status["composition"], status["panel_count"]),
+                         (False, "art", 3))
+        code, message = self.run_cli("approve", "--expect-sha", record["panorama"]["sha256"])
+        self.assertEqual(code, 1)
+        self.assertIn("asset-only", message)
+        code, message = self.run_cli("check", "--for", "implement")
+        self.assertEqual(code, 1)
+        self.assertIn("asset-only", message)
+        # A follow-up request is a revision like any other: the shown carousel is archived.
+        self.assertEqual(self.run_cli("revise")[0], 0)
+        self.assertTrue((self.root / "revisions" / "r1" / "panorama.png").exists())
+
+    def test_an_example_carousel_records_its_example_and_its_panel_count(self) -> None:
+        self.render()
+        panels = self.root / "panels"
+        Image.new("RGB", (1080, 1920), (1, 2, 3)).save(panels / "store-04.png")
+        example = self.root / "example" / "example-01.jpg"
+        example.parent.mkdir()
+        Image.new("RGB", (400, 260), (9, 9, 9)).save(example)
+        code, message = self.run_cli(*self.base_args(), "--composition", "example", "--no-game",
+                                     "--count", "4")
+        self.assertEqual(code, 1)
+        self.assertIn("needs --example", message)
+        code, message = self.run_cli(*self.base_args(), "--composition", "example", "--no-game",
+                                     "--count", "4", "--example", str(example))
+        self.assertEqual(code, 0, message)
+        record = self.record()
+        self.assertEqual(record["panel_count"], 4)
+        self.assertEqual([e["file"] for e in record["examples"]], ["example/example-01.jpg"])
+        self.assertIn("preview/panel-4.jpg", {p["file"] for p in record["previews"]})
+        code, message = self.run_cli(*self.base_args(), "--no-game", "--count", "6")
+        self.assertEqual(code, 1)
+        self.assertIn("2 to 5 panels", message)
+
     def test_a_project_made_before_the_gate_is_legacy(self) -> None:
         Path(concept_gate.HANDOFF_1).write_text("# Handoff 1\n", encoding="utf-8")
         code, message = self.run_cli("check", "--for", "implement")

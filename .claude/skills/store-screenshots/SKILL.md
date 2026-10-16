@@ -110,8 +110,10 @@ kit whose `art/panorama.png` does not descend from the approved file through rec
 
 ## Outputs
 
-Default N=8 screenshots: P=3 adjacent concept panels sliced from the approved panorama — the
-carousel the user approved, exported with its recorded flags — followed by N−P actual
+Default N=8 screenshots: P adjacent concept panels sliced from the approved panorama — the
+carousel the user approved, exported with its recorded flags (P is its panel count: three, or the
+example's count when it followed a layout example; `export-flags.txt` carries `--panels P`) —
+followed by N−P actual
 gameplay/meta captures with optional device frames and captions, set on the
 game background from the campaign art — the same picture the captured game shows (see Phase 5).
 With `--keep-runtime-background` they sit on the panorama's opening panel instead. Produce `store/`
@@ -384,7 +386,10 @@ banner is made from the panorama, never the other way round.
 `art/long-banner.png` is the campaign banner, made by campaign-art.md Step 4 unless a banner
 already exists in this panorama's world: the prompt is `banner-character` or `banner-object` from
 [references/campaign-prompts.md](references/campaign-prompts.md), rendered with this game's values
-and passing `tools/prompt_template.py check`. The template is this section and "First-prompt
+and passing `tools/prompt_template.py check` — or `banner-art-character` / `banner-art-object`
+when the approved concept's composition is `art`, or `example` with no field (`concept_gate.py
+status --json` → `composition`): the same banner with the panorama's hero objects where the
+gameplay would be. The template is this section and "First-prompt
 requirements" below written out once for the banner; do not re-adapt them yourself. The approved
 panorama is attached as **world context**, not as a source to extend: the banner inherits its backdrop, palette, lighting, board housing, lower-edge treatment and ball look in a new
 horizontal composition, not an edit, outpaint or crop of the panorama. The character may take a

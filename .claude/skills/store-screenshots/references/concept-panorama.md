@@ -31,12 +31,93 @@ because nothing told the image model where the cuts fall. The composition guide 
 | `/autocreate` Phase 3.9 | every new game, after Phase 3.8 | the layout draft (no game exists yet) |
 | `/autocreate --revise "<feedback>"` | the user asked for changes instead of approving | the layout draft |
 | `/store-screenshots` preflight | only a game made before this gate (`concept_gate.py status` → NONE, legacy) | a real gameplay capture |
+| the web service's asset-only skills (Concept carousel, Carousel from example) | an Assets-only chat: a carousel with no game behind it | the layout draft, or none ("Asset-only carousels") |
 
 The legacy store caller runs Steps 1–5 into `$ART_DIR/panorama.png` and returns to the store
 runbook: there is no carousel to present and nothing to approve, because the store run itself is
 the user's request. It draws the composition guide from its capture (`--field`) like any caller,
 but the render budget is the concept callers' — with no user review to come, its panorama follows
 the store's correction policy.
+
+## Composition kinds
+
+The picture is composed one of three ways. The kind is recorded at publish
+(`concept_gate.py publish --composition`) and picks the template (campaign-prompts.md → "Choosing a
+template").
+
+| Kind | When | Template | Guide | Gameplay sample of a game concept |
+|---|---|---|---|---|
+| `gameplay` | the default | `panorama-character` / `panorama-object` | `composition-guide --field <layout draft>` | the crop of the painted field |
+| `art` | the user asks for a carousel without gameplay ("no gameplay", "art only", "без геймплея"), or the service's scope says so | `panorama-art-character` / `panorama-art-object` | `composition-guide --hero <object> …`, no `--field` | the layout draft, copied as `gameplay-sample.png`; its spec says the panorama shows no field |
+| `example` | the user supplied another game's carousel or panorama to follow — the service puts it under `design/references/layout/` and says so | `panorama-example-gameplay` when the example shows a game field, else `panorama-example` | `example-guide` | the crop of the field that replaced the example's, else the layout draft as for `art` |
+
+A game is still built from an `art` or `example` concept: its field follows the layout draft and the
+level data, so Step 1's draft is made for every game concept whatever the composition, and V23
+compares the game with it. The carousel simply does not show the field.
+
+### Art — key art without a field
+
+Like the references the user showed: the lead large on the first panel, the game's own hero
+objects — a fortune wheel, a heap of the game's coins, a crown, the biggest symbols — very large
+across the other panels, the five balls, the lower-edge band. In Step 1 choose two to four shipped
+hero objects (generate one as an ordinary game asset when the set has none large enough) and draw
+the guide with one `--hero` per remaining panel and no `--field`. Step 4 reviews everything but the
+field: each panel has its own focal object, large and readable, and nothing reads as a board,
+reels or a HUD.
+
+### Example — the layout of a supplied carousel
+
+The user wants another game's carousel re-made for this one, every element where the example has
+it. The example's layout outranks the house composition — bust framing, the field's place, the
+ball spots and count, the lower-edge band: a re-skin keeps what the example does, including a
+subject it deliberately splits across a cut. Identity (this game's own assets), no lettering but
+the ball inscriptions, no gambling UI or copy, the lighting and the lineage rules still hold. The
+example is the user's input, attached as **layout only**: never a style or identity reference, and
+nothing of its own characters, symbols, lettering or logo survives into the picture.
+
+1. Copy the example into `production/store-art/concept/example/` (it is archived with its
+   revision and recorded by `publish --example`).
+2. Read its panels: `"$STORE_PYTHON" tools/store_compose.py example-guide --example <file>
+   --grid-out production/store-art/concept/example-grid.png`, view the grid once, and note one
+   `X0,Y0,X1,Y1` box per panel — the picture inside the panel, not the gaps between panels, the
+   page around them or an app icon beside them. An example that is already one continuous
+   panorama needs no boxes (`--panels N`).
+3. The carousel has the example's panel count (2–5): the guide, the export, the previews and
+   `publish --count` all use it.
+4. Draw the guide for the render size: `example-guide --example <file> --box … --size play
+   --canvas <WxH> --offset-y 1 --out production/store-art/concept/example-guide.png`. The built-in
+   tool returns `1536x1024`; headless renders `3456x2384` for two or three panels, `3840x1920` for
+   four and `3840x1664` for five. The report says how much the Play crop trims; the model continues
+   the scene there.
+5. Inventory the example left to right — every character, creature, object, sign, ball and field —
+   and decide each one's counterpart in this game: its character (or lead object), its symbols and
+   objects, its field (`panorama-example-gameplay`), an unlettered object for a sign or title. That
+   is the `subjects` value; an element it leaves out keeps the example's identity.
+6. Render with the attachments in the template table's order, record it like any panorama, and
+   review the candidate's cut overlay (`composition-guide --over`) beside the example guide: the
+   same positions, sizes, crops and seam crossings, this game's identity, and no trace of the
+   example's. A subject in the wrong place is a composition defect (a fresh render); a remnant of
+   the example (an ear, a letter, its logo) is a region repair.
+7. Export with `--panels N --seam-snap off` and the guide's `--offset-y`: the guide was drawn with
+   exactly those cuts.
+
+## Asset-only carousels
+
+The web service's Assets-only chats make a carousel that no game is built from: the **Concept
+carousel** skill (any composition) and **Carousel from example** (`example`). They follow Steps
+1–5 and 7 with these differences:
+
+- There is no Flutter project, GDD, production plan, level data or balance. The brief is
+  `design/asset-concept.md`, and the assets the picture needs — the lead, the symbols, the
+  multiplier ball, the hero objects — are generated as ordinary game assets (`/generate-png-asset`
+  rules, `tools/cutout.py` for sprites) and recorded `--role asset`.
+- The guide, the template, the render budget, the lineage ledger and the Play-size export are the
+  same. A `gameplay` composition still paints a field from the layout draft: the user builds the
+  game from these assets, so the field is the picture of a game they can make.
+- No gameplay sample and no approval: publish with `--no-game` (and `--composition`). The service
+  shows the carousel in the chat as delivered. A later request in the same chat is a revision:
+  `concept_gate.py revise` archives the shown carousel first, and the budget starts again.
+- The service skill packages the delivery itself (`tools/asset_compose.py --carousel`).
 
 ## Files — `production/store-art/concept/`
 
@@ -45,6 +126,7 @@ the store's correction policy.
 | `panorama.png` | the accepted panorama source (`3456x2384` headless; ~1.6 MP from the built-in tool) |
 | `panorama-prompt.txt` | the rendered `panorama-*` prompt; `prompt_template.py check` PASS |
 | `layout-draft.png` | the context-only sketch of the planned field |
+| `example/`, `example-grid.png`, `example-guide.png` | an `example` composition: the supplied example, its pixel grid, and its panels seated on this export's cuts |
 | `composition-guide.png` | the context-only placement sketch: the panel cuts, the lead, the field, the five balls, the lower band |
 | `panels/` | the triptych export: `store-01..03.png` at the Google Play size 1080×1920, `_panorama-preview.png`, `_carousel-preview.png` |
 | `export-flags.txt` | the exact `triptych` flags the carousel was exported with — the store run reuses them |
@@ -234,6 +316,10 @@ printf '%s\n' "--panels 3 --pop soft --seam-snap off --offset-y 1 --lead-kind ch
   > production/store-art/concept/export-flags.txt
 ```
 
+`--panels` is the carousel's panel count: three, or the example's count for an `example`
+composition. It goes into `export-flags.txt` with the other flags, so the store run and the
+service's App Store export cut the same panels.
+
 Use the game's `--lead-kind`. The bottom anchored Play crop keeps the panorama's foreground
 objects in all three panels; the guide and export must use the same `--offset-y`. Review the top
 edge as well, especially the highest ball and the character's head. If either is clipped, adjust
@@ -287,6 +373,12 @@ python3 tools/art_lineage.py record --file production/store-art/concept/gameplay
 The runtime field is the same board seen square-on, as the game requires: the camera angle and
 the marketing-only items are the panorama's; everything else in this file is the game's.
 
+An `art` concept, or an `example` one whose example showed no field, paints no field: copy the
+layout draft to `gameplay-sample.png` (it is a sketch of real assets, not generated art, so it
+needs no lineage record) and write the spec from it with `- Source: the layout draft — the
+panorama shows no field (composition: art)`. The game is built to that. An asset-only carousel has no
+sample at all.
+
 ## Step 7 — publish and stop
 
 ```bash
@@ -296,8 +388,10 @@ python3 tools/concept_gate.py publish \
   --panels production/store-art/concept/panels \
   --sample production/store-art/concept/gameplay-sample.png \
   --sample-spec production/store-art/concept/gameplay-sample.md \
-  --lead-kind character \
+  --lead-kind character --composition gameplay \
   --known-issue "The painted board is 6×8; the game keeps the level data's 7×8."  # one per issue
+# --composition art|example (+ --example production/store-art/concept/example/<file>), --count N
+# for a carousel of N panels; an asset-only carousel adds --no-game and drops --sample/--sample-spec
 ```
 
 Publish once, after the review passes: a different panorama replacing a PENDING one is refused

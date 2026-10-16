@@ -14,7 +14,9 @@ describes, so it survives in every project snapshot:
 
   publish   record a reviewed panorama + its sliced panels as the PENDING concept (and write
             the small web previews the service shows), with `--known-issue` for anything the
-            render budget left unfixed; archives a previous revision first
+            render budget left unfixed; archives a previous revision first. `--composition`
+            names how the picture was composed (gameplay, art, example) and `--no-game` marks an
+            asset-only carousel that no game is built from
   budget    fresh renders and region repairs left in the revision being made (3 and 5): the
             user reviews the picture next, so its own review loop is bounded
   revise    archive the PENDING concept before a revision render (status DRAFTING)
@@ -25,6 +27,18 @@ describes, so it survives in every project snapshot:
 Statuses: NONE (no record), DRAFTING (a revision is being rendered), PENDING (awaiting the user),
 APPROVED. A project made before this gate existed has no record and no `Concept gate: required`
 line in its Session 1 handoff; `check --for implement` reports it as LEGACY and lets it through.
+
+Compositions (concept-panorama.md → "Composition kinds"):
+
+  gameplay  the default: the game's field caught mid-move beside its lead — the gameplay sample
+            the game is built to look like
+  art       key art only, no field: the lead and the game's objects large across the panels
+  example   the layout of an example carousel the user supplied, every element kept where the
+            example has it and replaced by this game's counterpart (`--example`, the source)
+
+A concept a game is built from always has a gameplay sample: for an art or example picture with
+no field it is the layout draft. An asset-only carousel (`--no-game`) is a deliverable, not a
+contract: it needs no sample, and it is never approved or implemented.
 """
 from __future__ import annotations
 
@@ -50,6 +64,10 @@ PREVIEW_QUALITY = 86
 # The store kit exports its App Store set later from the same 3:2 panorama: nearly the same cuts
 # across the width, plus the height that Play's 9:16 crop trims.
 PANEL_SIZE = (1080, 1920)
+# The carousel's panel count: three by default, two to five for an example carousel. Mirrors the
+# range `store_compose.py composition-guide --panels` accepts.
+PANEL_COUNTS = range(2, 6)
+COMPOSITIONS = ("gameplay", "art", "example")
 DEFAULT_LEDGER = "production/store-art/lineage.json"
 # The concept panorama's own review is bounded, because the user reviews it the moment it is
 # published. Unbounded, one panorama took ten fresh renders and 42 minutes, every one of them
@@ -234,14 +252,33 @@ def cmd_publish(args: argparse.Namespace) -> int:
     panorama = Path(args.panorama)
     prompt = Path(args.prompt)
     panels_dir = Path(args.panels)
-    sample = Path(args.sample)
-    sample_spec = Path(args.sample_spec)
+    game = not args.no_game
+    if args.count not in PANEL_COUNTS:
+        raise GateError(f"--count {args.count}: a carousel has {PANEL_COUNTS.start} to "
+                        f"{PANEL_COUNTS.stop - 1} panels")
+    if (args.sample is None) != (args.sample_spec is None):
+        raise GateError("--sample and --sample-spec go together: the crop and its written spec")
+    if game and args.sample is None:
+        raise GateError("a concept a game is built from needs its gameplay sample (--sample, "
+                        "--sample-spec): the field crop, or the layout draft when the picture "
+                        "shows no field. Only an asset-only carousel (--no-game) has none")
+    sample = Path(args.sample) if args.sample else None
+    sample_spec = Path(args.sample_spec) if args.sample_spec else None
+    examples = [Path(e) for e in args.example]
+    if args.composition == "example" and not examples:
+        raise GateError("--composition example needs --example: the layout example the user "
+                        "supplied, copied under the concept directory")
+    if examples and args.composition != "example":
+        raise GateError("--example belongs to --composition example")
     issues = known_issues(args.known_issue)
-    for path, what in ((panorama, "panorama"), (prompt, "panorama prompt"),
-                       (sample, "gameplay-sample crop"), (sample_spec, "gameplay-sample spec")):
+    inputs = [(panorama, "panorama"), (prompt, "panorama prompt")]
+    if sample is not None and sample_spec is not None:
+        inputs += [(sample, "gameplay-sample crop"), (sample_spec, "gameplay-sample spec")]
+    inputs += [(example, "layout example") for example in examples]
+    for path, what in inputs:
         if not path.is_file():
             raise GateError(f"missing {what}: {path}")
-    for path in (panorama, prompt, sample, sample_spec):
+    for path, _ in inputs:
         if root.resolve() not in path.resolve().parents:
             raise GateError(f"{path} must live under {root}/ so it is archived with its revision")
     panels = [panels_dir / f"store-{i:02d}.png" for i in range(1, args.count + 1)]
@@ -254,7 +291,7 @@ def cmd_publish(args: argparse.Namespace) -> int:
                 raise GateError(f"{panel} is {image.size[0]}x{image.size[1]}; the carousel is "
                                 f"exported at the Google Play size {PANEL_SIZE[0]}x{PANEL_SIZE[1]} "
                                 "(`store_compose.py triptych --size play`)")
-    if not sample_spec.read_text(encoding="utf-8").strip():
+    if sample_spec is not None and not sample_spec.read_text(encoding="utf-8").strip():
         raise GateError(f"{sample_spec} is empty — describe the gameplay sample the game must match")
 
     ledger = Path(args.ledger)
@@ -298,9 +335,14 @@ def cmd_publish(args: argparse.Namespace) -> int:
         "panorama": {"file": rel(panorama, root), "sha256": sha256(panorama),
                      "size": pano_size},
         "prompt": {"file": rel(prompt, root), "sha256": sha256(prompt)},
+        "composition": args.composition,
+        "game": game,
+        "panel_count": len(panels),
         "panels": [{"file": rel(p, root), "sha256": sha256(p)} for p in panels],
-        "gameplay_sample": {"file": rel(sample, root), "sha256": sha256(sample),
-                            "spec": rel(sample_spec, root)},
+        "gameplay_sample": ({"file": rel(sample, root), "sha256": sha256(sample),
+                             "spec": rel(sample_spec, root)}
+                            if sample is not None and sample_spec is not None else None),
+        "examples": [{"file": rel(e, root), "sha256": sha256(e)} for e in examples],
         "previews": previews,
         "feedback": (previous or {}).get("feedback", []),
         "published_at": now(),
@@ -312,8 +354,9 @@ def cmd_publish(args: argparse.Namespace) -> int:
         data["note"] = args.note
     data["known_issues"] = issues
     save(root, data)
-    print(f"✅ concept revision {revision} is PENDING approval — {rel(panorama, project)} "
-          f"({len(panels)} panels, sha256 {data['panorama']['sha256'][:12]}…)")
+    waiting = "PENDING approval" if game else "published (asset-only: nothing is built from it)"
+    print(f"✅ concept revision {revision} is {waiting} — {rel(panorama, project)} "
+          f"({len(panels)} panels, {args.composition}, sha256 {data['panorama']['sha256'][:12]}…)")
     for issue in data["known_issues"]:
         print(f"   known issue: {issue}")
     return 0
@@ -367,6 +410,9 @@ def cmd_approve(args: argparse.Namespace) -> int:
                         f"{data['panorama']['sha256'][:12]}…")
     if not current_panorama_matches(root, data):
         raise GateError(f"{panorama_of(root, data)} no longer matches the panorama the user saw")
+    if data.get("game") is False:
+        raise GateError("this is an asset-only carousel (published --no-game): it is delivered, "
+                        "not approved, and no game is built from it")
     if data["status"] == "APPROVED":
         print(f"= concept revision {data['revision']} was already approved "
               f"({data['approved_at']}, by {data['approved_by']})")
@@ -399,6 +445,9 @@ def cmd_status(args: argparse.Namespace) -> int:
             "lead_kind": data.get("lead_kind"),
             "panorama_sha256": data["panorama"]["sha256"],
             "panorama_intact": current_panorama_matches(root, data),
+            "composition": data.get("composition", "gameplay"),
+            "game": data.get("game", True),
+            "panel_count": data.get("panel_count", len(data.get("panels", []))),
             "previews": [p["file"] for p in data.get("previews", [])],
             "approved_at": data.get("approved_at"),
             "known_issues": data.get("known_issues", []),
@@ -409,8 +458,9 @@ def cmd_status(args: argparse.Namespace) -> int:
               + (" (legacy project: made before the approval gate)" if legacy_project() else ""))
         return 0
     intact = "intact" if current_panorama_matches(root, data) else "CHANGED SINCE PUBLISH"
+    kind = data.get("composition", "gameplay") + ("" if data.get("game", True) else ", asset-only")
     print(f"{data['status']} — revision {data.get('revision')}, panorama "
-          f"{data['panorama']['file']} ({intact})")
+          f"{data['panorama']['file']} ({intact}; {len(data.get('panels', []))} panels, {kind})")
     for issue in data.get("known_issues", []):
         print(f"known issue: {issue}")
     if data.get("approved_at"):
@@ -455,6 +505,10 @@ def cmd_check(args: argparse.Namespace) -> int:
         print("❌ no concept carousel: Session 1 must publish one (autocreate Phase 3.9) and the "
               "user must approve it before implementation", file=sys.stderr)
         return 1
+    if data.get("game") is False:
+        print("❌ the concept carousel is asset-only (published --no-game); no game is built "
+              "from it — start /autocreate for a game", file=sys.stderr)
+        return 1
     if data["status"] != "APPROVED":
         print(f"❌ the concept carousel is {data['status']}, not APPROVED — implementation waits "
               "for the user's approval", file=sys.stderr)
@@ -479,10 +533,24 @@ def main(argv: list[str] | None = None) -> int:
     pub.add_argument("--prompt", required=True, help="the rendered panorama prompt file")
     pub.add_argument("--panels", required=True,
                      help="the triptych output directory (store-01.png …, _carousel-preview.png)")
-    pub.add_argument("--count", type=int, default=3, help="carousel panel count (default 3)")
-    pub.add_argument("--sample", required=True, help="crop of the panorama's gameplay sample")
-    pub.add_argument("--sample-spec", required=True, help="gameplay-sample.md")
+    pub.add_argument("--count", type=int, default=3,
+                     help=f"carousel panel count, {PANEL_COUNTS.start}..{PANEL_COUNTS.stop - 1} "
+                          "(default 3)")
+    pub.add_argument("--sample", default=None,
+                     help="crop of the panorama's gameplay sample (the layout draft when the "
+                          "picture shows no field); required unless --no-game")
+    pub.add_argument("--sample-spec", default=None, help="gameplay-sample.md")
     pub.add_argument("--lead-kind", required=True, choices=("character", "object", "mechanic"))
+    pub.add_argument("--composition", choices=COMPOSITIONS, default="gameplay",
+                     help="how the picture is composed: the game's field beside its lead "
+                          "(gameplay, default), key art with no field (art), or the layout of a "
+                          "supplied example (example)")
+    pub.add_argument("--example", action="append", default=[],
+                     help="the layout example a --composition example picture follows, copied "
+                          "under the concept directory (repeatable: one file per panel image)")
+    pub.add_argument("--no-game", action="store_true",
+                     help="an asset-only carousel: a deliverable no game is built from, so it "
+                          "needs no gameplay sample and is never approved")
     pub.add_argument("--ledger", default=DEFAULT_LEDGER)
     pub.add_argument("--note", default=None)
     pub.add_argument("--known-issue", action="append", default=[],
