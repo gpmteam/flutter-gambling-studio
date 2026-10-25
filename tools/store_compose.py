@@ -68,8 +68,8 @@ makes (genre/theme agnostic — everything visual comes from the arguments):
   check     validates a finished directory against store constraints, with a
             per-store verdict (Play / App Store) on every file.
 
-Screenshot size defaults to 1320x2868 — the App Store's 6.9" slot, the single
-upload that covers every current iPhone. Google Play will NOT take that shape
+Screenshot size defaults to 1206x2622 — the App Store's medium Dynamic Island
+display size. Google Play will NOT take that shape
 (it caps the long side at 2× the short one), so a listing aimed at both stores
 exports a second set at `--size play` (1080x1920, exactly 9:16). The concept
 carousel the user approves before any code is exported at `play`.
@@ -96,7 +96,7 @@ Requires: Pillow + numpy (both already required by tools/cutout.py).
 Examples:
   python3 tools/store_compose.py fonts --font-dir assets/fonts
   python3 tools/store_compose.py triptych --src art/keyart-integrated.png \\
-      --out store/ --panels 3 --size 1320x2868 --art-gate off
+      --out store/ --panels 3 --size 1206x2622 --art-gate off
   # Campaign art only (references/campaign-art.md): the game background.
   python3 tools/store_compose.py backdrop --src production/store-art/shared-background.png \\
       --out-dir assets/images/backgrounds --prefix bg_campaign --variants menu,game \\
@@ -104,7 +104,7 @@ Examples:
       --confirm-game-background-replacement
   python3 tools/store_compose.py showcase --shot raw/02-menu.png \\
       --bg art/keyart-integrated.png \\
-      --out store/store-04.png --size 1320x2868 --caption "Every Spin Counts" \\
+      --out store/store-04.png --size 1206x2622 --caption "Every Spin Counts" \\
       --type-mood epic --caption-color "#FFF6DC" --caption-color2 "#F0B34A"
   python3 tools/store_compose.py showcase ... --size play   # 9:16 set for Play
   python3 tools/store_compose.py banner --keyart art/long-banner-integrated.png \\
@@ -146,19 +146,19 @@ PLAY_MAX_BYTES = 8 * 1024 * 1024
 # Play rejects a screenshot whose long side is more than twice the short side.
 PLAY_MAX_RATIO = 2.0
 
-# Canonical portrait sizes. The App Store's 6.9" slot is the default because a
-# single 6.9" upload covers every current iPhone in App Store Connect.
+# Canonical portrait sizes. The default uses the App Store's medium Dynamic Island display.
 #
 # Its 2.17:1 shape is ILLEGAL on Google Play (PLAY_MAX_RATIO above), so a
 # listing that targets BOTH stores needs a second export at 9:16 — `check`
 # prints a per-store verdict so that never gets discovered at upload time.
 SIZE_PRESETS = {
-    "iphone-6.9": (1320, 2868),   # App Store 6.9" (primary)
+    "iphone-6.3": (1206, 2622),   # App Store medium Dynamic Island display (default)
+    "iphone-6.9": (1320, 2868),   # App Store large Dynamic Island display
     "iphone-6.9-alt": (1290, 2796),  # App Store 6.9" (accepted alternative)
     "iphone-6.5": (1242, 2688),   # App Store 6.5" (legacy slot)
     "play": (1080, 1920),         # Google Play phone, exactly 9:16
 }
-DEFAULT_SCREEN_SIZE = "1320x2868"
+DEFAULT_SCREEN_SIZE = "1206x2622"
 
 # ── font discovery ──────────────────────────────────────────────────────────
 #
@@ -285,7 +285,7 @@ def parse_size(text: str) -> tuple[int, int]:
         w, h = key.replace("×", "x").split("x")
         size = (int(w), int(h))
     except Exception:
-        die(f"bad --size {text!r}; expected WIDTHxHEIGHT (e.g. 1320x2868) "
+        die(f"bad --size {text!r}; expected WIDTHxHEIGHT (e.g. 1206x2622) "
             f"or a preset: {', '.join(SIZE_PRESETS)}")
     if size[0] < 16 or size[1] < 16:
         die(f"--size {text!r} is too small")
@@ -322,6 +322,7 @@ def store_verdict(w: int, h: int) -> tuple[bool, bool, str]:
     play_ok = (PLAY_MIN_SIDE <= short_side and long_side <= PLAY_MAX_SIDE
                and ratio <= PLAY_MAX_RATIO + 1e-6)
     appstore_ok = (w, h) in {
+        SIZE_PRESETS["iphone-6.3"],
         SIZE_PRESETS["iphone-6.9"], SIZE_PRESETS["iphone-6.9-alt"],
         SIZE_PRESETS["iphone-6.5"],
     }
@@ -3888,7 +3889,7 @@ def cmd_composition_guide(args) -> None:
     # One render feeds both of the store kit's sets, so it is judged against the App Store strip
     # whatever --size the guide is drawn for: the App Store's tall panels need nearly its whole
     # height, and Play's 9:16 panels take the same width and crop its top and bottom.
-    app_w, app_h = SIZE_PRESETS["iphone-6.9"]
+    app_w, app_h = SIZE_PRESETS["iphone-6.3"]
     kit = (app_w * n + parse_gutter(args.gutter, app_w) * (n - 1)) / app_h
     if abs(math.log((cw / ch) / kit)) > math.log(1.12):
         warn(f"a {cw}×{ch} render is {cw / ch:.2f}:1, and the store kit cuts its App Store set "

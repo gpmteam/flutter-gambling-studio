@@ -24,7 +24,7 @@ def png(size, mode="RGB"):
 class StoreKitTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.app = png((1320, 2868))
+        cls.app = png((1206, 2622))
         cls.play = png((1080, 1920))
         cls.feature = png((1024, 500))
         cls.master = png((1024, 1024))
@@ -95,7 +95,7 @@ class StoreKitTests(unittest.TestCase):
 
     def test_bad_dimensions_transparency_numbering_and_image_corruption_fail(self):
         for changes in ({"store/store-01.png": self.play},
-                        {"store/store-01.png": png((1320, 2868), "RGBA")},
+                        {"store/store-01.png": png((1206, 2622), "RGBA")},
                         {"store/store-03.png": self.app},
                         {"store/store-01.png": b"not a PNG"},
                         {"branding/app_icon.png": png((1024, 1024), "RGBA")}):

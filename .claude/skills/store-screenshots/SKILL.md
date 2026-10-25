@@ -1,7 +1,7 @@
 ---
 name: store-screenshots
 description: "Create a store kit from the campaign: export the concept panorama the user approved before implementation unchanged (crops, grading and a detail pass only) as the carousel panels — torso-to-head character, the gameplay the game was built to match, mandatory flying x5/x10/x25/x50/x100 balls in every panel — then render the banner in its world from the template and a shipped ball asset. Phone slides put real captures on the game background — the same picture the game uses, character whole in frame. Add feature graphic from the banner, icon/emblem in the panorama's world, and ZIP. Started automatically after /autocreate-finalize; legacy games without an approved concept get a panorama first."
-argument-hint: "[--count 8] [--panels 3] [--lead-kind character|object|mechanic] [--character-framing bust|mascot] [--banner-layout free|left-heavy] [--size 1320x2868|play] [--no-play-set] [--frame ios|android|none] [--no-apply] [--no-wire-logo] [--no-captions] [--keep-runtime-background]"
+argument-hint: "[--count 8] [--panels 3] [--lead-kind character|object|mechanic] [--character-framing bust|mascot] [--banner-layout free|left-heavy] [--size 1206x2622|play] [--no-play-set] [--frame ios|android|none] [--no-apply] [--no-wire-logo] [--no-captions] [--keep-runtime-background]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Agent
 ---
@@ -117,7 +117,7 @@ followed by N−P actual
 gameplay/meta captures with optional device frames and captions, set on the
 game background from the campaign art — the same picture the captured game shows (see Phase 5).
 With `--keep-runtime-background` they sit on the panorama's opening panel instead. Produce `store/`
-at 1320×2868 and `store-play/` at 1080×1920 independently, not by resizing one set into the other.
+at 1206×2622 and `store-play/` at 1080×1920 independently, not by resizing one set into the other.
 Include a dedicated text-free 1024×500 feature graphic: the banner scene plus one Android-style
 phone on the right holding a real screenshot, with no title or copy anywhere (see Phase 5),
 icon masters/platform densities (1024 launcher master, 512×512 Play listing icon, frame-free —
@@ -378,7 +378,7 @@ in every panel, and the abstract slot-style backdrop. Attach, in order: the orig
 authority), the multiplier reference (ball model), the composition guide
 (`store_compose.py composition-guide --field <capture>`: placement and the panel cuts), the
 gameplay capture (context only), visible shipped sprites, matching previews. When the tool takes custom sizes, `3456x2384` (about 1.45:1)
-covers three 1320×2868 panels plus the default hidden seam allowance. No banner is attached: the
+covers three 1206×2622 panels plus the default hidden seam allowance. No banner is attached: the
 banner is made from the panorama, never the other way round.
 
 ### 1b — Banner (panorama as world context)
@@ -680,7 +680,7 @@ FLAGS=$(cat production/store-art/concept/export-flags.txt)
 "$STORE_PYTHON" tools/store_compose.py triptych --src "$ART_DIR/panorama.png" \
   --out "$PLAY_DIR" --size play $FLAGS
 "$STORE_PYTHON" tools/store_compose.py triptych --src "$ART_DIR/panorama.png" \
-  --out "$OUT_DIR" --size 1320x2868 $FLAGS
+  --out "$OUT_DIR" --size 1206x2622 $FLAGS
 ```
 
 Use `--lead-kind character` or `object` as applicable for a legacy game. Export each set from the
@@ -697,7 +697,7 @@ about 3% of the width: a label or character cut in an App Store panel is fixed w
 suitable for a carousel. A label cut by the gutter needs a crop correction; every panel must still
 carry a ball, at least two balls must still cover gameplay, and no ball may cover the player.
 
-**Resolution.** The App Store panels need about 4160×2868 of picture. `tools/gpt_image.py`
+**Resolution.** The App Store panels need about 3801×2622 of picture. `tools/gpt_image.py`
 renders the panorama natively at `3456x2384`, a 1.2× export. The built-in image tool returns about
 1.6 MP (around 1508×1043): a 2.75× enlargement that no sharpening hides, and `triptych` warns
 above 1.6×. With such a source, run the **detail pass** on the accepted panorama before
@@ -706,7 +706,7 @@ model's full resolution and merge them back in detail mode.
 
 ```bash
 "$STORE_PYTHON" tools/region_repair.py upscale --src "$ART_DIR/panorama.png" \
-  --height 2868 --out "$ART_DIR/panorama-canvas.png"
+  --height 2622 --out "$ART_DIR/panorama-canvas.png"
 "$STORE_PYTHON" tools/region_repair.py cut --src "$ART_DIR/panorama-canvas.png" \
   --box X0,Y0,X1,Y1 --context 0.3 --out-dir "$ART_DIR/detail/01-lead"
 # Same references as a repair, window.png as the edit target: "re-render this at full detail —
@@ -742,7 +742,7 @@ promotional balls to it; the banner and panorama carry those.
 ```bash
 "$STORE_PYTHON" tools/store_compose.py showcase --shot "$RAW_DIR/03-game-action.png" \
   --bg "$ART_DIR/shared-background.png" --out "$OUT_DIR/store-04.png" \
-  --size 1320x2868 --caption "Every Spin Counts" --type-mood playful --pop soft
+  --size 1206x2622 --caption "Every Spin Counts" --type-mood playful --pop soft
 ```
 
 **Fallback with `--keep-runtime-background` only.** Real-capture backdrops show the opening panel
@@ -762,7 +762,7 @@ object/mechanic lead, `--bg-subject` spans the lead object instead.
 "$STORE_PYTHON" tools/store_compose.py showcase --shot "$RAW_DIR/03-game-action.png" \
   --bg "$ART_DIR/panorama.png" --bg-panel 1 --bg-subject 0.00,0.38 \
   --out "$OUT_DIR/store-04.png" \
-  --size 1320x2868 --caption "Every Spin Counts" --type-mood playful --pop soft
+  --size 1206x2622 --caption "Every Spin Counts" --type-mood playful --pop soft
 ```
 
 With `--panels 0 --keep-runtime-background`, use `art/multiplier-showcase-bg.png` (Phase 1b)

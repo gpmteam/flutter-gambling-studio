@@ -327,7 +327,7 @@ the bias and save the chosen value in `export-flags.txt` only after all three pa
 A head or label clipped by a seam is fixed in the export
 (`--zoom` with `--offset`, `--offset-y` for the top or bottom edge), and the flags that fixed it
 go into `export-flags.txt`. The size never goes into that file: the store run passes it, once for
-each set. On a 3:2 render its App Store panels (1320×2868) cut the picture within a percent of its
+each set. On a 3:2 render its App Store panels (1206×2622) cut the picture within a percent of its
 width of the Play cuts and add back the strip above that the Play crop trims — which is
 why the panorama is still rendered 3:2: one picture serves both sets. Review the three panels at final crop size and `_carousel-preview.png` once. With the
 built-in tool's ~1.6 MP source the compositor warns about the enlargement: that is expected here —

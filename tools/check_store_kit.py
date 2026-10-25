@@ -148,7 +148,7 @@ def check(archive: Path, count: int = 8, play_set: bool = True,
             except (OSError, SyntaxError, ValueError) as exc:
                 errors.append(f"{relative}: invalid PNG ({exc}).")
 
-        for directory, size in (("store", (1320, 2868)), ("store-play", (1080, 1920))):
+        for directory, size in (("store", (1206, 2622)), ("store-play", (1080, 1920))):
             prefix = member(directory) + "/"
             images = sorted(n for n in names if n.startswith(prefix) and n.lower().endswith(".png"))
             if directory == "store-play" and not play_set:
