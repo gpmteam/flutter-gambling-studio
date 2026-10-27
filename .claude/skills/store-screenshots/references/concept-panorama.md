@@ -318,7 +318,9 @@ printf '%s\n' "--panels 3 --pop soft --seam-snap off --offset-y 1 --lead-kind ch
 
 `--panels` is the carousel's panel count: three, or the example's count for an `example`
 composition. It goes into `export-flags.txt` with the other flags, so the store run and the
-service's App Store export cut the same panels.
+service's App Store export cut the same panels. Both pass the file straight to `triptych`, so it
+holds those flags and nothing else — no label, note, command, path or `--size`; record the banner
+crop and other notes in the handoff. `concept_gate.py publish` refuses anything else.
 
 Use the game's `--lead-kind`. The bottom anchored Play crop keeps the panorama's foreground
 objects in all three panels; the guide and export must use the same `--offset-y`. Review the top

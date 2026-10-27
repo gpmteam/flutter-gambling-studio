@@ -170,6 +170,26 @@ class ConceptGateTests(unittest.TestCase):
         self.assertEqual(code, 1)
         self.assertIn("art_lineage.py record", message)
 
+    def test_publish_requires_export_flags_triptych_can_take(self) -> None:
+        # Session 1 agents wrote notes like these on 2026-10-27; the service could not cut the
+        # App Store set from them, and `triptych $(cat export-flags.txt)` would fail the same way.
+        self.render()
+        flags = self.root / "export-flags.txt"
+        for note in ("Panorama: store_compose triptych --size play --zoom 1.15 --seam-snap off\n",
+                     "--panels 3 --size play --seam-snap off\n",
+                     "--panels 3 --offset-y\n",
+                     "--panels 4 --seam-snap off\n"):
+            flags.write_text(note, encoding="utf-8")
+            code, message = self.publish()
+            self.assertEqual(code, 1, note)
+            self.assertIn("export-flags.txt", message)
+            self.assertIsNone(concept_gate.load(self.root))
+
+        flags.write_text("--panels 3 --pop soft --seam-snap off --offset-y -0.6 "
+                         "--lead-kind character --art-gate off\n", encoding="utf-8")
+        code, message = self.publish()
+        self.assertEqual(code, 0, message)
+
     def lineage(self, *argv: str) -> tuple[int, str]:
         out, err = io.StringIO(), io.StringIO()
         with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):

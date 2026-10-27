@@ -46,6 +46,7 @@ import argparse
 import datetime as _dt
 import hashlib
 import json
+import re
 import shutil
 import sys
 from pathlib import Path
@@ -68,6 +69,14 @@ PANEL_SIZE = (1080, 1920)
 # range `store_compose.py composition-guide --panels` accepts.
 PANEL_COUNTS = range(2, 6)
 COMPOSITIONS = ("gameplay", "art", "example")
+# `export-flags.txt` is handed straight to `triptych` by the store run (`FLAGS=$(cat …)`) and by
+# the service's App Store export, so it holds these flags and nothing else: no label, note, path
+# or size. Mirrors TRIPTYCH_FLAGS in the service's tools/asset_compose.py.
+EXPORT_FLAGS_FILE = "export-flags.txt"
+EXPORT_FLAGS = frozenset({"--panels", "--pop", "--vibrance", "--lift", "--contrast", "--bloom",
+                          "--seam-snap", "--offset", "--offset-y", "--zoom", "--gutter",
+                          "--lead-kind", "--character-framing", "--art-gate"})
+EXPORT_FLAG_VALUE = re.compile(r"^[-+]?[A-Za-z0-9.%]+$")
 DEFAULT_LEDGER = "production/store-art/lineage.json"
 # The concept panorama's own review is bounded, because the user reviews it the moment it is
 # published. Unbounded, one panorama took ten fresh renders and 42 minutes, every one of them
@@ -293,6 +302,7 @@ def cmd_publish(args: argparse.Namespace) -> int:
                                 "(`store_compose.py triptych --size play`)")
     if sample_spec is not None and not sample_spec.read_text(encoding="utf-8").strip():
         raise GateError(f"{sample_spec} is empty — describe the gameplay sample the game must match")
+    check_export_flags(root / EXPORT_FLAGS_FILE, args.count)
 
     ledger = Path(args.ledger)
     if ledger.exists():
@@ -360,6 +370,27 @@ def cmd_publish(args: argparse.Namespace) -> int:
     for issue in data["known_issues"]:
         print(f"   known issue: {issue}")
     return 0
+
+
+def check_export_flags(path: Path, count: int) -> None:
+    """Refuse an export-flags.txt that `triptych $(cat export-flags.txt)` could not run."""
+    if not path.is_file():
+        return
+    tokens = path.read_text(encoding="utf-8").split()
+    seen: dict[str, str] = {}
+    for index in range(0, len(tokens), 2):
+        flag = tokens[index]
+        value = tokens[index + 1] if index + 1 < len(tokens) else ""
+        if flag not in EXPORT_FLAGS or not EXPORT_FLAG_VALUE.fullmatch(value):
+            raise GateError(
+                f"{path}: {flag!r} — the file holds only the triptych flags the carousel was "
+                f"exported with, on one line, e.g. `--panels {count} --pop soft --seam-snap off "
+                "--offset-y 1 --lead-kind character --art-gate off`: no label, note, command, "
+                "path or --size. The store run and the App Store export pass it straight to "
+                "`triptych`; rewrite it with printf and publish again")
+        seen[flag] = value
+    if seen.get("--panels", str(count)) != str(count):
+        raise GateError(f"{path} cuts {seen['--panels']} panels; the carousel has {count}")
 
 
 def known_issues(values: list[str] | None) -> list[str]:
