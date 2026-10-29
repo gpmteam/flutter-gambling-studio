@@ -24,8 +24,8 @@ project to `dart analyze` 0 errors + `flutter test` green. In this session:
 - **V23**: the live field, side by side with the approved concept's gameplay sample, is the same
   field — the user approved the game by that picture
 - updating the session state + the final report + `production/session-state/finalize-verdict.json`
-- **the store kit handoff** (Phase 13): a production-ready game goes straight on to
-  `/store-screenshots`
+- **the store kit handoff** (Phase 13): a finished game — production-ready, or shipped with its
+  remaining defects named — goes straight on to `/store-screenshots`
 - **release-engineering PREP** (`/release-engineering --prep-only --no-keystore`): icons, native
   splash, versioning, store metadata, CI — **WITHOUT building the AAB/APK and without a keystore**
 
@@ -50,6 +50,35 @@ project to `dart analyze` 0 errors + `flutter test` green. In this session:
 
 ---
 
+## Finish the game — a defect is work, not a verdict
+
+Session 3 ends with a finished game. There is nobody to route a defect back to: under the web
+service this session is the last one before the store kit, and a run that ends with "rework
+remains" leaves the user with an unfinished game and no store kit. So every defect this session
+finds is this session's work:
+
+- **Targeted defects** go through the 10.5.3 auto-fix loop and the 10.6 fix iterations.
+- **Defects a targeted edit cannot fix** get one **rework pass** here, in this session, under
+  Session 2's rules — the work `/ui-audit --fix` or `/autocreate-implement --resume` would do:
+  recompose a screen that misses the gameplay-screen or mobile contract (field size, touch
+  targets, dead space on a tall phone), move game state out of a widget into the game/controller
+  behind `ValueNotifier`s (`.claude/rules/ui-code.md` §1), finish branding wiring, rebuild a
+  clear/feedback treatment. Then re-run only the tests, tours and captures that cover it.
+- **Coverage that has not run yet is not a finding** — run it: the loss path, the secondary
+  screens, active-state feedback, the soak. "Not yet verified" never goes in a report as a blocker.
+- **Still frozen** in the rework pass: the rules engine's behaviour, `game_config.dart`,
+  `design/balance/*.json`, `assets/data/*.json`, the GDD and `production/store-art/concept/`.
+  Rework changes how the game is built and shown, not its rules, numbers or approved picture.
+- **Past the budget** (3 auto-fix iterations, 2 playtest iterations, then one rework pass per
+  defect), a defect that remains **ships named**: the verdict is `KNOWN_ISSUES` and each remaining
+  defect is one sentence in `finalize-verdict.json` → `known_issues`. The store kit follows. A
+  no-gambling violation is the one exception — it is removed, never shipped.
+- **`BLOCKED` is reserved** for a required tool, service or input that is unavailable (no Flutter
+  SDK that compiles, the image tool down when a missing background must be rendered) or an
+  explicit user resource limit. A game that compiles and plays is never `BLOCKED`.
+
+---
+
 ## 🚨 MANDATORY CONTRACT
 
 1. ✅ Reads `production/session-state/autocreate-handoff.md` **as its first action**
@@ -57,7 +86,8 @@ project to `dart analyze` 0 errors + `flutter test` green. In this session:
    `dart analyze` still 0 errors)
 3. ✅ Reads `.claude/docs/mobile-first-contract.md` (portrait phone only — no desktop, tablet
    or landscape design) and `.claude/docs/gameplay-screen-contract.md` before runtime capture and
-   treats every V13–V23 defect as a HIGH release blocker
+   treats every V13–V23 defect as HIGH — it keeps the game from `PRODUCTION_READY`, and this
+   session fixes it ("Finish the game" above); it is never a reason to stop
 4. ✅ Runs Phases 10.4 → 10.45 → 10.5 → 10.6 → 11 → 11.5 → 12 → 13 in that order
 5. ✅ Returns the final report to the parent session (or prints it for the user) and writes
    `production/session-state/finalize-verdict.json`
@@ -65,10 +95,10 @@ project to `dart analyze` 0 errors + `flutter test` green. In this session:
 **Forbidden:**
 - ❌ Changing `lib/game/game_config.dart`, `design/balance/*.json` or `assets/data/*.json` —
   the balance and content are frozen
-- ❌ Rewriting whole screens — only targeted runtime auto-fixes are allowed
+- ❌ Rewriting whole screens inside the auto-fix loop — the loop makes targeted runtime fixes
   (overflow, setState after dispose, a missing asset path, a null ValueNotifier), plus the
   targeted background integration explicitly required by Phase 10.4 and the one-widget emblem
-  wiring of Phase 10.45
+  wiring of Phase 10.45; a screen that needs recomposing goes to the rework pass above
 - ❌ Generating a release upload keystore — Phase 11.5 runs ONLY with `--no-keystore`;
   a signed AAB is the user's explicit `/release-engineering`
 - ❌ Calling `/release-package` — packaging is a separate, explicit run
@@ -587,8 +617,10 @@ Consolidate the problems, mark their severity (CRITICAL/HIGH/MEDIUM) and assign 
 - Changing the GDD
 
 If V13–V17 require structural recomposition rather than a targeted constraint edit, do not hide
-or downgrade the defect. Mark finalization FAIL and route it back to `/ui-audit --fix` or
-`/autocreate-implement --resume`; Session 2 owns whole-screen composition.
+or downgrade the defect, and do not stop on it: give it the rework pass ("Finish the game"
+above) — recompose the screen here under Session 2's composition rules, then re-run the tour
+that covers it at 390×844 and 360×640. A defect still there after the rework pass is a known
+issue.
 
 ### 10.5.4 — Phase 10.5's exit criterion
 
@@ -598,9 +630,9 @@ or downgrade the defect. Mark finalization FAIL and route it back to `/ui-audit 
   `MENU_LEAD_EXIT=0`, `GAMEPLAY_CENTER_EXIT=0`, and the vision confirmations agree), V22 and V23 pass,
   and the gameplay-screen contract passes in idle and active states at every phone size
 - **Partial success**: CRITICAL/HIGH are cleared but MEDIUMs remain — go on to Phase 11 with CONCERNS
-- **Failure**: after 3 iterations any CRITICAL/HIGH remains — save
-  `production/runtime-screenshots/<ts>/REPORT.md`, report with the verdict FAIL;
-  Phase 11 runs anyway (active.md is updated with the FAIL verdict)
+- **Failure**: after 3 iterations and the rework pass a CRITICAL/HIGH remains — save
+  `production/runtime-screenshots/<ts>/REPORT.md` with the verdict FAIL; each remaining defect is a
+  known issue, and Phase 11 runs anyway (active.md is updated with the FAIL verdict)
 
 **The Android path (`PLATFORM=android`, compile-only):**
 - **Success**: `flutter build apk --debug` finishes with exit code 0 (`ANDROID_BUILD_EXIT=0`)
@@ -644,11 +676,14 @@ error: playtest needs a genuinely running instance over CDP, and compile-only la
 - Verdict: **PLAYABLE / PLAYABLE-WITH-ISSUES / NOT-PLAYABLE / SKIPPED** →
   `production/playtest/<ts>/PLAYTEST-REPORT.md`.
 - On a CRITICAL (P1/P2/P8), run an auto-fix loop of up to 2 iterations against the same table of
-  permitted fixes as in 10.5.3 (targeted wiring edits only; NOT balance, NOT rewriting screens).
+  permitted fixes as in 10.5.3 (targeted wiring edits only; NOT balance, NOT rewriting screens);
+  what those cannot fix gets the rework pass.
+- Exercise every path the report would otherwise list as unverified — the loss path (play a
+  level out of moves), each secondary screen, active-chain/combo feedback — before writing it.
 
 **Exit criterion:** PLAYTEST-REPORT.md exists; the verdict is ≠ NOT-PLAYABLE (or the 2 iterations
-are exhausted — then the verdict is recorded honestly and reaches the final report as the FAIL
-reason).
+and the rework pass are exhausted — then the verdict is recorded honestly and its cause is a known
+issue).
 
 ---
 
@@ -669,8 +704,9 @@ Task: Production-ready
 ## Status
 [If the campaign background, the approved gameplay sample (V23) and runtime/playtest/layout pass: The game is fully
 implemented and verified. The store kit (/store-screenshots) follows. To get the APK and the archive, run /release-package.]
-[If the campaign background is incomplete or any CRITICAL/HIGH or NOT-PLAYABLE remains: RELEASE BLOCKED. Return to /ui-audit --fix or
-/autocreate-implement --resume; do not run /release-package or /store-screenshots yet.]
+[If defects remain after the rework pass: The game is implemented and playable and ships with known issues — [one line
+each]. The store kit (/store-screenshots) follows; `/ui-audit --fix` can take the known issues on later.]
+[If a required tool or service was unavailable: BLOCKED on [it]; everything else above is done.]
 
 ## Runtime verification
 - Verdict: [PASS / CONCERNS / FAIL / SKIPPED]
@@ -709,15 +745,22 @@ cat > production/session-state/finalize-verdict.json <<'JSON'
   "playtest": "PLAYABLE",
   "campaign_background": "PASS",
   "gameplay_sample": "PASS",
+  "known_issues": [],
   "blockers": [],
   "finished_at": "<ISO timestamp>"
 }
 JSON
 ```
 
-`verdict` is `PRODUCTION_READY` exactly when Phase 12's report says
-`AUTOCREATE COMPLETE — PRODUCTION READY`, and `BLOCKED` otherwise, with every blocker listed in
-one line each. Write it from the evidence, never optimistically.
+`verdict` is one of three, written from the evidence, never optimistically:
+
+- `PRODUCTION_READY` exactly when Phase 12's report says `AUTOCREATE COMPLETE — PRODUCTION READY`;
+- `KNOWN_ISSUES` when the game is finished and defects remain after their budget and the rework
+  pass — each one sentence in `known_issues`, e.g. "The board fills 48% of the 430×932 viewport
+  (contract: 55%)."; the store kit follows;
+- `BLOCKED` only when a required tool, service or input was unavailable (or an explicit user
+  resource limit was reached) — each in `blockers`, naming what was unavailable. Work that remains
+  to be done is never a blocker: do it.
 
 ---
 
@@ -758,8 +801,9 @@ Print to the user (or, when invoked as a sub-agent, return it to the parent sess
 `AUTOCREATE COMPLETE — PRODUCTION READY` only when runtime has 0 CRITICAL/HIGH issues, the
 gameplay-screen contract passes, playtest is not NOT-PLAYABLE, the campaign background is
 integrated and verified (V22), and the live field matches the approved gameplay sample (V23).
-Otherwise use `AUTOCREATE BLOCKED — UI/GAMEPLAY REWORK REQUIRED` and put the blocking rerun
-command first.
+When defects remain after the rework pass, use `AUTOCREATE COMPLETE — SHIPPED WITH KNOWN ISSUES`
+and list each one under the header. Use `AUTOCREATE BLOCKED — <what was unavailable>` only for the
+`BLOCKED` verdict above, never for work that remains.
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -852,7 +896,7 @@ command first.
 
 ## Phase 13 — the store kit
 
-A production-ready game goes straight on to its store listing, built from the same approved
+A finished game — `PRODUCTION_READY` or `KNOWN_ISSUES` — goes straight on to its store listing, built from the same approved
 panorama: `/store-screenshots` exports it unchanged as the carousel slides (crops, grading and the
 detail pass only), renders the banner in its world, puts real captures of this game on its
 background, and packages the kit.
@@ -864,7 +908,7 @@ echo "store kit: ${AUTOCREATE_STORE_KIT:-agent}"
 - `AUTOCREATE_STORE_KIT=service` (the web service sets it) or `--no-store-kit` → do not start it:
   the service runs `/store-screenshots` as its own run after reading `finalize-verdict.json`. End
   here.
-- Otherwise, when the verdict is `PRODUCTION_READY`, spawn a clean-context agent:
+- Otherwise, when the verdict is `PRODUCTION_READY` or `KNOWN_ISSUES`, spawn a clean-context agent:
 
 ```text
 You are the store-kit session of /autocreate. Read .claude/skills/store-screenshots/SKILL.md and
@@ -873,9 +917,9 @@ run it with its defaults. The concept panorama the user approved is production/s
 render the banner in its world. Return the ZIP path, the check_store_kit.py result and any blocker.
 ```
 
-- When the verdict is `BLOCKED`, do not start the store kit: the listing would show a game that
-  fails its own gates. The report names the blockers and says the store kit follows their fix
-  (`/store-screenshots`).
+- When the verdict is `BLOCKED` (a required tool or service was unavailable), do not start the
+  store kit here; the report names what was unavailable and that `/store-screenshots` follows once
+  it is back.
 
 ---
 
@@ -887,18 +931,21 @@ render the banner in its world. Return the ZIP path, the check_store_kit.py resu
 | 10.4. Campaign check | The approved concept passes `concept_gate.py check`; the background (rendered in the approved panorama's world, character whole in frame) is ACCEPTED and selected by every screen; campaign.md complete; analyzer/tests pass | Only when missing: fresh renders from original references + the approved panorama; at most one whole-frame edit; region repairs for local defects (art-lineage.md) |
 | 10.45. Branding | The launcher icon and emblem are rendered in the approved panorama's world (or reused from the ledger), applied, wired with one widget, analyzer/tests pass, runtime backgrounds UNCHANGED; or `Branding: BLOCKED` recorded with its cause | 1 fresh render + 2 region repairs per picture |
 | 10.5. Runtime Chrome / Android compile | Web: 0 CRITICAL/HIGH visual at every phone size, gameplay-screen contract PASS, no HIGH in the V18 asset-distortion, V19 menu-composition/role, V20 gameplay-centering, V22 campaign-background or V23 approved-gameplay-sample audits, wide host shows the phone column, 0 FATAL in flutter-run.log (+ soak: no leak). Android (`--platform android`): `flutter build apk --debug` exit 0 | 3 (Chrome is always available) / 2 (Android compile) |
-| 10.6. Playtest | PLAYTEST-REPORT.md, verdict ≠ NOT-PLAYABLE (P1–P10) | 2 |
+| 10.6. Playtest | PLAYTEST-REPORT.md, verdict ≠ NOT-PLAYABLE (P1–P10), every path exercised | 2 |
+| Rework pass | A defect the loops above could not fix is reworked here under Session 2's rules (screen recomposition, game state out of widgets, branding wiring), then re-verified; what remains is a named known issue | 1 per defect |
 | 11. Session state | `active.md` updated | 1 |
 | 11.5. Release-eng prep | Icons/splash generated, `store/` created (AAB best-effort) | 1 |
 | 12. Final report | The report was printed / returned; `finalize-verdict.json` written | 1 |
-| 13. Store kit | PRODUCTION_READY → `/store-screenshots` started (or left to the web service); BLOCKED → not started, and the report says why | 1 |
+| 13. Store kit | PRODUCTION_READY or KNOWN_ISSUES → `/store-screenshots` started (or left to the web service); BLOCKED → not started, and the report names what was unavailable | 1 |
 
 **THE ABSOLUTE MINIMUM to finish Session 3:**
 - `production/session-state/active.md` is updated
-- The final report is printed, with the runtime verification verdict
+- `finalize-verdict.json` is written and the final report is printed, with the runtime
+  verification verdict
 
-This minimum permits an honest blocked report; it does not permit a production-ready claim. Any
-remaining V13–V23/HIGH defect, a BLOCKED campaign background, or a failed mobile-phone/gameplay-screen contract keeps the project blocked.
+This minimum does not permit a production-ready claim: any remaining V13–V23/HIGH defect, a
+BLOCKED campaign background, or a failed mobile-phone/gameplay-screen contract makes the verdict
+`KNOWN_ISSUES` with that defect named — after this session has spent its budget fixing it.
 
 ---
 

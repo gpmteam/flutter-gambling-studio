@@ -320,6 +320,24 @@ class ConceptApprovalGuidanceTest(unittest.TestCase):
                 self.assertIn(phrase, self.finalize)
         self.assertIn("| V23 | **Field is not the approved gameplay sample**", self.emulator)
 
+    def test_finalization_finishes_the_game_instead_of_stopping(self) -> None:
+        # A build once stopped with "AUTOCREATE BLOCKED — UI and gameplay rework remains" on a game
+        # that cleared level 1 in Chrome, and the store kit never started.
+        checklist = " ".join((Path(__file__).resolve().parents[2] / ".claude/skills/autocreate-finalize/checklist.md")
+                             .read_text(encoding="utf-8").split())
+        for phrase in ("## Finish the game — a defect is work, not a verdict",
+                       "**Coverage that has not run yet is not a finding**",
+                       "A game that compiles and plays is never `BLOCKED`.",
+                       "`AUTOCREATE COMPLETE — SHIPPED WITH KNOWN ISSUES`",
+                       "when the verdict is `PRODUCTION_READY` or `KNOWN_ISSUES`, spawn"):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, self.finalize)
+        for phrase in ("UI/GAMEPLAY REWORK REQUIRED", "RELEASE BLOCKED", "Mark finalization FAIL and route it back"):
+            with self.subTest(phrase=phrase):
+                self.assertNotIn(phrase, self.finalize)
+        self.assertIn("| rework pass |", checklist)
+        self.assertNotIn("route back", checklist)
+
     def test_the_store_kit_exports_the_approved_panorama_unchanged(self) -> None:
         for phrase in ("python3 tools/concept_gate.py status",
                        "$(cat production/store-art/concept/export-flags.txt)",

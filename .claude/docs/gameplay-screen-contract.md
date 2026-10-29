@@ -103,6 +103,7 @@ Treat any of these as a HIGH layout defect and a release blocker:
 - the game screen has a desktop, tablet or landscape branch, or a wide host stretches it instead
   of showing the phone column.
 
-Implementation must recompose the screen before handoff. Finalization must fail and route the
-screen back through `/ui-audit --fix` or `/autocreate-implement --resume`; it must not downgrade
-these failures to cosmetic concerns.
+Implementation must recompose the screen before handoff. Finalization must not downgrade these
+failures to cosmetic concerns, and must not stop on them either: it recomposes the screen in its
+rework pass and re-verifies it; a failure still there afterwards ships as a named known issue
+(`autocreate-finalize` → "Finish the game").
