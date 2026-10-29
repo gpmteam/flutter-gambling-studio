@@ -93,6 +93,29 @@ class StoreKitTests(unittest.TestCase):
         self.assertTrue(check(self.kit(), 8))
         self.assertTrue(check(self.kit(play_set=False), 2, True))
 
+    def test_a_kit_ships_with_its_remaining_defects_named(self):
+        issues = {"visual_review": "KNOWN_ISSUES",
+                  "known_issues": ["feature graphic: the x50 ball is clipped by the top edge"]}
+        archive = self.kit(manifest_changes=issues)
+        self.assertEqual(check(archive, 2), [])
+        result = subprocess.run([sys.executable, "-B", str(REPO / "tools/check_store_kit.py"),
+                                 "--archive", str(archive), "--count", "2"],
+                                capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("- feature graphic: the x50 ball is clipped by the top edge", result.stdout)
+        # A composition note on the approved panorama may ride along with a clean review.
+        self.assertEqual(check(self.kit(manifest_changes={
+            "known_issues": ["approved panorama: only x25 overlaps the board"]}), 2), [])
+
+    def test_known_issues_must_be_named(self):
+        for change in ({"visual_review": "KNOWN_ISSUES"},
+                       {"gameplay_review": "KNOWN_ISSUES", "known_issues": []},
+                       {"visual_review": "KNOWN_ISSUES", "known_issues": [""]},
+                       {"visual_review": "KNOWN_ISSUES", "known_issues": "clipped ball"},
+                       {"visual_review": True}):
+            with self.subTest(change=change):
+                self.assertTrue(check(self.kit(manifest_changes=change), 2))
+
     def test_bad_dimensions_transparency_numbering_and_image_corruption_fail(self):
         for changes in ({"store/store-01.png": self.play},
                         {"store/store-01.png": png((1206, 2622), "RGBA")},

@@ -25,6 +25,11 @@ MAX_ART_GENERATION = 2
 # contract: the store kit crops, grades and detail-passes it, and may repair an objective defect
 # as a region, but never re-renders or whole-frame edits it.
 APPROVED_PANORAMA_STEPS = ("derive", "detail", "repair")
+# A review either found nothing (PASS) or ships the kit with what it could not fix named in
+# `known_issues` (KNOWN_ISSUES). A store run always delivers: a defect left when its correction
+# budget is spent travels with the kit instead of stopping the run without one.
+REVIEW_VERDICTS = ("PASS", "KNOWN_ISSUES")
+REVIEWS = ("visual_review", "gameplay_review")
 
 
 def lineage_errors(kit: zipfile.ZipFile, names: list[str], member) -> list[str]:
@@ -93,6 +98,24 @@ def concept_errors(kit: zipfile.ZipFile, names: list[str], member, concept: Path
     return []
 
 
+def review_errors(manifest: dict) -> list[str]:
+    errors = [f"Delivery {key} must be 'PASS' or 'KNOWN_ISSUES'." for key in REVIEWS
+              if not isinstance(manifest.get(key), str) or manifest.get(key) not in REVIEW_VERDICTS]
+    issues = manifest.get("known_issues", [])
+    if not isinstance(issues, list) or not all(isinstance(i, str) and i.strip() for i in issues):
+        errors.append("Delivery known_issues must be a list of non-empty sentences.")
+    elif not issues and any(manifest.get(key) == "KNOWN_ISSUES" for key in REVIEWS):
+        errors.append("A KNOWN_ISSUES review must name each remaining defect in known_issues.")
+    return errors
+
+
+def known_issues(archive: Path) -> list[str]:
+    """The defects the kit's STORE_DELIVERY.json says it ships with (after `check` passed)."""
+    with zipfile.ZipFile(archive) as kit:
+        name = next(n for n in kit.namelist() if PurePosixPath(n).name == "STORE_DELIVERY.json")
+        return list(json.loads(kit.read(name)).get("known_issues", []))
+
+
 def check(archive: Path, count: int = 8, play_set: bool = True,
           concept: Path | None = None) -> list[str]:
     from PIL import Image
@@ -115,10 +138,11 @@ def check(archive: Path, count: int = 8, play_set: bool = True,
         if not isinstance(manifest, dict):
             return ["STORE_DELIVERY.json must be an object."]
         expected = {"schema_version": 1, "status": "COMPLETE", "screenshot_count": count,
-                    "play_set": play_set, "visual_review": "PASS", "gameplay_review": "PASS"}
+                    "play_set": play_set}
         for key, value in expected.items():
             if manifest.get(key) != value or type(manifest.get(key)) is not type(value):
                 errors.append(f"Delivery {key} must be {value!r}.")
+        errors.extend(review_errors(manifest))
 
         def member(relative: str) -> str:
             p = PurePosixPath(relative)
@@ -198,6 +222,9 @@ def main() -> int:
         print("FAIL — store delivery:\n" + "\n".join(errors), file=sys.stderr)
         return 2
     print("PASS — store ZIP structure, required images, and recorded review declarations.")
+    issues = known_issues(args.archive)
+    if issues:
+        print("Known issues shipped with the kit:\n" + "\n".join(f"- {i}" for i in issues))
     return 0
 
 

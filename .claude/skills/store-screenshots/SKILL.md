@@ -79,6 +79,16 @@ with no ball is an objective failure. Keep the five ball labels legible. Review 
 crop size; after a correction review affected crops again. Use format/dimension checks for exports. Do not run numeric composition gates or repeat visual
 audits of unchanged art to optimize scores.
 
+These ball rules are judged on the scenes **this run makes** (the banner, any showcase
+background). The approved panorama met them, or carried the miss as a known issue, before the
+user approved it: where its ball count or placement falls short (fewer than two balls over
+gameplay, a panel without a ball), that is the composition the user chose. Name it in
+`STORE_DELIVERY.json` → `known_issues` and keep going; it is never a reason to withhold the kit.
+
+**A store run always ends with a ZIP.** A defect the correction budget could not remove ships
+with the kit, named in `known_issues` — it does not stop the run. Only a missing required input,
+tool or service (the concept not approved, the image tool down) ends a run without a kit.
+
 **The image model generates the multiplier balls and their labels in the same call as the rest
 of the scene.** Choose one suitable shipped round asset, such as a ball, coin, token or orb,
 confirm its path in the game's asset registry or `pubspec.yaml`, and attach that file to every
@@ -504,27 +514,32 @@ character, incorrect board dimensions or symbol ordering, and links that change 
 move or scoring state. Preserve the real mechanic, topology, symbols, and state.
 
 A failed visual review starts a correction loop; it does not end the pipeline. Reuse accepted
-artwork and correct only failed scenes. Never declare PASS or package rejected art to end the
-loop. **The loop is bounded per scene this run makes**: three fresh renders and five region
+artwork and correct only failed scenes. Never declare PASS for a defect you can see, and never
+stop the loop early to hand back an unfinished kit. **The loop is bounded per scene this run makes**: three fresh renders and five region
 repairs (the budget the concept panorama already has, `tools/concept_gate.py budget`), and the
 same defect is never attacked twice by the same method — a fresh render with the correction
 written into the prompt and the guide attached, then a region repair of the defect box, then
 the crop and the phone seat (`--zoom`, `--offset`; a ball label under the phone needs no new
 art). A measured store run spent six image calls and eleven minutes on one banner by repeating
 fresh renders for a phone-seat problem the guide now prevents. Past the budget, render nothing
-more: ship the best candidate if it passes every objective check, otherwise stop and report the
-delivery incomplete with the evidence under `production/store-art/failed-delivery/`.
+more: ship the best candidate and name each objective defect it still has in
+`STORE_DELIVERY.json` → `known_issues`, with `visual_review: "KNOWN_ISSUES"`. The kit is
+packaged either way; the defect travels with it, and the rejected attempts stay under
+`production/store-art/failed-delivery/`.
 
 The **concept panorama before approval** (`/autocreate` Phase 3.9 and `--revise`) has the same
-budget, enforced by the lineage ledger, with one difference: the user reviews it the moment it is
-published, so the best candidate is published with its remaining defects named as known issues
-([references/concept-panorama.md](references/concept-panorama.md) → Step 4). It never declares
-those defects fixed; it hands them to the user.
+budget, enforced by the lineage ledger, and ends the same way: the best candidate is published
+with its remaining defects named as known issues
+([references/concept-panorama.md](references/concept-panorama.md) → Step 4). Neither declares
+those defects fixed; both hand them to the user.
 
-The approved panorama is corrected only by crop, and by a region repair for an objective defect
-the concept review missed. A composition or taste note against it is not a defect: the user
-approved that composition, and the game was built to match it. Record the note in
-`STORE_INFO.md` for a later concept change; do not act on it here.
+The approved panorama is corrected only by crop, and by a region repair for an objective
+rendering defect the concept review missed (a misspelled or garbled label, a broken hand or
+face). A composition or taste note against it is not a defect: the user approved that composition, and
+the game was built to match it. Ball count and placement are composition — a panel without a
+ball or fewer than two balls over gameplay is never repaired here. Record the note in
+`STORE_INFO.md` and `known_issues` for a later concept change; do not act on it, and do not let
+it hold back the kit.
 
 **Repairs must not compound.** An image-model edit re-renders the whole frame even when the
 prompt says "change only X": every pixel is painted again, so an edit of an edit stacks
@@ -594,9 +609,9 @@ approach. Recheck the complete export contact sheet after composition changes; a
 audits of unchanged art.
 
 Preserve failure evidence under `production/store-art/failed-delivery/` while continuing repairs.
-BLOCKED is reserved for an unavailable required input/tool/service, an explicit user resource
-limit, or an objective defect still present when a scene's correction budget is spent; a failed
-visual review inside the budget is not a blocker, it is the next correction.
+BLOCKED is reserved for an unavailable required input/tool/service or an explicit user resource
+limit. A defect is never a blocker: inside the budget it is the next correction, and past the
+budget it ships as a known issue.
 Stop at the user's request. If an external blocker prevents continuing, save the exact cause and
 resume state, finish independent work, and report the incomplete delivery accurately.
 
@@ -608,10 +623,12 @@ render, so a label, hand or face under the phone is caught in one view, before a
 After the first full export, inspect one contact sheet showing the final App Store and Play crops,
 plus the feature graphic. The approved panorama's art was reviewed before the user approved it:
 here its crops are reviewed (a label or head cut by a seam, a board row lost by the Play crop),
-and its art only for an objective defect. The banner and anything else this run made get the
+and its art only for an objective rendering defect (a misspelled label, a broken hand). Its ball
+count and placement are the approved composition: a shortfall there is a known issue, not a
+failed review. The banner and anything else this run made get the
 whole review. Compare the character to its original asset, verify that `x5`, `x10`,
 `x25`, `x50` and `x100` each appear once, spelled exactly, on distinct airborne balls in the
-panorama and in the banner, and that every panorama panel carries at least one ball. Check that
+banner (and are spelled exactly wherever they appear in the panorama). Check that
 any main character reads from torso to head in the banner and the panorama. Its body should be
 cut through the torso by the bottom edge or the foreground band, with no legs, knees, hips or feet
 visible. It should be neither standing full length nor flying or floating, with visible space
@@ -620,8 +637,8 @@ obvious pasted screenshot
 boundary. Check that the balls
 read as the multiplier reference (silhouette, material, color, ornament) painted into the scene:
 lit by it, with glow and motion, labels bold and dominant. A flat, pasted-looking or small-label
-ball is an error. Confirm at least two ball bodies visibly cover gameplay and none overlaps the
-player/hero silhouette. Do not move balls off the board to clear the action. Check that the
+ball is an error. In the banner, confirm at least two ball bodies visibly cover gameplay and none
+overlaps the player/hero silhouette. Do not move balls off the board to clear the action. Check that the
 banner visibly shares the approved panorama's world, and that the lower edge is a close-up band of large,
 readable game objects over a continuous layer of the game's own pieces, without a floor, drape or heap of tiny props.
 For a game without a character, check that no player/mascot was invented. Apply the correction
@@ -818,10 +835,10 @@ currency, chance-based prizes and misleading scoring claims. Metadata describes 
 mechanic and records “simulated gambling: no”; rate the content and art. No virtual-currency
 disclaimer, age gate or odds disclosure. Interpret decorative objects in context.
 The Phase 2 review checks the five ball inscriptions in the final crops. A missing or altered label follows the
-Phase 1 correction policy; an unsupported gameplay value does not need one. Balls in the
-generated marketing scene must fly in every panel and cover some gameplay while leaving the
-player clear, and any character stays framed from torso to head. Keep separate real gameplay
-captures authentic.
+Phase 1 correction policy; an unsupported gameplay value does not need one. Balls in a
+marketing scene this run generates must fly in every panel and cover some gameplay while leaving the
+player clear (the approved panorama keeps the placement the user approved), and any character
+stays framed from torso to head. Keep separate real gameplay captures authentic.
 
 Recheck runtime-background inventory/hashes/wiring against the baseline taken after campaign art:
 normal result UNCHANGED, including a run that made the campaign art itself. If branding changed
@@ -855,8 +872,8 @@ python3 tools/art_lineage.py --ledger "$ART_DIR/lineage.json" verify \
   --file "$ART_DIR/long-banner.png" --file "$ART_DIR/panorama.png" \
   --file "$ART_DIR/shared-background.png"   # each file the kit ships
 ```
- After actual
-visual review confirms identity, framing, balls, and accurate gameplay, write
+ After the
+visual review of identity, framing, balls and accurate gameplay, write
 `$STORE_DIR/STORE_DELIVERY.json` with the resolved request count and Play-set choice:
 
 ```json
@@ -867,6 +884,7 @@ visual review confirms identity, framing, balls, and accurate gameplay, write
   "play_set": true,
   "visual_review": "PASS",
   "gameplay_review": "PASS",
+  "known_issues": [],
   "icon_master": "branding/app_icon.png",
   "listing_icon": "branding/store_icon_512.png",
   "emblem": "branding/emblem.png"
@@ -874,8 +892,12 @@ visual review confirms identity, framing, balls, and accurate gameplay, write
 ```
 
 Set STORE_COUNT to the resolved screenshot count. `8` and `true` are defaults, not overrides
-of `--count` or `--no-play-set`. Set review PASS
-only from the real image review; a blocked or pending scene cannot be declared COMPLETE.
+of `--count` or `--no-play-set`. A review is `PASS` when the real image review found nothing, and
+`KNOWN_ISSUES` when the shipped kit still has a defect: then `known_issues` names each one in a
+sentence the user can act on ("feature graphic: the x50 ball is clipped by the top edge after two
+region repairs"; "approved panorama: only x25 overlaps the board"). A note against the approved
+panorama's composition goes in `known_issues` too, and on its own leaves the review `PASS`.
+Never write `PASS` over a defect you saw; never hold the kit back because of one.
 
 ```bash
 ARCHIVE_NAME="$PROJECT_NAME-store-$TS.zip"
@@ -900,7 +922,8 @@ Create the ZIP after this file exists, then validate the archive itself:
 ```
 
 The worker requires a new or changed ZIP whose contents pass this gate. A successful image call,
-source-rule check, or CLI exit does not complete store delivery. On failure, preserve the report,
-exact runtime facts, attempt prompts and evidence under `production/store-art/failed-delivery/`
-as well as the export directory; worker snapshots exclude `project_zip/`. Do not package rejected
-art merely to satisfy the archive gate.
+source-rule check, or CLI exit does not complete store delivery. When the gate refuses the ZIP,
+fix what it names and package again; the run is not over until it passes. Preserve the report,
+attempt prompts and evidence of rejected art under `production/store-art/failed-delivery/` as
+well as the export directory; worker snapshots exclude `project_zip/`. Only an external blocker
+(see Phase 1) ends a run without a kit — and the worker resumes a run that stops without one.
