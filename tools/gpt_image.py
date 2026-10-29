@@ -41,7 +41,9 @@ from pathlib import Path
 from typing import Any
 
 
-API_ROOT = "https://api.openai.com/v1"
+# The web-service sandbox keeps the real API key outside the run: OPENAI_API_KEY there is a per-run
+# token that only the service's credential proxy (OPENAI_BASE_URL) accepts and exchanges.
+API_ROOT = os.environ.get("OPENAI_BASE_URL", "").strip().rstrip("/") or "https://api.openai.com/v1"
 MODEL = "gpt-image-2"
 PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
 RETRYABLE_HTTP_STATUS = {408, 409, 429, 500, 502, 503, 504}
